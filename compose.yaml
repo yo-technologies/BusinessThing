@@ -1,0 +1,14 @@
+include:
+    - llm-agent/compose.yaml
+    - llm-agent-db/compose.yaml
+    - jaeger/compose.yaml
+
+services:
+    dozzle:
+        container_name: dozzle
+        profiles: [logging, full]
+        image: amir20/dozzle:latest
+        volumes:
+            - /var/run/docker.sock:/var/run/docker.sock
+        ports:
+            - "9999:8080"

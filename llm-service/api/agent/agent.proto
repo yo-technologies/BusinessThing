@@ -1,0 +1,253 @@
+syntax = "proto3";
+
+package llm_agent.api.agent;
+
+option go_package = "llm-service/internal/pb/llm-agent/api/agent;agent";
+
+
+import "google/protobuf/empty.proto";
+import "google/protobuf/timestamp.proto";
+import "google/protobuf/struct.proto";
+import "google/api/annotations.proto";
+import "validate/validate.proto";
+import "protoc-gen-openapiv2/options/annotations.proto";
+
+option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_swagger) = {
+  info: {
+        title: "LLM Service API"
+    version: "1.0.0"
+        description: "API for LLM Service of BusinessThing"
+  };
+  consumes: "application/json"
+  produces: "application/json"
+  base_path: "/api"
+  schemes: HTTP
+  schemes: HTTPS
+  security_definitions: {
+    security: {
+      key: "Bearer"
+      value: {
+        type: TYPE_API_KEY
+        in: IN_HEADER
+        name: "Authorization"
+      }
+    }
+  }
+  security: {
+    security_requirement: {
+      key: "Bearer"
+      value: {}
+    }
+  }
+};
+
+service ChatService {
+    // Получить список чатов текущего пользователя
+    rpc GetChats(GetChatsRequest) returns (GetChatsResponse) {
+        option (google.api.http) = {
+            post: "/v1/chats"
+            body: "*"
+        };
+    }
+
+    // Получить конкретный чат с сообщениями по ID
+    rpc GetChat(GetChatRequest) returns (GetChatResponse) {
+        option (google.api.http) = {
+            get: "/v1/chats/{chat_id}"
+        };
+    }
+
+    // Получить ежедневные лимиты использования LLM для текущего пользователя
+    rpc GetLLMLimits(google.protobuf.Empty) returns (GetLLMLimitsResponse) {
+        option (google.api.http) = {
+            get: "/v1/llm/limits"
+        };
+    }
+
+    // Двунаправленный поток для общения с LLM агентом
+    rpc ChatStream(stream ChatStreamRequest) returns (stream ChatStreamResponse) {}
+}
+
+message Pagination {
+    // Пагинация: номер страницы (начинается с 1)
+    optional int32 page = 1 [(validate.rules).int32.gt = 0];
+    // Пагинация: количество элементов на страницу
+    optional int32 page_size = 2 [(validate.rules).int32.gt = 0, (validate.rules).int32.lte = 100];
+}
+
+message GetChatsRequest {
+    string org_id = 1 [(validate.rules).string.uuid = true];
+    optional Pagination pagination = 2;
+}
+
+message GetChatsResponse {
+    repeated Chat chats = 1;
+}
+
+message Chat {
+    string id = 1;
+    string title = 2;
+    google.protobuf.Timestamp created_at = 3;
+}
+
+message GetChatRequest {
+    string chat_id = 1 [(validate.rules).string.min_len = 1];
+}
+
+message GetChatResponse {
+    Chat chat = 1;
+    repeated ChatMessage messages = 2;
+}
+
+message GetLLMLimitsResponse {
+    int32 daily_limit = 1;
+    int32 used = 2;
+    int32 reserved = 3;
+}
+
+message ChatStreamRequest {
+    oneof payload {
+        SendMessageAction send_message = 1;
+        ToolDecisionAction tool_decision = 2;
+        StopAction stop = 3;
+    }
+}
+
+message SendMessageAction {
+    // If empty, a new chat will be created
+    optional string chat_id = 1;
+    string content = 2 [(validate.rules).string.min_len = 1];
+}
+
+message ToolDecisionAction {
+    string chat_id = 1 [(validate.rules).string.min_len = 1];
+    string tool_call_id = 2 [(validate.rules).string.min_len = 1];
+    bool approve = 3;
+}
+
+message StopAction {}
+
+message ChatStreamResponse {
+    oneof event {
+        StatusEvent status = 1;
+        UsageEvent usage = 2;
+        ContentDeltaEvent content_delta = 3;
+        ToolEvent tool_event = 4;
+        FinalEvent final = 5;
+        ErrorEvent error = 6;
+    }
+}
+
+message StatusEvent { string status = 1; }
+
+message UsageEvent { ChatUsage usage = 1; }
+
+message ContentDeltaEvent { string delta = 1; }
+
+message FinalEvent { ChatCompletion result = 1; }
+
+message ErrorEvent {
+    string message = 1;
+}
+
+
+message ChatUsage {
+    int32 prompt_tokens = 1;
+    int32 completion_tokens = 2;
+    int32 total_tokens = 3;
+}
+
+message ChatCompletion {
+    Chat chat = 1;
+    repeated ChatMessage messages = 2;
+    ChatUsage usage = 3;
+}
+
+enum ChatMessageRole {
+    ROLE_UNSPECIFIED = 0;
+    ROLE_USER = 1;
+    ROLE_ASSISTANT = 2;
+    ROLE_TOOL = 3;
+    ROLE_SYSTEM = 4;
+}
+
+enum ToolState {
+    TOOL_STATE_UNSPECIFIED = 0;
+    TOOL_STATE_PROPOSED = 1;
+    TOOL_STATE_REJECTED = 2;
+    TOOL_STATE_APPROVED = 3;
+}
+
+message ChatMessage {
+    string id = 1;
+    string chat_id = 2;
+    ChatMessageRole role = 3;
+    string content = 4;
+    optional string tool_name = 5;
+    optional string tool_call_id = 6;
+    optional google.protobuf.Struct tool_arguments = 7;
+    optional int64 token_usage = 8;
+    optional string error = 9;
+    ToolState tool_state = 10;
+    google.protobuf.Timestamp created_at = 11;
+}
+
+enum ToolEventState {
+    TOOL_EVENT_STATE_UNSPECIFIED = 0;
+    TOOL_EVENT_INVOKING = 1;
+    TOOL_EVENT_COMPLETED = 2;
+    TOOL_EVENT_ERROR = 3;
+}
+
+message ToolEvent {
+    string tool_name = 1;
+    string tool_call_id = 2;
+    string args_json = 3;
+    ToolEventState state = 4;
+    string error = 5;
+}
+
+
+service MemoryService {
+    // Список всех фактов о пользователе
+    rpc ListMemoryFacts(google.protobuf.Empty) returns (ListMemoryFactsResponse) {
+        option (google.api.http) = {
+            get: "/v1/memory/facts"
+        };
+    }
+    // Создать новый факт
+    rpc CreateMemoryFact(CreateMemoryFactRequest) returns (CreateMemoryFactResponse) {
+        option (google.api.http) = {
+            post: "/v1/memory/facts"
+            body: "*"
+        };
+    }
+    // Удалить факт по id
+    rpc DeleteMemoryFact(DeleteMemoryFactRequest) returns (google.protobuf.Empty) {
+        option (google.api.http) = {
+            delete: "/v1/memory/facts/{id}"
+        };
+    }
+}
+
+message MemoryFact {
+    string id = 1;
+    string content = 2;
+    google.protobuf.Timestamp created_at = 3;
+}
+
+message ListMemoryFactsResponse {
+    repeated MemoryFact facts = 1;
+}
+
+message CreateMemoryFactRequest {
+    string content = 1 [(validate.rules).string = {min_len: 1, max_len: 200}];
+}
+
+message CreateMemoryFactResponse {
+    MemoryFact fact = 1;
+}
+
+message DeleteMemoryFactRequest {
+    string id = 1 [(validate.rules).string.min_len = 1];
+}
