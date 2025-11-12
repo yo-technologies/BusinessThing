@@ -1,0 +1,562 @@
+package executor
+
+import (
+	"context"
+	"encoding/json"
+	"llm-service/internal/domain"
+	"llm-service/internal/domain/dto"
+	"llm-service/internal/llm"
+	"llm-service/internal/service"
+	"strings"
+
+	"github.com/opentracing/opentracing-go"
+)
+
+const (
+	maxIterations = 20
+)
+
+// Executor - основной исполнитель агентов
+type Executor struct {
+	chatManager     service.ChatManager
+	agentManager    service.AgentManager
+	contextBuilder  service.ContextBuilder
+	toolExecutor    service.ToolExecutor
+	subagentManager service.SubagentManager
+	llmProvider     llm.CompletionProvider
+}
+
+// NewExecutor создает новый executor
+func NewExecutor(
+	chatManager service.ChatManager,
+	agentManager service.AgentManager,
+	contextBuilder service.ContextBuilder,
+	toolExecutor service.ToolExecutor,
+	subagentManager service.SubagentManager,
+	llmProvider llm.CompletionProvider,
+) *Executor {
+	return &Executor{
+		chatManager:     chatManager,
+		agentManager:    agentManager,
+		contextBuilder:  contextBuilder,
+		toolExecutor:    toolExecutor,
+		subagentManager: subagentManager,
+		llmProvider:     llmProvider,
+	}
+}
+
+// ExecuteStream выполняет агента с потоковой передачей результатов
+func (e *Executor) ExecuteStream(ctx context.Context, req dto.ExecuteAgentDTO, stream service.ExecutionStream) error {
+	span, ctx := opentracing.StartSpanFromContext(ctx, "executor.ExecuteStream")
+	defer span.Finish()
+
+	// Получаем определение агента
+	agentDef, err := e.agentManager.GetAgent(req.AgentKey)
+	if err != nil {
+		return stream.SendError(err)
+	}
+
+	// Получаем или создаем чат
+	var chat *domain.Chat
+	if req.ChatID != nil {
+		chat, err = e.chatManager.GetChat(ctx, *req.ChatID)
+		if err != nil {
+			return stream.SendError(err)
+		}
+	} else {
+		chat, err = e.chatManager.CreateChat(ctx, dto.CreateChatDTO{
+			OrganizationID: req.OrganizationID,
+			UserID:         req.UserID,
+			AgentKey:       req.AgentKey,
+			Title:          req.Task,
+		})
+		if err != nil {
+			return stream.SendError(err)
+		}
+	}
+
+	// Создаем execution context
+	execCtx := &domain.ExecutionContext{
+		OrganizationID:    req.OrganizationID,
+		UserID:            req.UserID,
+		ChatID:            chat.ID,
+		AgentKey:          req.AgentKey,
+		TaskDescription:   req.Task,
+		AdditionalContext: req.Context,
+	}
+
+	// Добавляем сообщение пользователя
+	userMessage := &domain.Message{
+		Model:   domain.NewModel(),
+		ChatID:  chat.ID,
+		Role:    domain.MessageRoleUser,
+		Content: req.Task,
+	}
+	if err := e.chatManager.SaveMessage(ctx, userMessage); err != nil {
+		return stream.SendError(err)
+	}
+
+	// Отправляем сообщение пользователя
+	if err := stream.SendMessage(userMessage); err != nil {
+		return err
+	}
+
+	// Выполняем стриминг цикл агента
+	return e.runAgentLoopStream(ctx, chat, agentDef, execCtx, stream)
+}
+
+// SendMessageStream отправляет сообщение с потоковым ответом
+func (e *Executor) SendMessageStream(ctx context.Context, req dto.SendMessageDTO, stream service.MessageStream) error {
+	span, ctx := opentracing.StartSpanFromContext(ctx, "executor.SendMessageStream")
+	defer span.Finish()
+
+	// Получаем чат (всегда родительский - пользователь пишет в него)
+	// Если нет, создаем новый
+	var (
+		chat *domain.Chat
+		err  error
+	)
+	if req.ChatID == nil {
+		chat, err = e.chatManager.CreateChat(ctx, dto.CreateChatDTO{
+			OrganizationID: req.OrgID,
+			UserID:         req.UserID,
+			AgentKey:       "main", // основной агент по умолчанию
+			Title:          req.Content,
+		})
+		if err != nil {
+			return stream.SendError(err)
+		}
+		stream.SendChat(chat)
+		req.ChatID = &chat.ID
+	} else {
+		chat, err = e.chatManager.GetChat(ctx, *req.ChatID)
+		if err != nil {
+			return stream.SendError(err)
+		}
+	}
+
+	// Определяем активный чат: если есть активная сессия субагента, используем её
+	activeChat := chat
+	activeChatID, err := e.getActiveChatID(ctx, chat.ID)
+	if err != nil {
+		return stream.SendError(err)
+	}
+
+	if activeChatID != chat.ID {
+		activeChat, err = e.chatManager.GetChat(ctx, activeChatID)
+		if err != nil {
+			return stream.SendError(err)
+		}
+	}
+
+	// Получаем определение активного агента
+	agentDef, err := e.agentManager.GetAgent(activeChat.AgentKey)
+	if err != nil {
+		return stream.SendError(err)
+	}
+
+	// Сохраняем сообщение пользователя в активный чат
+	userMessage := &domain.Message{
+		Model:   domain.NewModel(),
+		ChatID:  activeChatID,
+		Role:    domain.MessageRoleUser,
+		Content: req.Content,
+	}
+	if err := e.chatManager.SaveMessage(ctx, userMessage); err != nil {
+		return stream.SendError(err)
+	}
+
+	// Создаем execution context для активного чата
+	execCtx := &domain.ExecutionContext{
+		OrganizationID: chat.OrganizationID,
+		UserID:         req.UserID,
+		ChatID:         activeChat.ID,
+		AgentKey:       activeChat.AgentKey,
+	}
+
+	// Выполняем стриминг с активным чатом
+	return e.runAgentLoopStream(ctx, activeChat, agentDef, execCtx, stream)
+}
+
+// getActiveChatID определяет ID активного чата (может быть субагент)
+func (e *Executor) getActiveChatID(ctx context.Context, chatID domain.ID) (domain.ID, error) {
+	return e.subagentManager.GetActiveChatID(ctx, chatID)
+}
+
+// runAgentLoopStream - цикл агента со стримингом
+func (e *Executor) runAgentLoopStream(
+	ctx context.Context,
+	chat *domain.Chat,
+	agentDef *domain.AgentDefinition,
+	execCtx *domain.ExecutionContext,
+	stream service.ExecutionStream,
+) error {
+	span, ctx := opentracing.StartSpanFromContext(ctx, "executor.runAgentLoopStream")
+	defer span.Finish()
+
+	// Текущий контекст выполнения (может меняться при переходах к субагентам)
+	currentChat := chat
+	currentAgent := agentDef
+	currentExecCtx := execCtx
+
+	for range maxIterations {
+		// Получаем актуальную историю текущего чата
+		_, messages, err := e.chatManager.GetChatWithMessages(ctx, currentChat.ID)
+		if err != nil {
+			return stream.SendError(err)
+		}
+
+		// Строим контекст для LLM
+		llmMessages, err := e.buildLLMMessages(ctx, currentChat, messages, currentAgent, currentExecCtx)
+		if err != nil {
+			return stream.SendError(err)
+		}
+
+		// Получаем инструменты текущего агента
+		tools, err := e.buildLLMTools(currentAgent)
+		if err != nil {
+			return stream.SendError(err)
+		}
+
+		// Вызываем LLM стрим
+		params := llm.ChatParams{
+			Messages:     llmMessages,
+			Tools:        tools,
+			IncludeUsage: true,
+		}
+
+		llmStream, err := e.llmProvider.CreateCompletionStream(ctx, params)
+		if err != nil {
+			return stream.SendError(domain.NewInternalError("failed to create LLM stream", err))
+		}
+
+		// Собираем контент из стрима
+		var contentBuilder strings.Builder
+		var toolCalls []*domain.ToolCall
+		toolCallsMap := make(map[int]*domain.ToolCall)
+
+		for llmStream.Next() {
+			chunk := llmStream.Chunk()
+			content := chunk.Content
+
+			// Отправляем текстовый контент
+			if content != "" {
+				contentBuilder.WriteString(content)
+				if err := stream.SendChunk(content); err != nil {
+					llmStream.Close()
+					return err
+				}
+			}
+
+			// Обрабатываем tool calls
+			for _, tcDelta := range chunk.ToolCalls {
+				tc, exists := toolCallsMap[tcDelta.Index]
+				if !exists {
+					tc = &domain.ToolCall{
+						Model:  domain.NewModel(),
+						Status: domain.ToolCallStatusPending,
+					}
+					toolCallsMap[tcDelta.Index] = tc
+					toolCalls = append(toolCalls, tc)
+				}
+
+				if tcDelta.Name != "" {
+					tc.Name = tcDelta.Name
+				}
+				if tcDelta.Arguments != "" {
+					var args json.RawMessage
+					if tc.Arguments != nil {
+						args = tc.Arguments
+					}
+					args = append(args, []byte(tcDelta.Arguments)...)
+					tc.Arguments = args
+				}
+			}
+		}
+
+		llmStream.Close()
+
+		if err := llmStream.Err(); err != nil {
+			return stream.SendError(err)
+		}
+
+		// Сохраняем сообщение ассистента в текущий чат
+		sender := currentChat.AgentKey
+		content := contentBuilder.String()
+
+		assistantMessage := &domain.Message{
+			Model:     domain.NewModel(),
+			ChatID:    currentChat.ID,
+			Role:      domain.MessageRoleAssistant,
+			Content:   content,
+			Sender:    &sender,
+			ToolCalls: toolCalls,
+		}
+
+		if err := e.chatManager.SaveMessage(ctx, assistantMessage); err != nil {
+			return stream.SendError(err)
+		}
+
+		// Отправляем финальное сообщение
+		if err := stream.SendMessage(assistantMessage); err != nil {
+			return err
+		}
+
+		// Если нет tool calls - завершаем цикл
+		if len(toolCalls) == 0 {
+			return nil
+		}
+
+		// Выполняем все tool calls
+		hasActiveTools := false
+		for _, toolCall := range toolCalls {
+			// Отправляем событие о вызове tool
+			if err := stream.SendToolCall(toolCall); err != nil {
+				return err
+			}
+
+			// Парсим аргументы
+			var arguments map[string]interface{}
+			if err := json.Unmarshal(toolCall.Arguments, &arguments); err != nil {
+				return stream.SendError(domain.NewInternalError("failed to parse tool arguments", err))
+			}
+
+			// Выполняем tool
+			toolCall.MarkExecuting()
+			result, err := e.toolExecutor.Execute(ctx, toolCall.Name, arguments, currentExecCtx, &toolCall.ID)
+
+			var resultJSON []byte
+			if err != nil {
+				toolCall.Fail()
+				resultJSON, _ = json.Marshal(map[string]interface{}{
+					"error": err.Error(),
+				})
+			} else {
+				resultJSON, _ = json.Marshal(result)
+				toolCall.Complete(resultJSON)
+			}
+
+			// Специальная обработка для switch_to_subagent
+			if toolCall.Name == string(domain.ToolNameSwitchToSubagent) && err == nil {
+				// Извлекаем subagent_key из результата
+				resultMap, ok := result.(map[string]interface{})
+				if !ok {
+					return stream.SendError(domain.NewInternalError("invalid switch_to_subagent result", nil))
+				}
+
+				subagentChatID, ok := resultMap["chat_id"].(domain.ID)
+				if !ok {
+					return stream.SendError(domain.NewInternalError("invalid chat_id in switch_to_subagent result", nil))
+				}
+
+				subagentKey, ok := arguments["subagent_key"].(string)
+				if !ok {
+					return stream.SendError(domain.NewInternalError("missing subagent_key argument", nil))
+				}
+
+				// Получаем чат субагента
+				subagentChat, err := e.chatManager.GetChat(ctx, subagentChatID)
+				if err != nil {
+					return stream.SendError(err)
+				}
+
+				// Получаем определение субагента
+				subagentDef, err := e.agentManager.GetAgent(subagentKey)
+				if err != nil {
+					return stream.SendError(err)
+				}
+
+				// Создаем новый execution context для субагента
+				subagentExecCtx := &domain.ExecutionContext{
+					OrganizationID:    currentExecCtx.OrganizationID,
+					UserID:            currentExecCtx.UserID,
+					ChatID:            subagentChat.ID,
+					AgentKey:          subagentKey,
+					TaskDescription:   arguments["task"].(string),
+					AdditionalContext: currentExecCtx.AdditionalContext,
+				}
+
+				// ПЕРЕКЛЮЧАЕМ КОНТЕКСТ на субагента
+				currentChat = subagentChat
+				currentAgent = subagentDef
+				currentExecCtx = subagentExecCtx
+
+				hasActiveTools = true
+				continue
+			}
+
+			// Специальная обработка для finish_subagent
+			if toolCall.Name == string(domain.ToolNameFinishSubagent) && err == nil {
+				// Проверяем, что мы действительно в субагенте
+				if currentChat.ParentChatID == nil {
+					return stream.SendError(domain.NewInvalidArgumentError("cannot finish_subagent from main agent"))
+				}
+
+				// Получаем родительский чат
+				parentChat, err := e.chatManager.GetChat(ctx, *currentChat.ParentChatID)
+				if err != nil {
+					return stream.SendError(err)
+				}
+
+				// Получаем определение родительского агента
+				parentAgentDef, err := e.agentManager.GetAgent(parentChat.AgentKey)
+				if err != nil {
+					return stream.SendError(err)
+				}
+
+				// Восстанавливаем execution context родителя
+				parentExecCtx := &domain.ExecutionContext{
+					OrganizationID:    currentExecCtx.OrganizationID,
+					UserID:            currentExecCtx.UserID,
+					ChatID:            parentChat.ID,
+					AgentKey:          parentChat.AgentKey,
+					TaskDescription:   execCtx.TaskDescription, // изначальная задача
+					AdditionalContext: currentExecCtx.AdditionalContext,
+				}
+
+				// Сохраняем результат субагента в родительский чат как tool result
+				toolResultMessage := &domain.Message{
+					Model:      domain.NewModel(),
+					ChatID:     parentChat.ID,
+					Role:       domain.MessageRoleTool,
+					Content:    string(resultJSON),
+					ToolCallID: currentChat.ParentToolCallID, // ссылка на tool call родителя
+				}
+
+				if err := e.chatManager.SaveMessage(ctx, toolResultMessage); err != nil {
+					return stream.SendError(err)
+				}
+
+				// Отправляем tool result в стрим
+				if err := stream.SendMessage(toolResultMessage); err != nil {
+					return err
+				}
+
+				// ПЕРЕКЛЮЧАЕМ КОНТЕКСТ обратно на родителя
+				currentChat = parentChat
+				currentAgent = parentAgentDef
+				currentExecCtx = parentExecCtx
+
+				hasActiveTools = true
+				continue
+			}
+
+			// Обычные tools - сохраняем результат в текущий чат
+			toolResultMessage := &domain.Message{
+				Model:      domain.NewModel(),
+				ChatID:     currentChat.ID,
+				Role:       domain.MessageRoleTool,
+				Content:    string(resultJSON),
+				ToolCallID: &toolCall.ID,
+			}
+
+			if err := e.chatManager.SaveMessage(ctx, toolResultMessage); err != nil {
+				return stream.SendError(err)
+			}
+
+			// Отправляем tool result message
+			if err := stream.SendMessage(toolResultMessage); err != nil {
+				return err
+			}
+
+			hasActiveTools = true
+		}
+
+		// Если были активные tools, продолжаем цикл с текущим контекстом
+		if !hasActiveTools {
+			break
+		}
+	}
+
+	return nil
+}
+
+// buildLLMMessages строит сообщения для LLM
+func (e *Executor) buildLLMMessages(
+	_ context.Context,
+	_ *domain.Chat,
+	messages []*domain.Message,
+	agentDef *domain.AgentDefinition,
+	execCtx *domain.ExecutionContext,
+) ([]llm.MessageParam, error) {
+	llmMessages := make([]llm.MessageParam, 0, len(messages)+1)
+
+	// Добавляем system prompt
+	systemPrompt := agentDef.GetSystemPrompt()
+
+	// Для субагентов заменяем {task} на реальную задачу
+	if execCtx.IsSubagentContext() {
+		systemPrompt = strings.ReplaceAll(systemPrompt, "{task}", execCtx.TaskDescription)
+	}
+
+	llmMessages = append(llmMessages, llm.MessageParam{
+		Role:    llm.RoleSystem,
+		Content: systemPrompt,
+	})
+
+	// Добавляем историю сообщений
+	for _, msg := range messages {
+		llmMsg := llm.MessageParam{
+			Role:    e.mapMessageRole(msg.Role),
+			Content: msg.Content,
+		}
+
+		// Добавляем tool calls для assistant сообщений
+		if msg.HasToolCalls() {
+			llmMsg.ToolCalls = make([]llm.ToolCall, len(msg.ToolCalls))
+			for i, tc := range msg.ToolCalls {
+				llmMsg.ToolCalls[i] = llm.ToolCall{
+					ID:        tc.ID.String(),
+					Name:      tc.Name,
+					Arguments: string(tc.Arguments),
+				}
+			}
+		}
+
+		// Добавляем tool call id для tool результатов
+		if msg.IsToolResult() && msg.ToolCallID != nil {
+			llmMsg.ToolCallID = msg.ToolCallID.String()
+		}
+
+		llmMessages = append(llmMessages, llmMsg)
+	}
+
+	return llmMessages, nil
+}
+
+// buildLLMTools строит список инструментов для LLM
+func (e *Executor) buildLLMTools(agentDef *domain.AgentDefinition) ([]llm.ToolDefinition, error) {
+	toolNames := agentDef.GetAllowedToolNames()
+	tools := make([]llm.ToolDefinition, 0, len(toolNames))
+
+	for _, toolName := range toolNames {
+		toolDef, err := e.agentManager.GetTool(toolName)
+		if err != nil {
+			return nil, err
+		}
+
+		tools = append(tools, llm.ToolDefinition{
+			Name:        toolDef.Name,
+			Description: toolDef.Description,
+			Parameters:  toolDef.Parameters,
+		})
+	}
+
+	return tools, nil
+}
+
+// mapMessageRole маппит доменную роль в LLM роль
+func (e *Executor) mapMessageRole(role domain.MessageRole) string {
+	switch role {
+	case domain.MessageRoleSystem:
+		return llm.RoleSystem
+	case domain.MessageRoleUser:
+		return llm.RoleUser
+	case domain.MessageRoleAssistant:
+		return llm.RoleAssistant
+	case domain.MessageRoleTool:
+		return llm.RoleTool
+	default:
+		return llm.RoleUser
+	}
+}

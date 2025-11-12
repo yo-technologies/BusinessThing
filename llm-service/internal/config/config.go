@@ -71,19 +71,42 @@ type CoreService struct {
 	Address string `mapstructure:"address"`
 }
 
+// AgentConfig - конфигурация одного агента
+type AgentConfig struct {
+	Key              string   `mapstructure:"key"`
+	Name             string   `mapstructure:"name"`
+	Description      string   `mapstructure:"description"`
+	SystemPrompt     string   `mapstructure:"system_prompt"`
+	Model            string   `mapstructure:"model"`
+	Temperature      float32  `mapstructure:"temperature"`
+	AllowedTools     []string `mapstructure:"allowed_tools"`
+	CanCallSubagents bool     `mapstructure:"can_call_subagents"`
+	IsSubagent       bool     `mapstructure:"is_subagent"`
+}
+
+// ToolConfig - конфигурация одного инструмента
+type ToolConfig struct {
+	Name        string                 `mapstructure:"name"`
+	Description string                 `mapstructure:"description"`
+	Parameters  map[string]interface{} `mapstructure:"parameters"`
+	Required    []string               `mapstructure:"required"`
+}
+
 // Config holds all runtime-configurable settings
 type Config struct {
 	mu sync.RWMutex
 
-	ServiceName string      `mapstructure:"service_name"`
-	HTTP        HTTP        `mapstructure:"http"`
-	GRPC        GRPC        `mapstructure:"grpc"`
-	DB          DB          `mapstructure:"db"`
-	LLM         LLM         `mapstructure:"llm"`
-	Proxy       *Proxy      `mapstructure:"proxy"`
-	JWT         JWT         `mapstructure:"jwt"`
-	Jaeger      Jaeger      `mapstructure:"jaeger"`
-	CoreService CoreService `mapstructure:"core_service"`
+	ServiceName string                 `mapstructure:"service_name"`
+	HTTP        HTTP                   `mapstructure:"http"`
+	GRPC        GRPC                   `mapstructure:"grpc"`
+	DB          DB                     `mapstructure:"db"`
+	LLM         LLM                    `mapstructure:"llm"`
+	Proxy       *Proxy                 `mapstructure:"proxy"`
+	JWT         JWT                    `mapstructure:"jwt"`
+	Jaeger      Jaeger                 `mapstructure:"jaeger"`
+	CoreService CoreService            `mapstructure:"core_service"`
+	Agents      map[string]AgentConfig `mapstructure:"agents"`
+	Tools       map[string]ToolConfig  `mapstructure:"tools"`
 }
 
 var (

@@ -13,9 +13,8 @@ import (
 	"syscall"
 
 	"llm-service/internal/app/interceptors"
-	"llm-service/internal/app/llm-agent/api/chat"
+	"llm-service/internal/app/llm-agent/api/agent"
 	"llm-service/internal/app/llm-agent/api/memory"
-	"llm-service/internal/app/websocket"
 	"llm-service/internal/jwt"
 	"llm-service/internal/logger"
 	desc "llm-service/pkg/agent"
@@ -94,16 +93,16 @@ func WithBypassCors(bypassCors bool) OptionsFunc {
 }
 
 type App struct {
-	chatService   chat.ChatService
-	memoryService memory.MemoryService
+	agentService  *agent.Service
+	memoryService *memory.Service
 	jwtProvider   *jwt.Provider
 
 	options *Options
 }
 
 func New(
-	chatService chat.ChatService,
-	memoryService memory.MemoryService,
+	agentService *agent.Service,
+	memoryService *memory.Service,
 	jwtProvider *jwt.Provider,
 	options ...OptionsFunc,
 ) *App {
@@ -112,7 +111,7 @@ func New(
 		o(opts)
 	}
 	return &App{
-		chatService:   chatService,
+		agentService:  agentService,
 		memoryService: memoryService,
 		jwtProvider:   jwtProvider,
 		options:       opts,
@@ -133,23 +132,20 @@ func (a *App) Run(ctx context.Context) error {
 		grpc.ChainUnaryInterceptor(
 			interceptors.TracingInterceptor,
 			interceptors.RecoveryInterceptor,
-			interceptors.NewUnaryAuthInterceptor(a.jwtProvider, unprotected...),
 			interceptors.ErrCodesInterceptor,
+			interceptors.NewUnaryAuthInterceptor(a.jwtProvider, unprotected...),
 		),
 		grpc.ChainStreamInterceptor(
 			interceptors.TracingStreamInterceptor,
 			interceptors.RecoveryStreamInterceptor,
-			interceptors.NewStreamAuthInterceptor(a.jwtProvider, unprotected...),
 			interceptors.ErrCodesStreamInterceptor,
+			interceptors.NewStreamAuthInterceptor(a.jwtProvider, unprotected...),
 		),
 	)
 
-	chatService := chat.NewService(a.chatService)
-	memoryService := memory.NewService(a.memoryService)
-
-	// Register the service
-	desc.RegisterChatServiceServer(srv, chatService)
-	desc.RegisterMemoryServiceServer(srv, memoryService)
+	// Register the services
+	desc.RegisterAgentServiceServer(srv, a.agentService)
+	desc.RegisterMemoryServiceServer(srv, a.memoryService)
 
 	// Reflect the service
 	if a.options.enableReflection {
@@ -181,25 +177,11 @@ func (a *App) Run(ctx context.Context) error {
 	}
 	gatewayMuxWithCORS := corsHandler.Handler(gatewayMux)
 
-	conn, err := grpc.NewClient(
-		grpcEndpoint,
-		grpc.WithTransportCredentials(insecure.NewCredentials()),
-	)
-	if err != nil {
-		return err
-	}
-
-	// Create WebSocket handler for ChatStream
-	wsHandler := websocket.NewChatHandler(
-		conn,
-		a.jwtProvider,
-	)
-
 	// Create swagger ui
 	httpMux := chi.NewRouter()
 
-	// WebSocket endpoint for ChatStream
-	httpMux.HandleFunc("/ws/v1/chat", wsHandler.HandleChatStream)
+	// WebSocket endpoint для будущей реализации
+	// httpMux.HandleFunc("/ws/v1/chat", wsHandler.HandleChatStream)
 
 	httpMux.HandleFunc("/swagger", func(w http.ResponseWriter, request *http.Request) {
 		logger.Info(request.Context(), "serving swagger file")
@@ -278,7 +260,7 @@ func registerGateway(ctx context.Context, mux *runtime.ServeMux, grpcEndpoint st
 		grpc.WithTransportCredentials(insecure.NewCredentials()),
 	}
 
-	err := desc.RegisterChatServiceHandlerFromEndpoint(ctx, mux, grpcEndpoint, opts)
+	err := desc.RegisterAgentServiceHandlerFromEndpoint(ctx, mux, grpcEndpoint, opts)
 	if err != nil {
 		return err
 	}

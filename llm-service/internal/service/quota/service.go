@@ -72,3 +72,18 @@ func (s *Service) DailyLimit(ctx context.Context, userID domain.ID) int {
 
 	return s.limitProv(ctx, userID)
 }
+
+// GetLimits возвращает информацию о лимитах и использовании токенов
+func (s *Service) GetLimits(ctx context.Context, userID domain.ID) (domain.LLMLimits, error) {
+	span, ctx := opentracing.StartSpanFromContext(ctx, "service.quota.GetLimits")
+	defer span.Finish()
+
+	day := s.today()
+	used, reserved, err := s.repo.GetLLMDailyUsage(ctx, userID, day)
+	if err != nil {
+		return domain.LLMLimits{}, err
+	}
+
+	limit := s.limitProv(ctx, userID)
+	return domain.NewLLMLimits(limit, used, reserved), nil
+}

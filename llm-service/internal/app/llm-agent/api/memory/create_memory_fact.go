@@ -3,10 +3,10 @@ package memory
 import (
 	"context"
 	"llm-service/internal/app/interceptors"
-	"llm-service/internal/app/mappers"
 	desc "llm-service/pkg/agent"
 
 	"github.com/opentracing/opentracing-go"
+	"google.golang.org/protobuf/types/known/timestamppb"
 )
 
 func (s *Service) CreateMemoryFact(ctx context.Context, req *desc.CreateMemoryFactRequest) (*desc.CreateMemoryFactResponse, error) {
@@ -26,6 +26,6 @@ func (s *Service) CreateMemoryFact(ctx context.Context, req *desc.CreateMemoryFa
 	return &desc.CreateMemoryFactResponse{Fact: &desc.MemoryFact{
 		Id:        fact.ID.String(),
 		Content:   fact.Content,
-		CreatedAt: mappers.ToProtoTimestamp(fact.CreatedAt),
+		CreatedAt: timestamppb.New(fact.CreatedAt),
 	}}, nil
 }

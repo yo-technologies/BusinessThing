@@ -4,11 +4,11 @@ import (
 	"context"
 
 	"llm-service/internal/app/interceptors"
-	"llm-service/internal/app/mappers"
 	desc "llm-service/pkg/agent"
 
 	"github.com/opentracing/opentracing-go"
 	"google.golang.org/protobuf/types/known/emptypb"
+	"google.golang.org/protobuf/types/known/timestamppb"
 )
 
 func (s *Service) ListMemoryFacts(ctx context.Context, _ *emptypb.Empty) (*desc.ListMemoryFactsResponse, error) {
@@ -30,7 +30,7 @@ func (s *Service) ListMemoryFacts(ctx context.Context, _ *emptypb.Empty) (*desc.
 		res.Facts = append(res.Facts, &desc.MemoryFact{
 			Id:        f.ID.String(),
 			Content:   f.Content,
-			CreatedAt: mappers.ToProtoTimestamp(f.CreatedAt),
+			CreatedAt: timestamppb.New(f.CreatedAt),
 		})
 	}
 	return res, nil

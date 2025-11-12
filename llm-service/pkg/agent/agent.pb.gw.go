@@ -36,34 +36,9 @@ var (
 	_ = metadata.Join
 )
 
-func request_ChatService_GetChats_0(ctx context.Context, marshaler runtime.Marshaler, client ChatServiceClient, req *http.Request, pathParams map[string]string) (proto.Message, runtime.ServerMetadata, error) {
-	var (
-		protoReq GetChatsRequest
-		metadata runtime.ServerMetadata
-	)
-	if err := marshaler.NewDecoder(req.Body).Decode(&protoReq); err != nil && !errors.Is(err, io.EOF) {
-		return nil, metadata, status.Errorf(codes.InvalidArgument, "%v", err)
-	}
-	if req.Body != nil {
-		_, _ = io.Copy(io.Discard, req.Body)
-	}
-	msg, err := client.GetChats(ctx, &protoReq, grpc.Header(&metadata.HeaderMD), grpc.Trailer(&metadata.TrailerMD))
-	return msg, metadata, err
-}
+var filter_AgentService_GetChat_0 = &utilities.DoubleArray{Encoding: map[string]int{"chat_id": 0}, Base: []int{1, 1, 0}, Check: []int{0, 1, 2}}
 
-func local_request_ChatService_GetChats_0(ctx context.Context, marshaler runtime.Marshaler, server ChatServiceServer, req *http.Request, pathParams map[string]string) (proto.Message, runtime.ServerMetadata, error) {
-	var (
-		protoReq GetChatsRequest
-		metadata runtime.ServerMetadata
-	)
-	if err := marshaler.NewDecoder(req.Body).Decode(&protoReq); err != nil && !errors.Is(err, io.EOF) {
-		return nil, metadata, status.Errorf(codes.InvalidArgument, "%v", err)
-	}
-	msg, err := server.GetChats(ctx, &protoReq)
-	return msg, metadata, err
-}
-
-func request_ChatService_GetChat_0(ctx context.Context, marshaler runtime.Marshaler, client ChatServiceClient, req *http.Request, pathParams map[string]string) (proto.Message, runtime.ServerMetadata, error) {
+func request_AgentService_GetChat_0(ctx context.Context, marshaler runtime.Marshaler, client AgentServiceClient, req *http.Request, pathParams map[string]string) (proto.Message, runtime.ServerMetadata, error) {
 	var (
 		protoReq GetChatRequest
 		metadata runtime.ServerMetadata
@@ -79,12 +54,18 @@ func request_ChatService_GetChat_0(ctx context.Context, marshaler runtime.Marsha
 	protoReq.ChatId, err = runtime.String(val)
 	if err != nil {
 		return nil, metadata, status.Errorf(codes.InvalidArgument, "type mismatch, parameter: %s, error: %v", "chat_id", err)
+	}
+	if err := req.ParseForm(); err != nil {
+		return nil, metadata, status.Errorf(codes.InvalidArgument, "%v", err)
+	}
+	if err := runtime.PopulateQueryParameters(&protoReq, req.Form, filter_AgentService_GetChat_0); err != nil {
+		return nil, metadata, status.Errorf(codes.InvalidArgument, "%v", err)
 	}
 	msg, err := client.GetChat(ctx, &protoReq, grpc.Header(&metadata.HeaderMD), grpc.Trailer(&metadata.TrailerMD))
 	return msg, metadata, err
 }
 
-func local_request_ChatService_GetChat_0(ctx context.Context, marshaler runtime.Marshaler, server ChatServiceServer, req *http.Request, pathParams map[string]string) (proto.Message, runtime.ServerMetadata, error) {
+func local_request_AgentService_GetChat_0(ctx context.Context, marshaler runtime.Marshaler, server AgentServiceServer, req *http.Request, pathParams map[string]string) (proto.Message, runtime.ServerMetadata, error) {
 	var (
 		protoReq GetChatRequest
 		metadata runtime.ServerMetadata
@@ -98,11 +79,158 @@ func local_request_ChatService_GetChat_0(ctx context.Context, marshaler runtime.
 	if err != nil {
 		return nil, metadata, status.Errorf(codes.InvalidArgument, "type mismatch, parameter: %s, error: %v", "chat_id", err)
 	}
+	if err := req.ParseForm(); err != nil {
+		return nil, metadata, status.Errorf(codes.InvalidArgument, "%v", err)
+	}
+	if err := runtime.PopulateQueryParameters(&protoReq, req.Form, filter_AgentService_GetChat_0); err != nil {
+		return nil, metadata, status.Errorf(codes.InvalidArgument, "%v", err)
+	}
 	msg, err := server.GetChat(ctx, &protoReq)
 	return msg, metadata, err
 }
 
-func request_ChatService_GetLLMLimits_0(ctx context.Context, marshaler runtime.Marshaler, client ChatServiceClient, req *http.Request, pathParams map[string]string) (proto.Message, runtime.ServerMetadata, error) {
+var filter_AgentService_ListChats_0 = &utilities.DoubleArray{Encoding: map[string]int{}, Base: []int(nil), Check: []int(nil)}
+
+func request_AgentService_ListChats_0(ctx context.Context, marshaler runtime.Marshaler, client AgentServiceClient, req *http.Request, pathParams map[string]string) (proto.Message, runtime.ServerMetadata, error) {
+	var (
+		protoReq ListChatsRequest
+		metadata runtime.ServerMetadata
+	)
+	if req.Body != nil {
+		_, _ = io.Copy(io.Discard, req.Body)
+	}
+	if err := req.ParseForm(); err != nil {
+		return nil, metadata, status.Errorf(codes.InvalidArgument, "%v", err)
+	}
+	if err := runtime.PopulateQueryParameters(&protoReq, req.Form, filter_AgentService_ListChats_0); err != nil {
+		return nil, metadata, status.Errorf(codes.InvalidArgument, "%v", err)
+	}
+	msg, err := client.ListChats(ctx, &protoReq, grpc.Header(&metadata.HeaderMD), grpc.Trailer(&metadata.TrailerMD))
+	return msg, metadata, err
+}
+
+func local_request_AgentService_ListChats_0(ctx context.Context, marshaler runtime.Marshaler, server AgentServiceServer, req *http.Request, pathParams map[string]string) (proto.Message, runtime.ServerMetadata, error) {
+	var (
+		protoReq ListChatsRequest
+		metadata runtime.ServerMetadata
+	)
+	if err := req.ParseForm(); err != nil {
+		return nil, metadata, status.Errorf(codes.InvalidArgument, "%v", err)
+	}
+	if err := runtime.PopulateQueryParameters(&protoReq, req.Form, filter_AgentService_ListChats_0); err != nil {
+		return nil, metadata, status.Errorf(codes.InvalidArgument, "%v", err)
+	}
+	msg, err := server.ListChats(ctx, &protoReq)
+	return msg, metadata, err
+}
+
+var filter_AgentService_DeleteChat_0 = &utilities.DoubleArray{Encoding: map[string]int{"chat_id": 0}, Base: []int{1, 1, 0}, Check: []int{0, 1, 2}}
+
+func request_AgentService_DeleteChat_0(ctx context.Context, marshaler runtime.Marshaler, client AgentServiceClient, req *http.Request, pathParams map[string]string) (proto.Message, runtime.ServerMetadata, error) {
+	var (
+		protoReq DeleteChatRequest
+		metadata runtime.ServerMetadata
+		err      error
+	)
+	if req.Body != nil {
+		_, _ = io.Copy(io.Discard, req.Body)
+	}
+	val, ok := pathParams["chat_id"]
+	if !ok {
+		return nil, metadata, status.Errorf(codes.InvalidArgument, "missing parameter %s", "chat_id")
+	}
+	protoReq.ChatId, err = runtime.String(val)
+	if err != nil {
+		return nil, metadata, status.Errorf(codes.InvalidArgument, "type mismatch, parameter: %s, error: %v", "chat_id", err)
+	}
+	if err := req.ParseForm(); err != nil {
+		return nil, metadata, status.Errorf(codes.InvalidArgument, "%v", err)
+	}
+	if err := runtime.PopulateQueryParameters(&protoReq, req.Form, filter_AgentService_DeleteChat_0); err != nil {
+		return nil, metadata, status.Errorf(codes.InvalidArgument, "%v", err)
+	}
+	msg, err := client.DeleteChat(ctx, &protoReq, grpc.Header(&metadata.HeaderMD), grpc.Trailer(&metadata.TrailerMD))
+	return msg, metadata, err
+}
+
+func local_request_AgentService_DeleteChat_0(ctx context.Context, marshaler runtime.Marshaler, server AgentServiceServer, req *http.Request, pathParams map[string]string) (proto.Message, runtime.ServerMetadata, error) {
+	var (
+		protoReq DeleteChatRequest
+		metadata runtime.ServerMetadata
+		err      error
+	)
+	val, ok := pathParams["chat_id"]
+	if !ok {
+		return nil, metadata, status.Errorf(codes.InvalidArgument, "missing parameter %s", "chat_id")
+	}
+	protoReq.ChatId, err = runtime.String(val)
+	if err != nil {
+		return nil, metadata, status.Errorf(codes.InvalidArgument, "type mismatch, parameter: %s, error: %v", "chat_id", err)
+	}
+	if err := req.ParseForm(); err != nil {
+		return nil, metadata, status.Errorf(codes.InvalidArgument, "%v", err)
+	}
+	if err := runtime.PopulateQueryParameters(&protoReq, req.Form, filter_AgentService_DeleteChat_0); err != nil {
+		return nil, metadata, status.Errorf(codes.InvalidArgument, "%v", err)
+	}
+	msg, err := server.DeleteChat(ctx, &protoReq)
+	return msg, metadata, err
+}
+
+var filter_AgentService_GetMessages_0 = &utilities.DoubleArray{Encoding: map[string]int{"chat_id": 0}, Base: []int{1, 1, 0}, Check: []int{0, 1, 2}}
+
+func request_AgentService_GetMessages_0(ctx context.Context, marshaler runtime.Marshaler, client AgentServiceClient, req *http.Request, pathParams map[string]string) (proto.Message, runtime.ServerMetadata, error) {
+	var (
+		protoReq GetMessagesRequest
+		metadata runtime.ServerMetadata
+		err      error
+	)
+	if req.Body != nil {
+		_, _ = io.Copy(io.Discard, req.Body)
+	}
+	val, ok := pathParams["chat_id"]
+	if !ok {
+		return nil, metadata, status.Errorf(codes.InvalidArgument, "missing parameter %s", "chat_id")
+	}
+	protoReq.ChatId, err = runtime.String(val)
+	if err != nil {
+		return nil, metadata, status.Errorf(codes.InvalidArgument, "type mismatch, parameter: %s, error: %v", "chat_id", err)
+	}
+	if err := req.ParseForm(); err != nil {
+		return nil, metadata, status.Errorf(codes.InvalidArgument, "%v", err)
+	}
+	if err := runtime.PopulateQueryParameters(&protoReq, req.Form, filter_AgentService_GetMessages_0); err != nil {
+		return nil, metadata, status.Errorf(codes.InvalidArgument, "%v", err)
+	}
+	msg, err := client.GetMessages(ctx, &protoReq, grpc.Header(&metadata.HeaderMD), grpc.Trailer(&metadata.TrailerMD))
+	return msg, metadata, err
+}
+
+func local_request_AgentService_GetMessages_0(ctx context.Context, marshaler runtime.Marshaler, server AgentServiceServer, req *http.Request, pathParams map[string]string) (proto.Message, runtime.ServerMetadata, error) {
+	var (
+		protoReq GetMessagesRequest
+		metadata runtime.ServerMetadata
+		err      error
+	)
+	val, ok := pathParams["chat_id"]
+	if !ok {
+		return nil, metadata, status.Errorf(codes.InvalidArgument, "missing parameter %s", "chat_id")
+	}
+	protoReq.ChatId, err = runtime.String(val)
+	if err != nil {
+		return nil, metadata, status.Errorf(codes.InvalidArgument, "type mismatch, parameter: %s, error: %v", "chat_id", err)
+	}
+	if err := req.ParseForm(); err != nil {
+		return nil, metadata, status.Errorf(codes.InvalidArgument, "%v", err)
+	}
+	if err := runtime.PopulateQueryParameters(&protoReq, req.Form, filter_AgentService_GetMessages_0); err != nil {
+		return nil, metadata, status.Errorf(codes.InvalidArgument, "%v", err)
+	}
+	msg, err := server.GetMessages(ctx, &protoReq)
+	return msg, metadata, err
+}
+
+func request_AgentService_GetLLMLimits_0(ctx context.Context, marshaler runtime.Marshaler, client AgentServiceClient, req *http.Request, pathParams map[string]string) (proto.Message, runtime.ServerMetadata, error) {
 	var (
 		protoReq emptypb.Empty
 		metadata runtime.ServerMetadata
@@ -114,7 +242,7 @@ func request_ChatService_GetLLMLimits_0(ctx context.Context, marshaler runtime.M
 	return msg, metadata, err
 }
 
-func local_request_ChatService_GetLLMLimits_0(ctx context.Context, marshaler runtime.Marshaler, server ChatServiceServer, req *http.Request, pathParams map[string]string) (proto.Message, runtime.ServerMetadata, error) {
+func local_request_AgentService_GetLLMLimits_0(ctx context.Context, marshaler runtime.Marshaler, server AgentServiceServer, req *http.Request, pathParams map[string]string) (proto.Message, runtime.ServerMetadata, error) {
 	var (
 		protoReq emptypb.Empty
 		metadata runtime.ServerMetadata
@@ -210,71 +338,111 @@ func local_request_MemoryService_DeleteMemoryFact_0(ctx context.Context, marshal
 	return msg, metadata, err
 }
 
-// RegisterChatServiceHandlerServer registers the http handlers for service ChatService to "mux".
-// UnaryRPC     :call ChatServiceServer directly.
+// RegisterAgentServiceHandlerServer registers the http handlers for service AgentService to "mux".
+// UnaryRPC     :call AgentServiceServer directly.
 // StreamingRPC :currently unsupported pending https://github.com/grpc/grpc-go/issues/906.
-// Note that using this registration option will cause many gRPC library features to stop working. Consider using RegisterChatServiceHandlerFromEndpoint instead.
+// Note that using this registration option will cause many gRPC library features to stop working. Consider using RegisterAgentServiceHandlerFromEndpoint instead.
 // GRPC interceptors will not work for this type of registration. To use interceptors, you must use the "runtime.WithMiddlewares" option in the "runtime.NewServeMux" call.
-func RegisterChatServiceHandlerServer(ctx context.Context, mux *runtime.ServeMux, server ChatServiceServer) error {
-	mux.Handle(http.MethodPost, pattern_ChatService_GetChats_0, func(w http.ResponseWriter, req *http.Request, pathParams map[string]string) {
+func RegisterAgentServiceHandlerServer(ctx context.Context, mux *runtime.ServeMux, server AgentServiceServer) error {
+	mux.Handle(http.MethodGet, pattern_AgentService_GetChat_0, func(w http.ResponseWriter, req *http.Request, pathParams map[string]string) {
 		ctx, cancel := context.WithCancel(req.Context())
 		defer cancel()
 		var stream runtime.ServerTransportStream
 		ctx = grpc.NewContextWithServerTransportStream(ctx, &stream)
 		inboundMarshaler, outboundMarshaler := runtime.MarshalerForRequest(mux, req)
-		annotatedContext, err := runtime.AnnotateIncomingContext(ctx, mux, req, "/llm_agent.api.agent.ChatService/GetChats", runtime.WithHTTPPathPattern("/v1/chats"))
+		annotatedContext, err := runtime.AnnotateIncomingContext(ctx, mux, req, "/llm_agent.api.agent.AgentService/GetChat", runtime.WithHTTPPathPattern("/v1/chats/{chat_id}"))
 		if err != nil {
 			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
 			return
 		}
-		resp, md, err := local_request_ChatService_GetChats_0(annotatedContext, inboundMarshaler, server, req, pathParams)
+		resp, md, err := local_request_AgentService_GetChat_0(annotatedContext, inboundMarshaler, server, req, pathParams)
 		md.HeaderMD, md.TrailerMD = metadata.Join(md.HeaderMD, stream.Header()), metadata.Join(md.TrailerMD, stream.Trailer())
 		annotatedContext = runtime.NewServerMetadataContext(annotatedContext, md)
 		if err != nil {
 			runtime.HTTPError(annotatedContext, mux, outboundMarshaler, w, req, err)
 			return
 		}
-		forward_ChatService_GetChats_0(annotatedContext, mux, outboundMarshaler, w, req, resp, mux.GetForwardResponseOptions()...)
+		forward_AgentService_GetChat_0(annotatedContext, mux, outboundMarshaler, w, req, resp, mux.GetForwardResponseOptions()...)
 	})
-	mux.Handle(http.MethodGet, pattern_ChatService_GetChat_0, func(w http.ResponseWriter, req *http.Request, pathParams map[string]string) {
+	mux.Handle(http.MethodGet, pattern_AgentService_ListChats_0, func(w http.ResponseWriter, req *http.Request, pathParams map[string]string) {
 		ctx, cancel := context.WithCancel(req.Context())
 		defer cancel()
 		var stream runtime.ServerTransportStream
 		ctx = grpc.NewContextWithServerTransportStream(ctx, &stream)
 		inboundMarshaler, outboundMarshaler := runtime.MarshalerForRequest(mux, req)
-		annotatedContext, err := runtime.AnnotateIncomingContext(ctx, mux, req, "/llm_agent.api.agent.ChatService/GetChat", runtime.WithHTTPPathPattern("/v1/chats/{chat_id}"))
+		annotatedContext, err := runtime.AnnotateIncomingContext(ctx, mux, req, "/llm_agent.api.agent.AgentService/ListChats", runtime.WithHTTPPathPattern("/v1/chats"))
 		if err != nil {
 			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
 			return
 		}
-		resp, md, err := local_request_ChatService_GetChat_0(annotatedContext, inboundMarshaler, server, req, pathParams)
+		resp, md, err := local_request_AgentService_ListChats_0(annotatedContext, inboundMarshaler, server, req, pathParams)
 		md.HeaderMD, md.TrailerMD = metadata.Join(md.HeaderMD, stream.Header()), metadata.Join(md.TrailerMD, stream.Trailer())
 		annotatedContext = runtime.NewServerMetadataContext(annotatedContext, md)
 		if err != nil {
 			runtime.HTTPError(annotatedContext, mux, outboundMarshaler, w, req, err)
 			return
 		}
-		forward_ChatService_GetChat_0(annotatedContext, mux, outboundMarshaler, w, req, resp, mux.GetForwardResponseOptions()...)
+		forward_AgentService_ListChats_0(annotatedContext, mux, outboundMarshaler, w, req, resp, mux.GetForwardResponseOptions()...)
 	})
-	mux.Handle(http.MethodGet, pattern_ChatService_GetLLMLimits_0, func(w http.ResponseWriter, req *http.Request, pathParams map[string]string) {
+	mux.Handle(http.MethodDelete, pattern_AgentService_DeleteChat_0, func(w http.ResponseWriter, req *http.Request, pathParams map[string]string) {
 		ctx, cancel := context.WithCancel(req.Context())
 		defer cancel()
 		var stream runtime.ServerTransportStream
 		ctx = grpc.NewContextWithServerTransportStream(ctx, &stream)
 		inboundMarshaler, outboundMarshaler := runtime.MarshalerForRequest(mux, req)
-		annotatedContext, err := runtime.AnnotateIncomingContext(ctx, mux, req, "/llm_agent.api.agent.ChatService/GetLLMLimits", runtime.WithHTTPPathPattern("/v1/llm/limits"))
+		annotatedContext, err := runtime.AnnotateIncomingContext(ctx, mux, req, "/llm_agent.api.agent.AgentService/DeleteChat", runtime.WithHTTPPathPattern("/v1/chats/{chat_id}"))
 		if err != nil {
 			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
 			return
 		}
-		resp, md, err := local_request_ChatService_GetLLMLimits_0(annotatedContext, inboundMarshaler, server, req, pathParams)
+		resp, md, err := local_request_AgentService_DeleteChat_0(annotatedContext, inboundMarshaler, server, req, pathParams)
 		md.HeaderMD, md.TrailerMD = metadata.Join(md.HeaderMD, stream.Header()), metadata.Join(md.TrailerMD, stream.Trailer())
 		annotatedContext = runtime.NewServerMetadataContext(annotatedContext, md)
 		if err != nil {
 			runtime.HTTPError(annotatedContext, mux, outboundMarshaler, w, req, err)
 			return
 		}
-		forward_ChatService_GetLLMLimits_0(annotatedContext, mux, outboundMarshaler, w, req, resp, mux.GetForwardResponseOptions()...)
+		forward_AgentService_DeleteChat_0(annotatedContext, mux, outboundMarshaler, w, req, resp, mux.GetForwardResponseOptions()...)
+	})
+	mux.Handle(http.MethodGet, pattern_AgentService_GetMessages_0, func(w http.ResponseWriter, req *http.Request, pathParams map[string]string) {
+		ctx, cancel := context.WithCancel(req.Context())
+		defer cancel()
+		var stream runtime.ServerTransportStream
+		ctx = grpc.NewContextWithServerTransportStream(ctx, &stream)
+		inboundMarshaler, outboundMarshaler := runtime.MarshalerForRequest(mux, req)
+		annotatedContext, err := runtime.AnnotateIncomingContext(ctx, mux, req, "/llm_agent.api.agent.AgentService/GetMessages", runtime.WithHTTPPathPattern("/v1/chats/{chat_id}/messages"))
+		if err != nil {
+			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
+			return
+		}
+		resp, md, err := local_request_AgentService_GetMessages_0(annotatedContext, inboundMarshaler, server, req, pathParams)
+		md.HeaderMD, md.TrailerMD = metadata.Join(md.HeaderMD, stream.Header()), metadata.Join(md.TrailerMD, stream.Trailer())
+		annotatedContext = runtime.NewServerMetadataContext(annotatedContext, md)
+		if err != nil {
+			runtime.HTTPError(annotatedContext, mux, outboundMarshaler, w, req, err)
+			return
+		}
+		forward_AgentService_GetMessages_0(annotatedContext, mux, outboundMarshaler, w, req, resp, mux.GetForwardResponseOptions()...)
+	})
+	mux.Handle(http.MethodGet, pattern_AgentService_GetLLMLimits_0, func(w http.ResponseWriter, req *http.Request, pathParams map[string]string) {
+		ctx, cancel := context.WithCancel(req.Context())
+		defer cancel()
+		var stream runtime.ServerTransportStream
+		ctx = grpc.NewContextWithServerTransportStream(ctx, &stream)
+		inboundMarshaler, outboundMarshaler := runtime.MarshalerForRequest(mux, req)
+		annotatedContext, err := runtime.AnnotateIncomingContext(ctx, mux, req, "/llm_agent.api.agent.AgentService/GetLLMLimits", runtime.WithHTTPPathPattern("/v1/llm/limits"))
+		if err != nil {
+			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
+			return
+		}
+		resp, md, err := local_request_AgentService_GetLLMLimits_0(annotatedContext, inboundMarshaler, server, req, pathParams)
+		md.HeaderMD, md.TrailerMD = metadata.Join(md.HeaderMD, stream.Header()), metadata.Join(md.TrailerMD, stream.Trailer())
+		annotatedContext = runtime.NewServerMetadataContext(annotatedContext, md)
+		if err != nil {
+			runtime.HTTPError(annotatedContext, mux, outboundMarshaler, w, req, err)
+			return
+		}
+		forward_AgentService_GetLLMLimits_0(annotatedContext, mux, outboundMarshaler, w, req, resp, mux.GetForwardResponseOptions()...)
 	})
 
 	return nil
@@ -350,9 +518,9 @@ func RegisterMemoryServiceHandlerServer(ctx context.Context, mux *runtime.ServeM
 	return nil
 }
 
-// RegisterChatServiceHandlerFromEndpoint is same as RegisterChatServiceHandler but
+// RegisterAgentServiceHandlerFromEndpoint is same as RegisterAgentServiceHandler but
 // automatically dials to "endpoint" and closes the connection when "ctx" gets done.
-func RegisterChatServiceHandlerFromEndpoint(ctx context.Context, mux *runtime.ServeMux, endpoint string, opts []grpc.DialOption) (err error) {
+func RegisterAgentServiceHandlerFromEndpoint(ctx context.Context, mux *runtime.ServeMux, endpoint string, opts []grpc.DialOption) (err error) {
 	conn, err := grpc.NewClient(endpoint, opts...)
 	if err != nil {
 		return err
@@ -371,85 +539,123 @@ func RegisterChatServiceHandlerFromEndpoint(ctx context.Context, mux *runtime.Se
 			}
 		}()
 	}()
-	return RegisterChatServiceHandler(ctx, mux, conn)
+	return RegisterAgentServiceHandler(ctx, mux, conn)
 }
 
-// RegisterChatServiceHandler registers the http handlers for service ChatService to "mux".
+// RegisterAgentServiceHandler registers the http handlers for service AgentService to "mux".
 // The handlers forward requests to the grpc endpoint over "conn".
-func RegisterChatServiceHandler(ctx context.Context, mux *runtime.ServeMux, conn *grpc.ClientConn) error {
-	return RegisterChatServiceHandlerClient(ctx, mux, NewChatServiceClient(conn))
+func RegisterAgentServiceHandler(ctx context.Context, mux *runtime.ServeMux, conn *grpc.ClientConn) error {
+	return RegisterAgentServiceHandlerClient(ctx, mux, NewAgentServiceClient(conn))
 }
 
-// RegisterChatServiceHandlerClient registers the http handlers for service ChatService
-// to "mux". The handlers forward requests to the grpc endpoint over the given implementation of "ChatServiceClient".
-// Note: the gRPC framework executes interceptors within the gRPC handler. If the passed in "ChatServiceClient"
+// RegisterAgentServiceHandlerClient registers the http handlers for service AgentService
+// to "mux". The handlers forward requests to the grpc endpoint over the given implementation of "AgentServiceClient".
+// Note: the gRPC framework executes interceptors within the gRPC handler. If the passed in "AgentServiceClient"
 // doesn't go through the normal gRPC flow (creating a gRPC client etc.) then it will be up to the passed in
-// "ChatServiceClient" to call the correct interceptors. This client ignores the HTTP middlewares.
-func RegisterChatServiceHandlerClient(ctx context.Context, mux *runtime.ServeMux, client ChatServiceClient) error {
-	mux.Handle(http.MethodPost, pattern_ChatService_GetChats_0, func(w http.ResponseWriter, req *http.Request, pathParams map[string]string) {
+// "AgentServiceClient" to call the correct interceptors. This client ignores the HTTP middlewares.
+func RegisterAgentServiceHandlerClient(ctx context.Context, mux *runtime.ServeMux, client AgentServiceClient) error {
+	mux.Handle(http.MethodGet, pattern_AgentService_GetChat_0, func(w http.ResponseWriter, req *http.Request, pathParams map[string]string) {
 		ctx, cancel := context.WithCancel(req.Context())
 		defer cancel()
 		inboundMarshaler, outboundMarshaler := runtime.MarshalerForRequest(mux, req)
-		annotatedContext, err := runtime.AnnotateContext(ctx, mux, req, "/llm_agent.api.agent.ChatService/GetChats", runtime.WithHTTPPathPattern("/v1/chats"))
+		annotatedContext, err := runtime.AnnotateContext(ctx, mux, req, "/llm_agent.api.agent.AgentService/GetChat", runtime.WithHTTPPathPattern("/v1/chats/{chat_id}"))
 		if err != nil {
 			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
 			return
 		}
-		resp, md, err := request_ChatService_GetChats_0(annotatedContext, inboundMarshaler, client, req, pathParams)
+		resp, md, err := request_AgentService_GetChat_0(annotatedContext, inboundMarshaler, client, req, pathParams)
 		annotatedContext = runtime.NewServerMetadataContext(annotatedContext, md)
 		if err != nil {
 			runtime.HTTPError(annotatedContext, mux, outboundMarshaler, w, req, err)
 			return
 		}
-		forward_ChatService_GetChats_0(annotatedContext, mux, outboundMarshaler, w, req, resp, mux.GetForwardResponseOptions()...)
+		forward_AgentService_GetChat_0(annotatedContext, mux, outboundMarshaler, w, req, resp, mux.GetForwardResponseOptions()...)
 	})
-	mux.Handle(http.MethodGet, pattern_ChatService_GetChat_0, func(w http.ResponseWriter, req *http.Request, pathParams map[string]string) {
+	mux.Handle(http.MethodGet, pattern_AgentService_ListChats_0, func(w http.ResponseWriter, req *http.Request, pathParams map[string]string) {
 		ctx, cancel := context.WithCancel(req.Context())
 		defer cancel()
 		inboundMarshaler, outboundMarshaler := runtime.MarshalerForRequest(mux, req)
-		annotatedContext, err := runtime.AnnotateContext(ctx, mux, req, "/llm_agent.api.agent.ChatService/GetChat", runtime.WithHTTPPathPattern("/v1/chats/{chat_id}"))
+		annotatedContext, err := runtime.AnnotateContext(ctx, mux, req, "/llm_agent.api.agent.AgentService/ListChats", runtime.WithHTTPPathPattern("/v1/chats"))
 		if err != nil {
 			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
 			return
 		}
-		resp, md, err := request_ChatService_GetChat_0(annotatedContext, inboundMarshaler, client, req, pathParams)
+		resp, md, err := request_AgentService_ListChats_0(annotatedContext, inboundMarshaler, client, req, pathParams)
 		annotatedContext = runtime.NewServerMetadataContext(annotatedContext, md)
 		if err != nil {
 			runtime.HTTPError(annotatedContext, mux, outboundMarshaler, w, req, err)
 			return
 		}
-		forward_ChatService_GetChat_0(annotatedContext, mux, outboundMarshaler, w, req, resp, mux.GetForwardResponseOptions()...)
+		forward_AgentService_ListChats_0(annotatedContext, mux, outboundMarshaler, w, req, resp, mux.GetForwardResponseOptions()...)
 	})
-	mux.Handle(http.MethodGet, pattern_ChatService_GetLLMLimits_0, func(w http.ResponseWriter, req *http.Request, pathParams map[string]string) {
+	mux.Handle(http.MethodDelete, pattern_AgentService_DeleteChat_0, func(w http.ResponseWriter, req *http.Request, pathParams map[string]string) {
 		ctx, cancel := context.WithCancel(req.Context())
 		defer cancel()
 		inboundMarshaler, outboundMarshaler := runtime.MarshalerForRequest(mux, req)
-		annotatedContext, err := runtime.AnnotateContext(ctx, mux, req, "/llm_agent.api.agent.ChatService/GetLLMLimits", runtime.WithHTTPPathPattern("/v1/llm/limits"))
+		annotatedContext, err := runtime.AnnotateContext(ctx, mux, req, "/llm_agent.api.agent.AgentService/DeleteChat", runtime.WithHTTPPathPattern("/v1/chats/{chat_id}"))
 		if err != nil {
 			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
 			return
 		}
-		resp, md, err := request_ChatService_GetLLMLimits_0(annotatedContext, inboundMarshaler, client, req, pathParams)
+		resp, md, err := request_AgentService_DeleteChat_0(annotatedContext, inboundMarshaler, client, req, pathParams)
 		annotatedContext = runtime.NewServerMetadataContext(annotatedContext, md)
 		if err != nil {
 			runtime.HTTPError(annotatedContext, mux, outboundMarshaler, w, req, err)
 			return
 		}
-		forward_ChatService_GetLLMLimits_0(annotatedContext, mux, outboundMarshaler, w, req, resp, mux.GetForwardResponseOptions()...)
+		forward_AgentService_DeleteChat_0(annotatedContext, mux, outboundMarshaler, w, req, resp, mux.GetForwardResponseOptions()...)
+	})
+	mux.Handle(http.MethodGet, pattern_AgentService_GetMessages_0, func(w http.ResponseWriter, req *http.Request, pathParams map[string]string) {
+		ctx, cancel := context.WithCancel(req.Context())
+		defer cancel()
+		inboundMarshaler, outboundMarshaler := runtime.MarshalerForRequest(mux, req)
+		annotatedContext, err := runtime.AnnotateContext(ctx, mux, req, "/llm_agent.api.agent.AgentService/GetMessages", runtime.WithHTTPPathPattern("/v1/chats/{chat_id}/messages"))
+		if err != nil {
+			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
+			return
+		}
+		resp, md, err := request_AgentService_GetMessages_0(annotatedContext, inboundMarshaler, client, req, pathParams)
+		annotatedContext = runtime.NewServerMetadataContext(annotatedContext, md)
+		if err != nil {
+			runtime.HTTPError(annotatedContext, mux, outboundMarshaler, w, req, err)
+			return
+		}
+		forward_AgentService_GetMessages_0(annotatedContext, mux, outboundMarshaler, w, req, resp, mux.GetForwardResponseOptions()...)
+	})
+	mux.Handle(http.MethodGet, pattern_AgentService_GetLLMLimits_0, func(w http.ResponseWriter, req *http.Request, pathParams map[string]string) {
+		ctx, cancel := context.WithCancel(req.Context())
+		defer cancel()
+		inboundMarshaler, outboundMarshaler := runtime.MarshalerForRequest(mux, req)
+		annotatedContext, err := runtime.AnnotateContext(ctx, mux, req, "/llm_agent.api.agent.AgentService/GetLLMLimits", runtime.WithHTTPPathPattern("/v1/llm/limits"))
+		if err != nil {
+			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
+			return
+		}
+		resp, md, err := request_AgentService_GetLLMLimits_0(annotatedContext, inboundMarshaler, client, req, pathParams)
+		annotatedContext = runtime.NewServerMetadataContext(annotatedContext, md)
+		if err != nil {
+			runtime.HTTPError(annotatedContext, mux, outboundMarshaler, w, req, err)
+			return
+		}
+		forward_AgentService_GetLLMLimits_0(annotatedContext, mux, outboundMarshaler, w, req, resp, mux.GetForwardResponseOptions()...)
 	})
 	return nil
 }
 
 var (
-	pattern_ChatService_GetChats_0     = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1}, []string{"v1", "chats"}, ""))
-	pattern_ChatService_GetChat_0      = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 1, 0, 4, 1, 5, 2}, []string{"v1", "chats", "chat_id"}, ""))
-	pattern_ChatService_GetLLMLimits_0 = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 2, 2}, []string{"v1", "llm", "limits"}, ""))
+	pattern_AgentService_GetChat_0      = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 1, 0, 4, 1, 5, 2}, []string{"v1", "chats", "chat_id"}, ""))
+	pattern_AgentService_ListChats_0    = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1}, []string{"v1", "chats"}, ""))
+	pattern_AgentService_DeleteChat_0   = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 1, 0, 4, 1, 5, 2}, []string{"v1", "chats", "chat_id"}, ""))
+	pattern_AgentService_GetMessages_0  = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 1, 0, 4, 1, 5, 2, 2, 3}, []string{"v1", "chats", "chat_id", "messages"}, ""))
+	pattern_AgentService_GetLLMLimits_0 = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 2, 2}, []string{"v1", "llm", "limits"}, ""))
 )
 
 var (
-	forward_ChatService_GetChats_0     = runtime.ForwardResponseMessage
-	forward_ChatService_GetChat_0      = runtime.ForwardResponseMessage
-	forward_ChatService_GetLLMLimits_0 = runtime.ForwardResponseMessage
+	forward_AgentService_GetChat_0      = runtime.ForwardResponseMessage
+	forward_AgentService_ListChats_0    = runtime.ForwardResponseMessage
+	forward_AgentService_DeleteChat_0   = runtime.ForwardResponseMessage
+	forward_AgentService_GetMessages_0  = runtime.ForwardResponseMessage
+	forward_AgentService_GetLLMLimits_0 = runtime.ForwardResponseMessage
 )
 
 // RegisterMemoryServiceHandlerFromEndpoint is same as RegisterMemoryServiceHandler but

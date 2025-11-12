@@ -50,6 +50,20 @@ func arrayToSlice[T any, U any](arr pgtype.FlatArray[T], f func(T) U) []U {
 	return result
 }
 
+// nullableIDToString конвертирует nullable ID в *string
+func nullableIDToString(id *domain.ID) *string {
+	if id == nil {
+		return nil
+	}
+	s := id.String()
+	return &s
+}
+
+// parseTimestamp парсит timestamp строку в time.Time
+func parseTimestamp(s string) (time.Time, error) {
+	return time.Parse(time.RFC3339, s)
+}
+
 func sliceToArray[T any, U any](slice []T, f func(T) U) pgtype.FlatArray[U] {
 	result := make(pgtype.FlatArray[U], 0, len(slice))
 	for _, elem := range slice {

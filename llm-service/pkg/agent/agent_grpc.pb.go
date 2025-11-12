@@ -20,219 +20,314 @@ import (
 const _ = grpc.SupportPackageIsVersion9
 
 const (
-	ChatService_GetChats_FullMethodName     = "/llm_agent.api.agent.ChatService/GetChats"
-	ChatService_GetChat_FullMethodName      = "/llm_agent.api.agent.ChatService/GetChat"
-	ChatService_GetLLMLimits_FullMethodName = "/llm_agent.api.agent.ChatService/GetLLMLimits"
-	ChatService_ChatStream_FullMethodName   = "/llm_agent.api.agent.ChatService/ChatStream"
+	AgentService_GetChat_FullMethodName       = "/llm_agent.api.agent.AgentService/GetChat"
+	AgentService_ListChats_FullMethodName     = "/llm_agent.api.agent.AgentService/ListChats"
+	AgentService_DeleteChat_FullMethodName    = "/llm_agent.api.agent.AgentService/DeleteChat"
+	AgentService_GetMessages_FullMethodName   = "/llm_agent.api.agent.AgentService/GetMessages"
+	AgentService_GetLLMLimits_FullMethodName  = "/llm_agent.api.agent.AgentService/GetLLMLimits"
+	AgentService_StreamMessage_FullMethodName = "/llm_agent.api.agent.AgentService/StreamMessage"
 )
 
-// ChatServiceClient is the client API for ChatService service.
+// AgentServiceClient is the client API for AgentService service.
 //
 // For semantics around ctx use and closing/ending streaming RPCs, please refer to https://pkg.go.dev/google.golang.org/grpc/?tab=doc#ClientConn.NewStream.
-type ChatServiceClient interface {
-	// Получить список чатов текущего пользователя
-	GetChats(ctx context.Context, in *GetChatsRequest, opts ...grpc.CallOption) (*GetChatsResponse, error)
-	// Получить конкретный чат с сообщениями по ID
+//
+// ===== Agent Service =====
+// Основной сервис для работы с агентами и чатами
+type AgentServiceClient interface {
+	// Получить чат по ID
 	GetChat(ctx context.Context, in *GetChatRequest, opts ...grpc.CallOption) (*GetChatResponse, error)
-	// Получить ежедневные лимиты использования LLM для текущего пользователя
+	// Получить список чатов
+	ListChats(ctx context.Context, in *ListChatsRequest, opts ...grpc.CallOption) (*ListChatsResponse, error)
+	// Удалить чат
+	DeleteChat(ctx context.Context, in *DeleteChatRequest, opts ...grpc.CallOption) (*emptypb.Empty, error)
+	// Получить историю сообщений чата
+	GetMessages(ctx context.Context, in *GetMessagesRequest, opts ...grpc.CallOption) (*GetMessagesResponse, error)
+	// Получить лимиты использования LLM
 	GetLLMLimits(ctx context.Context, in *emptypb.Empty, opts ...grpc.CallOption) (*GetLLMLimitsResponse, error)
-	// Двунаправленный поток для общения с LLM агентом
-	ChatStream(ctx context.Context, opts ...grpc.CallOption) (grpc.BidiStreamingClient[ChatStreamRequest, ChatStreamResponse], error)
+	// Стриминг сообщений
+	StreamMessage(ctx context.Context, in *StreamMessageRequest, opts ...grpc.CallOption) (grpc.ServerStreamingClient[StreamMessageResponse], error)
 }
 
-type chatServiceClient struct {
+type agentServiceClient struct {
 	cc grpc.ClientConnInterface
 }
 
-func NewChatServiceClient(cc grpc.ClientConnInterface) ChatServiceClient {
-	return &chatServiceClient{cc}
+func NewAgentServiceClient(cc grpc.ClientConnInterface) AgentServiceClient {
+	return &agentServiceClient{cc}
 }
 
-func (c *chatServiceClient) GetChats(ctx context.Context, in *GetChatsRequest, opts ...grpc.CallOption) (*GetChatsResponse, error) {
-	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
-	out := new(GetChatsResponse)
-	err := c.cc.Invoke(ctx, ChatService_GetChats_FullMethodName, in, out, cOpts...)
-	if err != nil {
-		return nil, err
-	}
-	return out, nil
-}
-
-func (c *chatServiceClient) GetChat(ctx context.Context, in *GetChatRequest, opts ...grpc.CallOption) (*GetChatResponse, error) {
+func (c *agentServiceClient) GetChat(ctx context.Context, in *GetChatRequest, opts ...grpc.CallOption) (*GetChatResponse, error) {
 	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
 	out := new(GetChatResponse)
-	err := c.cc.Invoke(ctx, ChatService_GetChat_FullMethodName, in, out, cOpts...)
+	err := c.cc.Invoke(ctx, AgentService_GetChat_FullMethodName, in, out, cOpts...)
 	if err != nil {
 		return nil, err
 	}
 	return out, nil
 }
 
-func (c *chatServiceClient) GetLLMLimits(ctx context.Context, in *emptypb.Empty, opts ...grpc.CallOption) (*GetLLMLimitsResponse, error) {
+func (c *agentServiceClient) ListChats(ctx context.Context, in *ListChatsRequest, opts ...grpc.CallOption) (*ListChatsResponse, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(ListChatsResponse)
+	err := c.cc.Invoke(ctx, AgentService_ListChats_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *agentServiceClient) DeleteChat(ctx context.Context, in *DeleteChatRequest, opts ...grpc.CallOption) (*emptypb.Empty, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(emptypb.Empty)
+	err := c.cc.Invoke(ctx, AgentService_DeleteChat_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *agentServiceClient) GetMessages(ctx context.Context, in *GetMessagesRequest, opts ...grpc.CallOption) (*GetMessagesResponse, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(GetMessagesResponse)
+	err := c.cc.Invoke(ctx, AgentService_GetMessages_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *agentServiceClient) GetLLMLimits(ctx context.Context, in *emptypb.Empty, opts ...grpc.CallOption) (*GetLLMLimitsResponse, error) {
 	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
 	out := new(GetLLMLimitsResponse)
-	err := c.cc.Invoke(ctx, ChatService_GetLLMLimits_FullMethodName, in, out, cOpts...)
+	err := c.cc.Invoke(ctx, AgentService_GetLLMLimits_FullMethodName, in, out, cOpts...)
 	if err != nil {
 		return nil, err
 	}
 	return out, nil
 }
 
-func (c *chatServiceClient) ChatStream(ctx context.Context, opts ...grpc.CallOption) (grpc.BidiStreamingClient[ChatStreamRequest, ChatStreamResponse], error) {
+func (c *agentServiceClient) StreamMessage(ctx context.Context, in *StreamMessageRequest, opts ...grpc.CallOption) (grpc.ServerStreamingClient[StreamMessageResponse], error) {
 	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
-	stream, err := c.cc.NewStream(ctx, &ChatService_ServiceDesc.Streams[0], ChatService_ChatStream_FullMethodName, cOpts...)
+	stream, err := c.cc.NewStream(ctx, &AgentService_ServiceDesc.Streams[0], AgentService_StreamMessage_FullMethodName, cOpts...)
 	if err != nil {
 		return nil, err
 	}
-	x := &grpc.GenericClientStream[ChatStreamRequest, ChatStreamResponse]{ClientStream: stream}
+	x := &grpc.GenericClientStream[StreamMessageRequest, StreamMessageResponse]{ClientStream: stream}
+	if err := x.ClientStream.SendMsg(in); err != nil {
+		return nil, err
+	}
+	if err := x.ClientStream.CloseSend(); err != nil {
+		return nil, err
+	}
 	return x, nil
 }
 
 // This type alias is provided for backwards compatibility with existing code that references the prior non-generic stream type by name.
-type ChatService_ChatStreamClient = grpc.BidiStreamingClient[ChatStreamRequest, ChatStreamResponse]
+type AgentService_StreamMessageClient = grpc.ServerStreamingClient[StreamMessageResponse]
 
-// ChatServiceServer is the server API for ChatService service.
-// All implementations must embed UnimplementedChatServiceServer
+// AgentServiceServer is the server API for AgentService service.
+// All implementations must embed UnimplementedAgentServiceServer
 // for forward compatibility.
-type ChatServiceServer interface {
-	// Получить список чатов текущего пользователя
-	GetChats(context.Context, *GetChatsRequest) (*GetChatsResponse, error)
-	// Получить конкретный чат с сообщениями по ID
+//
+// ===== Agent Service =====
+// Основной сервис для работы с агентами и чатами
+type AgentServiceServer interface {
+	// Получить чат по ID
 	GetChat(context.Context, *GetChatRequest) (*GetChatResponse, error)
-	// Получить ежедневные лимиты использования LLM для текущего пользователя
+	// Получить список чатов
+	ListChats(context.Context, *ListChatsRequest) (*ListChatsResponse, error)
+	// Удалить чат
+	DeleteChat(context.Context, *DeleteChatRequest) (*emptypb.Empty, error)
+	// Получить историю сообщений чата
+	GetMessages(context.Context, *GetMessagesRequest) (*GetMessagesResponse, error)
+	// Получить лимиты использования LLM
 	GetLLMLimits(context.Context, *emptypb.Empty) (*GetLLMLimitsResponse, error)
-	// Двунаправленный поток для общения с LLM агентом
-	ChatStream(grpc.BidiStreamingServer[ChatStreamRequest, ChatStreamResponse]) error
-	mustEmbedUnimplementedChatServiceServer()
+	// Стриминг сообщений
+	StreamMessage(*StreamMessageRequest, grpc.ServerStreamingServer[StreamMessageResponse]) error
+	mustEmbedUnimplementedAgentServiceServer()
 }
 
-// UnimplementedChatServiceServer must be embedded to have
+// UnimplementedAgentServiceServer must be embedded to have
 // forward compatible implementations.
 //
 // NOTE: this should be embedded by value instead of pointer to avoid a nil
 // pointer dereference when methods are called.
-type UnimplementedChatServiceServer struct{}
+type UnimplementedAgentServiceServer struct{}
 
-func (UnimplementedChatServiceServer) GetChats(context.Context, *GetChatsRequest) (*GetChatsResponse, error) {
-	return nil, status.Errorf(codes.Unimplemented, "method GetChats not implemented")
-}
-func (UnimplementedChatServiceServer) GetChat(context.Context, *GetChatRequest) (*GetChatResponse, error) {
+func (UnimplementedAgentServiceServer) GetChat(context.Context, *GetChatRequest) (*GetChatResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method GetChat not implemented")
 }
-func (UnimplementedChatServiceServer) GetLLMLimits(context.Context, *emptypb.Empty) (*GetLLMLimitsResponse, error) {
+func (UnimplementedAgentServiceServer) ListChats(context.Context, *ListChatsRequest) (*ListChatsResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method ListChats not implemented")
+}
+func (UnimplementedAgentServiceServer) DeleteChat(context.Context, *DeleteChatRequest) (*emptypb.Empty, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method DeleteChat not implemented")
+}
+func (UnimplementedAgentServiceServer) GetMessages(context.Context, *GetMessagesRequest) (*GetMessagesResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method GetMessages not implemented")
+}
+func (UnimplementedAgentServiceServer) GetLLMLimits(context.Context, *emptypb.Empty) (*GetLLMLimitsResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method GetLLMLimits not implemented")
 }
-func (UnimplementedChatServiceServer) ChatStream(grpc.BidiStreamingServer[ChatStreamRequest, ChatStreamResponse]) error {
-	return status.Errorf(codes.Unimplemented, "method ChatStream not implemented")
+func (UnimplementedAgentServiceServer) StreamMessage(*StreamMessageRequest, grpc.ServerStreamingServer[StreamMessageResponse]) error {
+	return status.Errorf(codes.Unimplemented, "method StreamMessage not implemented")
 }
-func (UnimplementedChatServiceServer) mustEmbedUnimplementedChatServiceServer() {}
-func (UnimplementedChatServiceServer) testEmbeddedByValue()                     {}
+func (UnimplementedAgentServiceServer) mustEmbedUnimplementedAgentServiceServer() {}
+func (UnimplementedAgentServiceServer) testEmbeddedByValue()                      {}
 
-// UnsafeChatServiceServer may be embedded to opt out of forward compatibility for this service.
-// Use of this interface is not recommended, as added methods to ChatServiceServer will
+// UnsafeAgentServiceServer may be embedded to opt out of forward compatibility for this service.
+// Use of this interface is not recommended, as added methods to AgentServiceServer will
 // result in compilation errors.
-type UnsafeChatServiceServer interface {
-	mustEmbedUnimplementedChatServiceServer()
+type UnsafeAgentServiceServer interface {
+	mustEmbedUnimplementedAgentServiceServer()
 }
 
-func RegisterChatServiceServer(s grpc.ServiceRegistrar, srv ChatServiceServer) {
-	// If the following call pancis, it indicates UnimplementedChatServiceServer was
+func RegisterAgentServiceServer(s grpc.ServiceRegistrar, srv AgentServiceServer) {
+	// If the following call pancis, it indicates UnimplementedAgentServiceServer was
 	// embedded by pointer and is nil.  This will cause panics if an
 	// unimplemented method is ever invoked, so we test this at initialization
 	// time to prevent it from happening at runtime later due to I/O.
 	if t, ok := srv.(interface{ testEmbeddedByValue() }); ok {
 		t.testEmbeddedByValue()
 	}
-	s.RegisterService(&ChatService_ServiceDesc, srv)
+	s.RegisterService(&AgentService_ServiceDesc, srv)
 }
 
-func _ChatService_GetChats_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(GetChatsRequest)
-	if err := dec(in); err != nil {
-		return nil, err
-	}
-	if interceptor == nil {
-		return srv.(ChatServiceServer).GetChats(ctx, in)
-	}
-	info := &grpc.UnaryServerInfo{
-		Server:     srv,
-		FullMethod: ChatService_GetChats_FullMethodName,
-	}
-	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(ChatServiceServer).GetChats(ctx, req.(*GetChatsRequest))
-	}
-	return interceptor(ctx, in, info, handler)
-}
-
-func _ChatService_GetChat_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+func _AgentService_GetChat_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
 	in := new(GetChatRequest)
 	if err := dec(in); err != nil {
 		return nil, err
 	}
 	if interceptor == nil {
-		return srv.(ChatServiceServer).GetChat(ctx, in)
+		return srv.(AgentServiceServer).GetChat(ctx, in)
 	}
 	info := &grpc.UnaryServerInfo{
 		Server:     srv,
-		FullMethod: ChatService_GetChat_FullMethodName,
+		FullMethod: AgentService_GetChat_FullMethodName,
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(ChatServiceServer).GetChat(ctx, req.(*GetChatRequest))
+		return srv.(AgentServiceServer).GetChat(ctx, req.(*GetChatRequest))
 	}
 	return interceptor(ctx, in, info, handler)
 }
 
-func _ChatService_GetLLMLimits_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+func _AgentService_ListChats_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(ListChatsRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(AgentServiceServer).ListChats(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: AgentService_ListChats_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(AgentServiceServer).ListChats(ctx, req.(*ListChatsRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _AgentService_DeleteChat_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(DeleteChatRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(AgentServiceServer).DeleteChat(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: AgentService_DeleteChat_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(AgentServiceServer).DeleteChat(ctx, req.(*DeleteChatRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _AgentService_GetMessages_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(GetMessagesRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(AgentServiceServer).GetMessages(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: AgentService_GetMessages_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(AgentServiceServer).GetMessages(ctx, req.(*GetMessagesRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _AgentService_GetLLMLimits_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
 	in := new(emptypb.Empty)
 	if err := dec(in); err != nil {
 		return nil, err
 	}
 	if interceptor == nil {
-		return srv.(ChatServiceServer).GetLLMLimits(ctx, in)
+		return srv.(AgentServiceServer).GetLLMLimits(ctx, in)
 	}
 	info := &grpc.UnaryServerInfo{
 		Server:     srv,
-		FullMethod: ChatService_GetLLMLimits_FullMethodName,
+		FullMethod: AgentService_GetLLMLimits_FullMethodName,
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(ChatServiceServer).GetLLMLimits(ctx, req.(*emptypb.Empty))
+		return srv.(AgentServiceServer).GetLLMLimits(ctx, req.(*emptypb.Empty))
 	}
 	return interceptor(ctx, in, info, handler)
 }
 
-func _ChatService_ChatStream_Handler(srv interface{}, stream grpc.ServerStream) error {
-	return srv.(ChatServiceServer).ChatStream(&grpc.GenericServerStream[ChatStreamRequest, ChatStreamResponse]{ServerStream: stream})
+func _AgentService_StreamMessage_Handler(srv interface{}, stream grpc.ServerStream) error {
+	m := new(StreamMessageRequest)
+	if err := stream.RecvMsg(m); err != nil {
+		return err
+	}
+	return srv.(AgentServiceServer).StreamMessage(m, &grpc.GenericServerStream[StreamMessageRequest, StreamMessageResponse]{ServerStream: stream})
 }
 
 // This type alias is provided for backwards compatibility with existing code that references the prior non-generic stream type by name.
-type ChatService_ChatStreamServer = grpc.BidiStreamingServer[ChatStreamRequest, ChatStreamResponse]
+type AgentService_StreamMessageServer = grpc.ServerStreamingServer[StreamMessageResponse]
 
-// ChatService_ServiceDesc is the grpc.ServiceDesc for ChatService service.
+// AgentService_ServiceDesc is the grpc.ServiceDesc for AgentService service.
 // It's only intended for direct use with grpc.RegisterService,
 // and not to be introspected or modified (even as a copy)
-var ChatService_ServiceDesc = grpc.ServiceDesc{
-	ServiceName: "llm_agent.api.agent.ChatService",
-	HandlerType: (*ChatServiceServer)(nil),
+var AgentService_ServiceDesc = grpc.ServiceDesc{
+	ServiceName: "llm_agent.api.agent.AgentService",
+	HandlerType: (*AgentServiceServer)(nil),
 	Methods: []grpc.MethodDesc{
 		{
-			MethodName: "GetChats",
-			Handler:    _ChatService_GetChats_Handler,
+			MethodName: "GetChat",
+			Handler:    _AgentService_GetChat_Handler,
 		},
 		{
-			MethodName: "GetChat",
-			Handler:    _ChatService_GetChat_Handler,
+			MethodName: "ListChats",
+			Handler:    _AgentService_ListChats_Handler,
+		},
+		{
+			MethodName: "DeleteChat",
+			Handler:    _AgentService_DeleteChat_Handler,
+		},
+		{
+			MethodName: "GetMessages",
+			Handler:    _AgentService_GetMessages_Handler,
 		},
 		{
 			MethodName: "GetLLMLimits",
-			Handler:    _ChatService_GetLLMLimits_Handler,
+			Handler:    _AgentService_GetLLMLimits_Handler,
 		},
 	},
 	Streams: []grpc.StreamDesc{
 		{
-			StreamName:    "ChatStream",
-			Handler:       _ChatService_ChatStream_Handler,
+			StreamName:    "StreamMessage",
+			Handler:       _AgentService_StreamMessage_Handler,
 			ServerStreams: true,
-			ClientStreams: true,
 		},
 	},
 	Metadata: "agent/agent.proto",
@@ -247,6 +342,8 @@ const (
 // MemoryServiceClient is the client API for MemoryService service.
 //
 // For semantics around ctx use and closing/ending streaming RPCs, please refer to https://pkg.go.dev/google.golang.org/grpc/?tab=doc#ClientConn.NewStream.
+//
+// ===== Memory Service =====
 type MemoryServiceClient interface {
 	// Список всех фактов о пользователе
 	ListMemoryFacts(ctx context.Context, in *emptypb.Empty, opts ...grpc.CallOption) (*ListMemoryFactsResponse, error)
@@ -297,6 +394,8 @@ func (c *memoryServiceClient) DeleteMemoryFact(ctx context.Context, in *DeleteMe
 // MemoryServiceServer is the server API for MemoryService service.
 // All implementations must embed UnimplementedMemoryServiceServer
 // for forward compatibility.
+//
+// ===== Memory Service =====
 type MemoryServiceServer interface {
 	// Список всех фактов о пользователе
 	ListMemoryFacts(context.Context, *emptypb.Empty) (*ListMemoryFactsResponse, error)

@@ -12,6 +12,8 @@ import (
 	"os"
 
 	"llm-service/internal/app"
+	agentapi "llm-service/internal/app/llm-agent/api/agent"
+	memoryapi "llm-service/internal/app/llm-agent/api/memory"
 	"llm-service/internal/config"
 	"llm-service/internal/db"
 	"llm-service/internal/domain"
@@ -19,10 +21,14 @@ import (
 	openai_llm "llm-service/internal/llm/openai"
 	"llm-service/internal/logger"
 	"llm-service/internal/repository"
+	"llm-service/internal/service/agent"
 	"llm-service/internal/service/chat"
+	contextbuilder "llm-service/internal/service/context"
+	"llm-service/internal/service/executor"
 	"llm-service/internal/service/memory"
 	"llm-service/internal/service/quota"
-	"llm-service/internal/service/tools"
+	"llm-service/internal/service/subagent"
+	"llm-service/internal/service/tool"
 	"llm-service/internal/tracer"
 
 	"github.com/jackc/pgx/v5/pgxpool"
@@ -82,18 +88,47 @@ func Run() error {
 
 	repo := repository.NewPGXRepository(transactor)
 
+	// Initialize services
 	memoryService := memory.New(repo)
 	quotaService := quota.New(repo, func(ctx context.Context, userID domain.ID) int {
 		return cfg.GetLLMTokenLimit()
 	})
-	toolsService := tools.New(memoryService)
-	chatService := chat.New(
-		toolsService,
-		repo,
+
+	// Initialize agent manager with config
+	agentManager, err := agent.NewManager(cfg)
+	if err != nil {
+		return fmt.Errorf("failed to create agent manager: %w", err)
+	}
+
+	// Initialize chat manager
+	var chatRepo repository.ChatRepository = repo
+	var messageRepo repository.MessageRepository = repo
+	var toolRepo repository.ToolCallRepository = repo
+
+	chatManager := chat.NewManager(chatRepo, messageRepo, toolRepo)
+
+	// Initialize context builder
+	ctxBuilder := contextbuilder.NewBuilder()
+
+	// Initialize subagent manager
+	subagentManager := subagent.NewManager(chatManager, agentManager)
+
+	// Initialize tool executor
+	toolExecutor := tool.NewExecutor(agentManager, subagentManager)
+
+	// Initialize agent executor
+	agentExecutor := executor.NewExecutor(
+		chatManager,
+		agentManager,
+		ctxBuilder,
+		toolExecutor,
+		subagentManager,
 		llmClient,
-		quotaService,
-		memoryService,
 	)
+
+	// Create API services
+	agentAPIService := agentapi.NewService(chatManager, agentExecutor, quotaService)
+	memoryAPIService := memoryapi.NewService(memoryService)
 
 	// Initialize JWT provider from config (fallbacks: env JWT_SECRET -> dev-secret)
 	jwtSecret := cfg.GetJWTSecret()
@@ -109,8 +144,8 @@ func Run() error {
 	jwtProvider := jwt.NewProvider(jwt.WithCredentials(jwt.NewSecretCredentials(jwtSecret)))
 
 	app := app.New(
-		chatService,
-		memoryService,
+		agentAPIService,
+		memoryAPIService,
 		jwtProvider,
 		app.WithHTTPPathPrefix(cfg.GetHTTPPathPrefix()),
 		app.WithGrpcPort(cfg.GetGRPCPort()),
