@@ -10,6 +10,7 @@ import (
 type ToolName string
 
 const (
+	// Системные инструменты
 	ToolNameSwitchToSubagent ToolName = "switch_to_subagent"
 	ToolNameFinishSubagent   ToolName = "finish_subagent"
 )
@@ -22,8 +23,6 @@ type AgentDefinition struct {
 	Name             string     `yaml:"name" json:"name"`
 	Description      string     `yaml:"description" json:"description"`
 	SystemPrompt     string     `yaml:"system_prompt" json:"system_prompt"`
-	Model            string     `yaml:"model" json:"model"`
-	Temperature      float32    `yaml:"temperature" json:"temperature"`
 	AllowedTools     []ToolName `yaml:"allowed_tools" json:"allowed_tools"`
 	CanCallSubagents bool       `yaml:"can_call_subagents" json:"can_call_subagents"`
 	IsSubagent       bool       `yaml:"is_subagent" json:"is_subagent"`

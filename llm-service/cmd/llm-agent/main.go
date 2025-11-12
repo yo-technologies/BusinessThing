@@ -94,8 +94,8 @@ func Run() error {
 		return cfg.GetLLMTokenLimit()
 	})
 
-	// Initialize agent manager with config
-	agentManager, err := agent.NewManager(cfg)
+	// Initialize agent manager
+	agentManager, err := agent.NewManager()
 	if err != nil {
 		return fmt.Errorf("failed to create agent manager: %w", err)
 	}
