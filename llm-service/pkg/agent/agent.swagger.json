@@ -1,0 +1,702 @@
+{
+  "swagger": "2.0",
+  "info": {
+    "title": "LLM Service API",
+    "description": "API for LLM Service of BusinessThing",
+    "version": "1.0.0"
+  },
+  "tags": [
+    {
+      "name": "AgentService"
+    },
+    {
+      "name": "MemoryService"
+    }
+  ],
+  "basePath": "/api",
+  "schemes": [
+    "http",
+    "https"
+  ],
+  "consumes": [
+    "application/json"
+  ],
+  "produces": [
+    "application/json"
+  ],
+  "paths": {
+    "/v1/chats": {
+      "get": {
+        "summary": "Получить список чатов",
+        "operationId": "AgentService_ListChats",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/agentListChatsResponse"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/rpcStatus"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "orgId",
+            "in": "query",
+            "required": false,
+            "type": "string"
+          },
+          {
+            "name": "page",
+            "in": "query",
+            "required": false,
+            "type": "integer",
+            "format": "int32"
+          },
+          {
+            "name": "pageSize",
+            "in": "query",
+            "required": false,
+            "type": "integer",
+            "format": "int32"
+          }
+        ],
+        "tags": [
+          "AgentService"
+        ]
+      }
+    },
+    "/v1/chats/{chatId}": {
+      "get": {
+        "summary": "Получить чат по ID",
+        "operationId": "AgentService_GetChat",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/agentGetChatResponse"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/rpcStatus"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "chatId",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "orgId",
+            "in": "query",
+            "required": false,
+            "type": "string"
+          }
+        ],
+        "tags": [
+          "AgentService"
+        ]
+      },
+      "delete": {
+        "summary": "Удалить чат",
+        "operationId": "AgentService_DeleteChat",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "type": "object",
+              "properties": {}
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/rpcStatus"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "chatId",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "orgId",
+            "in": "query",
+            "required": false,
+            "type": "string"
+          }
+        ],
+        "tags": [
+          "AgentService"
+        ]
+      }
+    },
+    "/v1/chats/{chatId}/messages": {
+      "get": {
+        "summary": "Получить историю сообщений чата",
+        "operationId": "AgentService_GetMessages",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/agentGetMessagesResponse"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/rpcStatus"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "chatId",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "orgId",
+            "in": "query",
+            "required": false,
+            "type": "string"
+          },
+          {
+            "name": "limit",
+            "in": "query",
+            "required": false,
+            "type": "integer",
+            "format": "int32"
+          },
+          {
+            "name": "offset",
+            "in": "query",
+            "required": false,
+            "type": "integer",
+            "format": "int32"
+          }
+        ],
+        "tags": [
+          "AgentService"
+        ]
+      }
+    },
+    "/v1/llm/limits": {
+      "get": {
+        "summary": "Получить лимиты использования LLM",
+        "operationId": "AgentService_GetLLMLimits",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/agentGetLLMLimitsResponse"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/rpcStatus"
+            }
+          }
+        },
+        "tags": [
+          "AgentService"
+        ]
+      }
+    },
+    "/v1/memory/facts": {
+      "get": {
+        "summary": "Список всех фактов о пользователе",
+        "operationId": "MemoryService_ListMemoryFacts",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/agentListMemoryFactsResponse"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/rpcStatus"
+            }
+          }
+        },
+        "tags": [
+          "MemoryService"
+        ]
+      },
+      "post": {
+        "summary": "Создать новый факт",
+        "operationId": "MemoryService_CreateMemoryFact",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/agentCreateMemoryFactResponse"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/rpcStatus"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/agentCreateMemoryFactRequest"
+            }
+          }
+        ],
+        "tags": [
+          "MemoryService"
+        ]
+      }
+    },
+    "/v1/memory/facts/{id}": {
+      "delete": {
+        "summary": "Удалить факт по id",
+        "operationId": "MemoryService_DeleteMemoryFact",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "type": "object",
+              "properties": {}
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/rpcStatus"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          }
+        ],
+        "tags": [
+          "MemoryService"
+        ]
+      }
+    }
+  },
+  "definitions": {
+    "agentChat": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string"
+        },
+        "organizationId": {
+          "type": "string"
+        },
+        "userId": {
+          "type": "string"
+        },
+        "agentKey": {
+          "type": "string"
+        },
+        "title": {
+          "type": "string"
+        },
+        "status": {
+          "$ref": "#/definitions/agentChatStatus"
+        },
+        "parentChatId": {
+          "type": "string",
+          "title": "для субагентов"
+        },
+        "parentToolCallId": {
+          "type": "string",
+          "title": "связь с tool call родительского агента"
+        },
+        "createdAt": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "updatedAt": {
+          "type": "string",
+          "format": "date-time"
+        }
+      }
+    },
+    "agentChatEvent": {
+      "type": "object",
+      "properties": {
+        "chatId": {
+          "type": "string"
+        },
+        "chatName": {
+          "type": "string"
+        }
+      },
+      "title": "Отправляется при создании чата и при изменении имени"
+    },
+    "agentChatStatus": {
+      "type": "string",
+      "enum": [
+        "CHAT_STATUS_UNSPECIFIED",
+        "CHAT_STATUS_ACTIVE",
+        "CHAT_STATUS_COMPLETED",
+        "CHAT_STATUS_FAILED",
+        "CHAT_STATUS_ARCHIVED"
+      ],
+      "default": "CHAT_STATUS_UNSPECIFIED"
+    },
+    "agentChatUsage": {
+      "type": "object",
+      "properties": {
+        "promptTokens": {
+          "type": "integer",
+          "format": "int32"
+        },
+        "completionTokens": {
+          "type": "integer",
+          "format": "int32"
+        },
+        "totalTokens": {
+          "type": "integer",
+          "format": "int32"
+        }
+      }
+    },
+    "agentCreateMemoryFactRequest": {
+      "type": "object",
+      "properties": {
+        "content": {
+          "type": "string"
+        }
+      }
+    },
+    "agentCreateMemoryFactResponse": {
+      "type": "object",
+      "properties": {
+        "fact": {
+          "$ref": "#/definitions/agentMemoryFact"
+        }
+      }
+    },
+    "agentErrorEvent": {
+      "type": "object",
+      "properties": {
+        "code": {
+          "type": "string"
+        },
+        "message": {
+          "type": "string"
+        }
+      }
+    },
+    "agentGetChatResponse": {
+      "type": "object",
+      "properties": {
+        "chat": {
+          "$ref": "#/definitions/agentChat"
+        }
+      }
+    },
+    "agentGetLLMLimitsResponse": {
+      "type": "object",
+      "properties": {
+        "dailyLimit": {
+          "type": "integer",
+          "format": "int32"
+        },
+        "used": {
+          "type": "integer",
+          "format": "int32"
+        },
+        "remaining": {
+          "type": "integer",
+          "format": "int32"
+        }
+      }
+    },
+    "agentGetMessagesResponse": {
+      "type": "object",
+      "properties": {
+        "messages": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "$ref": "#/definitions/agentMessage"
+          }
+        },
+        "total": {
+          "type": "integer",
+          "format": "int32"
+        }
+      }
+    },
+    "agentListChatsResponse": {
+      "type": "object",
+      "properties": {
+        "chats": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "$ref": "#/definitions/agentChat"
+          }
+        },
+        "total": {
+          "type": "integer",
+          "format": "int32"
+        },
+        "page": {
+          "type": "integer",
+          "format": "int32"
+        },
+        "pageSize": {
+          "type": "integer",
+          "format": "int32"
+        }
+      }
+    },
+    "agentListMemoryFactsResponse": {
+      "type": "object",
+      "properties": {
+        "facts": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "$ref": "#/definitions/agentMemoryFact"
+          }
+        }
+      }
+    },
+    "agentMemoryFact": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string"
+        },
+        "content": {
+          "type": "string"
+        },
+        "createdAt": {
+          "type": "string",
+          "format": "date-time"
+        }
+      }
+    },
+    "agentMessage": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string"
+        },
+        "chatId": {
+          "type": "string"
+        },
+        "role": {
+          "$ref": "#/definitions/agentMessageRole"
+        },
+        "content": {
+          "type": "string"
+        },
+        "sender": {
+          "type": "string",
+          "title": "null для user, agent_key для агентов"
+        },
+        "toolCalls": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "$ref": "#/definitions/agentToolCall"
+          }
+        },
+        "toolCallId": {
+          "type": "string",
+          "title": "для tool результатов"
+        },
+        "createdAt": {
+          "type": "string",
+          "format": "date-time"
+        }
+      }
+    },
+    "agentMessageChunk": {
+      "type": "object",
+      "properties": {
+        "content": {
+          "type": "string"
+        }
+      }
+    },
+    "agentMessageRole": {
+      "type": "string",
+      "enum": [
+        "MESSAGE_ROLE_UNSPECIFIED",
+        "MESSAGE_ROLE_SYSTEM",
+        "MESSAGE_ROLE_USER",
+        "MESSAGE_ROLE_ASSISTANT",
+        "MESSAGE_ROLE_TOOL"
+      ],
+      "default": "MESSAGE_ROLE_UNSPECIFIED"
+    },
+    "agentNewMessagePayload": {
+      "type": "object",
+      "properties": {
+        "chatId": {
+          "type": "string"
+        },
+        "orgId": {
+          "type": "string"
+        },
+        "content": {
+          "type": "string"
+        }
+      }
+    },
+    "agentStreamMessageResponse": {
+      "type": "object",
+      "properties": {
+        "chunk": {
+          "$ref": "#/definitions/agentMessageChunk"
+        },
+        "message": {
+          "$ref": "#/definitions/agentMessage"
+        },
+        "toolCall": {
+          "$ref": "#/definitions/agentToolCallEvent"
+        },
+        "usage": {
+          "$ref": "#/definitions/agentUsageEvent"
+        },
+        "error": {
+          "$ref": "#/definitions/agentErrorEvent"
+        },
+        "chat": {
+          "$ref": "#/definitions/agentChatEvent"
+        }
+      }
+    },
+    "agentToolCall": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string"
+        },
+        "name": {
+          "type": "string"
+        },
+        "arguments": {
+          "type": "string",
+          "title": "JSON string"
+        },
+        "result": {
+          "type": "string",
+          "title": "JSON string (после выполнения)"
+        },
+        "status": {
+          "$ref": "#/definitions/agentToolCallStatus"
+        },
+        "createdAt": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "completedAt": {
+          "type": "string",
+          "format": "date-time"
+        }
+      }
+    },
+    "agentToolCallEvent": {
+      "type": "object",
+      "properties": {
+        "toolName": {
+          "type": "string"
+        },
+        "arguments": {
+          "type": "string"
+        },
+        "status": {
+          "type": "string"
+        }
+      }
+    },
+    "agentToolCallStatus": {
+      "type": "string",
+      "enum": [
+        "TOOL_CALL_STATUS_UNSPECIFIED",
+        "TOOL_CALL_STATUS_PENDING",
+        "TOOL_CALL_STATUS_EXECUTING",
+        "TOOL_CALL_STATUS_COMPLETED",
+        "TOOL_CALL_STATUS_FAILED"
+      ],
+      "default": "TOOL_CALL_STATUS_UNSPECIFIED"
+    },
+    "agentUsageEvent": {
+      "type": "object",
+      "properties": {
+        "usage": {
+          "$ref": "#/definitions/agentChatUsage"
+        }
+      }
+    },
+    "protobufAny": {
+      "type": "object",
+      "properties": {
+        "@type": {
+          "type": "string"
+        }
+      },
+      "additionalProperties": {}
+    },
+    "rpcStatus": {
+      "type": "object",
+      "properties": {
+        "code": {
+          "type": "integer",
+          "format": "int32"
+        },
+        "message": {
+          "type": "string"
+        },
+        "details": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "$ref": "#/definitions/protobufAny"
+          }
+        }
+      }
+    }
+  },
+  "securityDefinitions": {
+    "Bearer": {
+      "type": "apiKey",
+      "name": "Authorization",
+      "in": "header"
+    }
+  },
+  "security": [
+    {
+      "Bearer": []
+    }
+  ]
+}

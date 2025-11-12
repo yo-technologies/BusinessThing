@@ -1,0 +1,296 @@
+syntax = "proto3";
+
+package llm_agent.api.agent;
+
+option go_package = "llm-service/internal/pb/llm-agent/api/agent;agent";
+
+import "google/protobuf/empty.proto";
+import "google/protobuf/timestamp.proto";
+import "google/api/annotations.proto";
+import "validate/validate.proto";
+import "protoc-gen-openapiv2/options/annotations.proto";
+
+option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_swagger) = {
+  info: {
+    title: "LLM Service API"
+    version: "1.0.0"
+    description: "API for LLM Service of BusinessThing"
+  };
+  consumes: "application/json"
+  produces: "application/json"
+  base_path: "/api"
+  schemes: HTTP
+  schemes: HTTPS
+  security_definitions: {
+    security: {
+      key: "Bearer"
+      value: {
+        type: TYPE_API_KEY
+        in: IN_HEADER
+        name: "Authorization"
+      }
+    }
+  }
+  security: {
+    security_requirement: {
+      key: "Bearer"
+      value: {}
+    }
+  }
+};
+
+// ===== Agent Service =====
+// Основной сервис для работы с агентами и чатами
+service AgentService {
+    // Получить чат по ID
+    rpc GetChat(GetChatRequest) returns (GetChatResponse) {
+        option (google.api.http) = {
+            get: "/v1/chats/{chat_id}"
+        };
+    }
+
+    // Получить список чатов
+    rpc ListChats(ListChatsRequest) returns (ListChatsResponse) {
+        option (google.api.http) = {
+            get: "/v1/chats"
+        };
+    }
+
+    // Удалить чат
+    rpc DeleteChat(DeleteChatRequest) returns (google.protobuf.Empty) {
+        option (google.api.http) = {
+            delete: "/v1/chats/{chat_id}"
+        };
+    }
+
+    
+    // Получить историю сообщений чата
+    rpc GetMessages(GetMessagesRequest) returns (GetMessagesResponse) {
+        option (google.api.http) = {
+            get: "/v1/chats/{chat_id}/messages"
+        };
+    }
+    
+    // Получить лимиты использования LLM
+    rpc GetLLMLimits(google.protobuf.Empty) returns (GetLLMLimitsResponse) {
+        option (google.api.http) = {
+            get: "/v1/llm/limits"
+        };
+    }
+
+    // Двунаправленный стриминг сообщений
+    rpc StreamMessage(stream StreamMessageRequest) returns (stream StreamMessageResponse) {}
+}
+
+// ===== Memory Service =====
+service MemoryService {
+    // Список всех фактов о пользователе
+    rpc ListMemoryFacts(google.protobuf.Empty) returns (ListMemoryFactsResponse) {
+        option (google.api.http) = {
+            get: "/v1/memory/facts"
+        };
+    }
+    
+    // Создать новый факт
+    rpc CreateMemoryFact(CreateMemoryFactRequest) returns (CreateMemoryFactResponse) {
+        option (google.api.http) = {
+            post: "/v1/memory/facts"
+            body: "*"
+        };
+    }
+    
+    // Удалить факт по id
+    rpc DeleteMemoryFact(DeleteMemoryFactRequest) returns (google.protobuf.Empty) {
+        option (google.api.http) = {
+            delete: "/v1/memory/facts/{id}"
+        };
+    }
+}
+
+// ===== Chat Management Messages =====
+
+message GetChatRequest {
+    string chat_id = 1 [(validate.rules).string.min_len = 1];
+    string org_id = 2 [(validate.rules).string.min_len = 1];
+}
+
+message GetChatResponse {
+    Chat chat = 1;
+}
+
+message ListChatsRequest {
+    string org_id = 1 [(validate.rules).string.min_len = 1];
+    int32 page = 2;
+    int32 page_size = 3 [(validate.rules).int32 = {gte: 1, lte: 100}];
+}
+
+message ListChatsResponse {
+    repeated Chat chats = 1;
+    int32 total = 2;
+    int32 page = 3;
+    int32 page_size = 4;
+}
+
+message DeleteChatRequest {
+    string chat_id = 1 [(validate.rules).string.min_len = 1];
+    string org_id = 2 [(validate.rules).string.min_len = 1];
+}
+
+// ===== Message Management =====
+message StreamMessageRequest {
+    oneof pyaload {
+        NewMessagePayload new_message = 1;
+    }
+}
+
+message NewMessagePayload {
+    optional string chat_id = 1 [(validate.rules).string.min_len = 1];
+    string org_id = 2 [(validate.rules).string.min_len = 1];
+    string content = 3 [(validate.rules).string.min_len = 1];
+}
+
+message StreamMessageResponse {
+    oneof event {
+        MessageChunk chunk = 1;
+        Message message = 2;
+        ToolCallEvent tool_call = 3;
+        UsageEvent usage = 4;
+        ErrorEvent error = 5;
+        ChatEvent chat = 6;
+    }
+}
+
+message GetMessagesRequest {
+    string chat_id = 1 [(validate.rules).string.min_len = 1];
+    string org_id = 2 [(validate.rules).string.min_len = 1];
+    int32 limit = 3 [(validate.rules).int32 = {gte: 1, lte: 100}];
+    int32 offset = 4;
+}
+
+message GetMessagesResponse {
+    repeated Message messages = 1;
+    int32 total = 2;
+}
+
+message GetLLMLimitsResponse {
+    int32 daily_limit = 1;
+    int32 used = 2;
+    int32 remaining = 3;
+}
+
+// ===== Domain Models =====
+
+message Chat {
+    string id = 1;
+    string organization_id = 2;
+    string user_id = 3;
+    string agent_key = 4;
+    string title = 5;
+    ChatStatus status = 6;
+    string parent_chat_id = 7; // для субагентов
+    string parent_tool_call_id = 8; // связь с tool call родительского агента
+    google.protobuf.Timestamp created_at = 9;
+    google.protobuf.Timestamp updated_at = 10;
+}
+
+enum ChatStatus {
+    CHAT_STATUS_UNSPECIFIED = 0;
+    CHAT_STATUS_ACTIVE = 1;
+    CHAT_STATUS_COMPLETED = 2;
+    CHAT_STATUS_FAILED = 3;
+    CHAT_STATUS_ARCHIVED = 4;
+}
+
+message Message {
+    string id = 1;
+    string chat_id = 2;
+    MessageRole role = 3;
+    string content = 4;
+    string sender = 5; // null для user, agent_key для агентов
+    repeated ToolCall tool_calls = 6;
+    string tool_call_id = 7; // для tool результатов
+    google.protobuf.Timestamp created_at = 8;
+}
+
+enum MessageRole {
+    MESSAGE_ROLE_UNSPECIFIED = 0;
+    MESSAGE_ROLE_SYSTEM = 1;
+    MESSAGE_ROLE_USER = 2;
+    MESSAGE_ROLE_ASSISTANT = 3;
+    MESSAGE_ROLE_TOOL = 4;
+}
+
+message ToolCall {
+    string id = 1;
+    string name = 2;
+    string arguments = 3; // JSON string
+    string result = 4; // JSON string (после выполнения)
+    ToolCallStatus status = 5;
+    google.protobuf.Timestamp created_at = 6;
+    google.protobuf.Timestamp completed_at = 7;
+}
+
+enum ToolCallStatus {
+    TOOL_CALL_STATUS_UNSPECIFIED = 0;
+    TOOL_CALL_STATUS_PENDING = 1;
+    TOOL_CALL_STATUS_EXECUTING = 2;
+    TOOL_CALL_STATUS_COMPLETED = 3;
+    TOOL_CALL_STATUS_FAILED = 4;
+}
+
+// ===== Event Messages =====
+
+message MessageChunk {
+    string content = 1;
+}
+
+message ToolCallEvent {
+    string tool_name = 1;
+    string arguments = 2;
+    string status = 3;
+}
+
+message UsageEvent {
+    ChatUsage usage = 1;
+}
+
+message ErrorEvent {
+    string code = 1;
+    string message = 2;
+}
+
+// Отправляется при создании чата и при изменении имени
+message ChatEvent {
+    string chat_id = 1;
+    string chat_name = 2;
+}
+
+message ChatUsage {
+    int32 prompt_tokens = 1;
+    int32 completion_tokens = 2;
+    int32 total_tokens = 3;
+}
+
+// ===== Memory Models =====
+
+message MemoryFact {
+    string id = 1;
+    string content = 2;
+    google.protobuf.Timestamp created_at = 3;
+}
+
+message ListMemoryFactsResponse {
+    repeated MemoryFact facts = 1;
+}
+
+message CreateMemoryFactRequest {
+    string content = 1 [(validate.rules).string = {min_len: 1, max_len: 200}];
+}
+
+message CreateMemoryFactResponse {
+    MemoryFact fact = 1;
+}
+
+message DeleteMemoryFactRequest {
+    string id = 1 [(validate.rules).string.min_len = 1];
+}

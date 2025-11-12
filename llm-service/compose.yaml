@@ -1,0 +1,41 @@
+services:
+    llm-agent-service:
+        container_name: llm-agent-service
+        profiles: [backend, full]
+        build:
+            context: .
+            dockerfile: Dockerfile
+            target: final
+        volumes:
+            - type: bind
+              source: ./config.docker.yaml
+              target: /config.yaml
+              read_only: true
+        ports:
+            - "8084:8084"
+            - "50063:50063"
+        depends_on:
+            llm-agent-db:
+                condition: service_healthy
+            jaeger:
+                condition: service_started
+            llm-agent-migrate:
+                condition: service_completed_successfully
+
+    llm-agent-migrate:
+        container_name: llm-agent-migrate
+        profiles: [backend, full]
+        build:
+            context: .
+            dockerfile: Dockerfile
+            target: migrate
+        environment:
+            - CONFIG_PATH=/config.yaml
+        volumes:
+            - ./migrations:/migrations
+            - type: bind
+              source: ./config.docker.yaml
+              target: /config.yaml
+              read_only: true
+        depends_on:
+            - llm-agent-db

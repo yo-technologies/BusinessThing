@@ -1,0 +1,68 @@
+# Пример конфигурации для llm-agent
+# Скопируйте этот файл в config.yaml и при необходимости отредактируйте значения.
+# Переменная окружения CONFIG_PATH может переопределить путь к файлу конфигурации.
+
+# Подключение к БД LLM Agent (см. llm-agent-db/compose.yaml)
+# По дефолту docker-compose пробрасывает порт 6533 -> 5432
+# Значения по умолчанию см. в llm-agent-db/.env
+# DSN будет собран как: postgres://user:password@host:port/name?sslmode=ssl_mode
+#                     где "name" — это имя базы данных
+
+db:
+  host: localhost
+  port: 6533
+  user: postgres
+  password: postgres
+  name: postgres
+  # ssl_mode: disable|require|verify-ca|verify-full
+  ssl_mode: disable
+
+# Настройки LLM-провайдера (OpenAI-совместимый)
+# base_url — опционально; оставьте пустым для провайдера по умолчанию SDK,
+# либо укажите кастомный совместимый эндпоинт (например, прокси или локальный провайдер):
+#   - https://api.openai.com/v1
+#   - http://localhost:11434/v1 (пример)
+# api_key — ключ доступа к провайдеру
+# model — идентификатор модели в провайдере
+# reasoning_effort — уровень "reasoning" (minimal|low|medium|high), если поддерживается моделью
+
+llm:
+  base_url: "https://api.openai.com/v1"
+  api_key: "sk-REPLACE_ME"
+  model: "gpt-5-mini"
+  reasoning_effort: "high"
+
+# (Необязательно) HTTP(S) прокси для исходящих запросов к провайдеру LLM
+# Если прокси не используется — можно удалить весь блок или оставить пустые значения.
+# Пример схемы: http|https|socks5
+
+proxy:
+  host: ""
+  port: 0
+  user: ""
+  password: ""
+  protocol: "http"
+
+# Секрет для проверки JWT-токенов (HS256).
+# В проде задавайте безопасное значение и храните вне VCS.
+jwt:
+  secret: "CHANGE_ME"
+
+
+jaeger:
+  endpoint: "http://localhost:14268/api/traces"
+
+# Адрес core-service для получения банковских данных
+core_service:
+  address: "localhost:50051"
+
+# Настройки HTTP-сервера (Gateway для gRPC)
+http:
+  address: ":8084"
+  path_prefix: "/api"
+  enable_gateway: true
+
+# Настройки gRPC-сервера
+grpc:
+  port: 50063
+service_name: "llm-agent"
