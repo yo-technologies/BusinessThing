@@ -6,6 +6,8 @@ import (
 	"fmt"
 	"llm-service/internal/domain"
 	"llm-service/internal/service"
+
+	"github.com/opentracing/opentracing-go"
 )
 
 // Executor - исполнитель инструментов
@@ -34,6 +36,9 @@ func (e *Executor) Execute(
 	execCtx *domain.ExecutionContext,
 	toolCallID *domain.ID,
 ) (interface{}, error) {
+	span, ctx := opentracing.StartSpanFromContext(ctx, "tool.Executor.Execute")
+	defer span.Finish()
+
 	// Проверяем разрешения
 	if !e.CanExecute(toolName, execCtx.AgentKey) {
 		return nil, domain.NewForbiddenError(fmt.Sprintf("agent %s is not allowed to use tool %s", execCtx.AgentKey, toolName))
@@ -75,6 +80,9 @@ func (e *Executor) executeSwitchToSubagent(
 	execCtx *domain.ExecutionContext,
 	toolCallID *domain.ID,
 ) (interface{}, error) {
+	span, ctx := opentracing.StartSpanFromContext(ctx, "tool.Executor.executeSwitchToSubagent")
+	defer span.Finish()
+
 	// Парсим аргументы
 	subagentKey, ok := arguments["subagent_key"].(string)
 	if !ok {
@@ -109,6 +117,9 @@ func (e *Executor) executeFinishSubagent(
 	arguments map[string]interface{},
 	execCtx *domain.ExecutionContext,
 ) (interface{}, error) {
+	span, ctx := opentracing.StartSpanFromContext(ctx, "tool.Executor.executeFinishSubagent")
+	defer span.Finish()
+
 	// Парсим аргументы
 	summary, ok := arguments["summary"].(string)
 	if !ok {

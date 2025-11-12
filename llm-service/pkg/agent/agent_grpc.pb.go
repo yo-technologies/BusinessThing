@@ -45,8 +45,8 @@ type AgentServiceClient interface {
 	GetMessages(ctx context.Context, in *GetMessagesRequest, opts ...grpc.CallOption) (*GetMessagesResponse, error)
 	// Получить лимиты использования LLM
 	GetLLMLimits(ctx context.Context, in *emptypb.Empty, opts ...grpc.CallOption) (*GetLLMLimitsResponse, error)
-	// Стриминг сообщений
-	StreamMessage(ctx context.Context, in *StreamMessageRequest, opts ...grpc.CallOption) (grpc.ServerStreamingClient[StreamMessageResponse], error)
+	// Двунаправленный стриминг сообщений
+	StreamMessage(ctx context.Context, opts ...grpc.CallOption) (grpc.BidiStreamingClient[StreamMessageRequest, StreamMessageResponse], error)
 }
 
 type agentServiceClient struct {
@@ -107,24 +107,18 @@ func (c *agentServiceClient) GetLLMLimits(ctx context.Context, in *emptypb.Empty
 	return out, nil
 }
 
-func (c *agentServiceClient) StreamMessage(ctx context.Context, in *StreamMessageRequest, opts ...grpc.CallOption) (grpc.ServerStreamingClient[StreamMessageResponse], error) {
+func (c *agentServiceClient) StreamMessage(ctx context.Context, opts ...grpc.CallOption) (grpc.BidiStreamingClient[StreamMessageRequest, StreamMessageResponse], error) {
 	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
 	stream, err := c.cc.NewStream(ctx, &AgentService_ServiceDesc.Streams[0], AgentService_StreamMessage_FullMethodName, cOpts...)
 	if err != nil {
 		return nil, err
 	}
 	x := &grpc.GenericClientStream[StreamMessageRequest, StreamMessageResponse]{ClientStream: stream}
-	if err := x.ClientStream.SendMsg(in); err != nil {
-		return nil, err
-	}
-	if err := x.ClientStream.CloseSend(); err != nil {
-		return nil, err
-	}
 	return x, nil
 }
 
 // This type alias is provided for backwards compatibility with existing code that references the prior non-generic stream type by name.
-type AgentService_StreamMessageClient = grpc.ServerStreamingClient[StreamMessageResponse]
+type AgentService_StreamMessageClient = grpc.BidiStreamingClient[StreamMessageRequest, StreamMessageResponse]
 
 // AgentServiceServer is the server API for AgentService service.
 // All implementations must embed UnimplementedAgentServiceServer
@@ -143,8 +137,8 @@ type AgentServiceServer interface {
 	GetMessages(context.Context, *GetMessagesRequest) (*GetMessagesResponse, error)
 	// Получить лимиты использования LLM
 	GetLLMLimits(context.Context, *emptypb.Empty) (*GetLLMLimitsResponse, error)
-	// Стриминг сообщений
-	StreamMessage(*StreamMessageRequest, grpc.ServerStreamingServer[StreamMessageResponse]) error
+	// Двунаправленный стриминг сообщений
+	StreamMessage(grpc.BidiStreamingServer[StreamMessageRequest, StreamMessageResponse]) error
 	mustEmbedUnimplementedAgentServiceServer()
 }
 
@@ -170,7 +164,7 @@ func (UnimplementedAgentServiceServer) GetMessages(context.Context, *GetMessages
 func (UnimplementedAgentServiceServer) GetLLMLimits(context.Context, *emptypb.Empty) (*GetLLMLimitsResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method GetLLMLimits not implemented")
 }
-func (UnimplementedAgentServiceServer) StreamMessage(*StreamMessageRequest, grpc.ServerStreamingServer[StreamMessageResponse]) error {
+func (UnimplementedAgentServiceServer) StreamMessage(grpc.BidiStreamingServer[StreamMessageRequest, StreamMessageResponse]) error {
 	return status.Errorf(codes.Unimplemented, "method StreamMessage not implemented")
 }
 func (UnimplementedAgentServiceServer) mustEmbedUnimplementedAgentServiceServer() {}
@@ -285,15 +279,11 @@ func _AgentService_GetLLMLimits_Handler(srv interface{}, ctx context.Context, de
 }
 
 func _AgentService_StreamMessage_Handler(srv interface{}, stream grpc.ServerStream) error {
-	m := new(StreamMessageRequest)
-	if err := stream.RecvMsg(m); err != nil {
-		return err
-	}
-	return srv.(AgentServiceServer).StreamMessage(m, &grpc.GenericServerStream[StreamMessageRequest, StreamMessageResponse]{ServerStream: stream})
+	return srv.(AgentServiceServer).StreamMessage(&grpc.GenericServerStream[StreamMessageRequest, StreamMessageResponse]{ServerStream: stream})
 }
 
 // This type alias is provided for backwards compatibility with existing code that references the prior non-generic stream type by name.
-type AgentService_StreamMessageServer = grpc.ServerStreamingServer[StreamMessageResponse]
+type AgentService_StreamMessageServer = grpc.BidiStreamingServer[StreamMessageRequest, StreamMessageResponse]
 
 // AgentService_ServiceDesc is the grpc.ServiceDesc for AgentService service.
 // It's only intended for direct use with grpc.RegisterService,
@@ -328,6 +318,7 @@ var AgentService_ServiceDesc = grpc.ServiceDesc{
 			StreamName:    "StreamMessage",
 			Handler:       _AgentService_StreamMessage_Handler,
 			ServerStreams: true,
+			ClientStreams: true,
 		},
 	},
 	Metadata: "agent/agent.proto",

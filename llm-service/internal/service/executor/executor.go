@@ -3,6 +3,7 @@ package executor
 import (
 	"context"
 	"encoding/json"
+	"fmt"
 	"llm-service/internal/domain"
 	"llm-service/internal/domain/dto"
 	"llm-service/internal/llm"
@@ -207,7 +208,7 @@ func (e *Executor) runAgentLoopStream(
 		}
 
 		// Строим контекст для LLM
-		llmMessages, err := e.buildLLMMessages(ctx, currentChat, messages, currentAgent, currentExecCtx)
+		llmMessages, err := e.buildLLMMessages(ctx, currentChat, messages, currentAgent)
 		if err != nil {
 			return stream.SendError(err)
 		}
@@ -338,21 +339,18 @@ func (e *Executor) runAgentLoopStream(
 
 			// Специальная обработка для switch_to_subagent
 			if toolCall.Name == string(domain.ToolNameSwitchToSubagent) && err == nil {
-				// Извлекаем subagent_key из результата
-				resultMap, ok := result.(map[string]interface{})
-				if !ok {
-					return stream.SendError(domain.NewInternalError("invalid switch_to_subagent result", nil))
+				// Извлекаем chat_id из результата безопасно (поддерживаем как domain.ID, так и string)
+				subagentChatID, err := extractChatIDFromResult(result)
+				if err != nil {
+					return stream.SendError(err)
 				}
 
-				subagentChatID, ok := resultMap["chat_id"].(domain.ID)
-				if !ok {
-					return stream.SendError(domain.NewInternalError("invalid chat_id in switch_to_subagent result", nil))
-				}
-
+				// Извлекаем subagent_key и task из аргументов с проверкой типов
 				subagentKey, ok := arguments["subagent_key"].(string)
-				if !ok {
-					return stream.SendError(domain.NewInternalError("missing subagent_key argument", nil))
+				if !ok || subagentKey == "" {
+					return stream.SendError(domain.NewInvalidArgumentError("missing or invalid subagent_key argument"))
 				}
+				task, _ := arguments["task"].(string)
 
 				// Получаем чат субагента
 				subagentChat, err := e.chatManager.GetChat(ctx, subagentChatID)
@@ -372,7 +370,7 @@ func (e *Executor) runAgentLoopStream(
 					UserID:            currentExecCtx.UserID,
 					ChatID:            subagentChat.ID,
 					AgentKey:          subagentKey,
-					TaskDescription:   arguments["task"].(string),
+					TaskDescription:   task,
 					AdditionalContext: currentExecCtx.AdditionalContext,
 				}
 
@@ -410,7 +408,7 @@ func (e *Executor) runAgentLoopStream(
 					UserID:            currentExecCtx.UserID,
 					ChatID:            parentChat.ID,
 					AgentKey:          parentChat.AgentKey,
-					TaskDescription:   execCtx.TaskDescription, // изначальная задача
+					TaskDescription:   "",
 					AdditionalContext: currentExecCtx.AdditionalContext,
 				}
 
@@ -471,23 +469,42 @@ func (e *Executor) runAgentLoopStream(
 	return nil
 }
 
+// extractChatIDFromResult безопасно извлекает ID чата из результата tool switch_to_subagent
+func extractChatIDFromResult(result interface{}) (domain.ID, error) {
+	// Ожидаем map[string]interface{}
+	resultMap, ok := result.(map[string]interface{})
+	if !ok {
+		return domain.ID{}, domain.NewInternalError("invalid switch_to_subagent result", nil)
+	}
+
+	// Пробуем как domain.ID (когда результат от внутреннего сервиса без marshaling)
+	if id, ok := resultMap["chat_id"].(domain.ID); ok {
+		return id, nil
+	}
+
+	// Пробуем как string (если где-то был marshal/unmarshal)
+	if s, ok := resultMap["chat_id"].(string); ok && s != "" {
+		id, err := domain.ParseID(s)
+		if err != nil {
+			return domain.ID{}, domain.NewInvalidArgumentError(fmt.Sprintf("invalid chat_id: %v", err))
+		}
+		return id, nil
+	}
+
+	return domain.ID{}, domain.NewInvalidArgumentError("missing or invalid chat_id in switch_to_subagent result")
+}
+
 // buildLLMMessages строит сообщения для LLM
 func (e *Executor) buildLLMMessages(
 	_ context.Context,
 	_ *domain.Chat,
 	messages []*domain.Message,
 	agentDef *domain.AgentDefinition,
-	execCtx *domain.ExecutionContext,
 ) ([]llm.MessageParam, error) {
 	llmMessages := make([]llm.MessageParam, 0, len(messages)+1)
 
 	// Добавляем system prompt
 	systemPrompt := agentDef.GetSystemPrompt()
-
-	// Для субагентов заменяем {task} на реальную задачу
-	if execCtx.IsSubagentContext() {
-		systemPrompt = strings.ReplaceAll(systemPrompt, "{task}", execCtx.TaskDescription)
-	}
 
 	llmMessages = append(llmMessages, llm.MessageParam{
 		Role:    llm.RoleSystem,

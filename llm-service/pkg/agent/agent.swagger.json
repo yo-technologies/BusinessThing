@@ -558,6 +558,20 @@
       ],
       "default": "MESSAGE_ROLE_UNSPECIFIED"
     },
+    "agentNewMessagePayload": {
+      "type": "object",
+      "properties": {
+        "chatId": {
+          "type": "string"
+        },
+        "orgId": {
+          "type": "string"
+        },
+        "content": {
+          "type": "string"
+        }
+      }
+    },
     "agentStreamMessageResponse": {
       "type": "object",
       "properties": {
