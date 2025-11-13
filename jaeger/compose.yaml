@@ -1,6 +1,6 @@
 services:
   jaeger:
-    container_name: multibanking_thing_jaeger
+    container_name: businessthing-jaeger
     profiles: [tracing, full, dev]
     image: jaegertracing/all-in-one
     environment:

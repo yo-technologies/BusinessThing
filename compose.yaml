@@ -1,7 +1,10 @@
 include:
-    - llm-agent/compose.yaml
-    - llm-agent-db/compose.yaml
+    - llm-service/compose.yaml
+    - llm-service-db/compose.yaml
     - jaeger/compose.yaml
+    - rabbitmq/compose.yaml
+    - opensearch/compose.yaml
+    - doc-processing/compose.yaml
 
 services:
     dozzle:
