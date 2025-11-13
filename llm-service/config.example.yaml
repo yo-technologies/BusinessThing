@@ -65,4 +65,8 @@ http:
 # Настройки gRPC-сервера
 grpc:
   port: 50063
+
+docs_processor:
+  address: "localhost:50052"
+
 service_name: "llm-agent"

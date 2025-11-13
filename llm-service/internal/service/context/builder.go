@@ -3,16 +3,19 @@ package context
 import (
 	"context"
 	"llm-service/internal/domain"
+	"llm-service/internal/rag"
 )
 
 // Builder - построитель контекста для LLM
 type Builder struct {
-	// TODO: добавить зависимости для RAG, vector search, memory service
+	ragClient *rag.Client
 }
 
 // NewBuilder создает новый builder контекста
-func NewBuilder() *Builder {
-	return &Builder{}
+func NewBuilder(ragClient *rag.Client) *Builder {
+	return &Builder{
+		ragClient: ragClient,
+	}
 }
 
 // BuildContext строит контекст для агента на основе истории чата и дополнительных данных
@@ -41,15 +44,16 @@ func (b *Builder) EnrichWithRAG(
 	query string,
 	limit int,
 ) ([]string, error) {
-	// TODO: Реализовать интеграцию с vector search service
-	// 1. Отправить запрос в vector search
-	// 2. Получить релевантные фрагменты документов
-	// 3. Форматировать для включения в контекст
+	if b.ragClient == nil {
+		return []string{}, nil
+	}
 
-	// Заглушка
-	results := make([]string, 0)
+	chunks, err := b.ragClient.SearchRelevantChunks(ctx, organizationID, query, limit, 0.5)
+	if err != nil {
+		return nil, err
+	}
 
-	return results, nil
+	return chunks, nil
 }
 
 // EnrichWithMemoryFacts добавляет факты из памяти пользователя

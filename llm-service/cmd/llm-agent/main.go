@@ -20,6 +20,7 @@ import (
 	"llm-service/internal/jwt"
 	openai_llm "llm-service/internal/llm/openai"
 	"llm-service/internal/logger"
+	"llm-service/internal/rag"
 	"llm-service/internal/repository"
 	"llm-service/internal/service/agent"
 	"llm-service/internal/service/chat"
@@ -107,8 +108,15 @@ func Run() error {
 
 	chatManager := chat.NewManager(chatRepo, messageRepo, toolRepo)
 
+	// Initialize RAG client
+	ragClient, err := rag.NewClient(cfg.GetDocsProcessorAddress())
+	if err != nil {
+		return fmt.Errorf("failed to create RAG client: %w", err)
+	}
+	defer ragClient.Close()
+
 	// Initialize context builder
-	ctxBuilder := contextbuilder.NewBuilder()
+	ctxBuilder := contextbuilder.NewBuilder(ragClient)
 
 	// Initialize subagent manager
 	subagentManager := subagent.NewManager(chatManager, agentManager)

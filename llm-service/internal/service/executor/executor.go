@@ -74,6 +74,22 @@ func (e *Executor) ExecuteStream(ctx context.Context, req dto.ExecuteAgentDTO, s
 		if err != nil {
 			return stream.SendError(err)
 		}
+
+		// Сохраняем system message с RAG при создании нового чата
+		systemPrompt, err := e.buildSystemPromptWithRAG(ctx, chat, agentDef, req.Task)
+		if err != nil {
+			return stream.SendError(err)
+		}
+
+		systemMessage := &domain.Message{
+			Model:   domain.NewModel(),
+			ChatID:  chat.ID,
+			Role:    domain.MessageRoleSystem,
+			Content: systemPrompt,
+		}
+		if err := e.chatManager.SaveMessage(ctx, systemMessage); err != nil {
+			return stream.SendError(err)
+		}
 	}
 
 	// Создаем execution context
@@ -127,6 +143,28 @@ func (e *Executor) SendMessageStream(ctx context.Context, req dto.SendMessageDTO
 		if err != nil {
 			return stream.SendError(err)
 		}
+
+		// Получаем агента и сохраняем system message с RAG
+		agentDef, err := e.agentManager.GetAgent("main")
+		if err != nil {
+			return stream.SendError(err)
+		}
+
+		systemPrompt, err := e.buildSystemPromptWithRAG(ctx, chat, agentDef, req.Content)
+		if err != nil {
+			return stream.SendError(err)
+		}
+
+		systemMessage := &domain.Message{
+			Model:   domain.NewModel(),
+			ChatID:  chat.ID,
+			Role:    domain.MessageRoleSystem,
+			Content: systemPrompt,
+		}
+		if err := e.chatManager.SaveMessage(ctx, systemMessage); err != nil {
+			return stream.SendError(err)
+		}
+
 		stream.SendChat(chat)
 		req.ChatID = &chat.ID
 	} else {
@@ -207,8 +245,8 @@ func (e *Executor) runAgentLoopStream(
 			return stream.SendError(err)
 		}
 
-		// Строим контекст для LLM
-		llmMessages, err := e.buildLLMMessages(ctx, currentChat, messages, currentAgent)
+		// Строим контекст для LLM - просто конвертируем messages из БД
+		llmMessages, err := e.buildLLMMessages(messages)
 		if err != nil {
 			return stream.SendError(err)
 		}
@@ -379,6 +417,22 @@ func (e *Executor) runAgentLoopStream(
 				currentAgent = subagentDef
 				currentExecCtx = subagentExecCtx
 
+				// Сохраняем system message с RAG для субагента
+				subagentSystemPrompt, err := e.buildSystemPromptWithRAG(ctx, currentChat, currentAgent, task)
+				if err != nil {
+					return stream.SendError(err)
+				}
+
+				systemMessage := &domain.Message{
+					Model:   domain.NewModel(),
+					ChatID:  currentChat.ID,
+					Role:    domain.MessageRoleSystem,
+					Content: subagentSystemPrompt,
+				}
+				if err := e.chatManager.SaveMessage(ctx, systemMessage); err != nil {
+					return stream.SendError(err)
+				}
+
 				hasActiveTools = true
 				continue
 			}
@@ -494,22 +548,43 @@ func extractChatIDFromResult(result interface{}) (domain.ID, error) {
 	return domain.ID{}, domain.NewInvalidArgumentError("missing or invalid chat_id in switch_to_subagent result")
 }
 
-// buildLLMMessages строит сообщения для LLM
-func (e *Executor) buildLLMMessages(
-	_ context.Context,
-	_ *domain.Chat,
-	messages []*domain.Message,
+// buildSystemPromptWithRAG строит system prompt с RAG
+func (e *Executor) buildSystemPromptWithRAG(
+	ctx context.Context,
+	chat *domain.Chat,
 	agentDef *domain.AgentDefinition,
-) ([]llm.MessageParam, error) {
-	llmMessages := make([]llm.MessageParam, 0, len(messages)+1)
-
-	// Добавляем system prompt
+	query string,
+) (string, error) {
 	systemPrompt := agentDef.GetSystemPrompt()
 
-	llmMessages = append(llmMessages, llm.MessageParam{
-		Role:    llm.RoleSystem,
-		Content: systemPrompt,
-	})
+	// Обогащаем контекст через RAG если есть query
+	if query != "" {
+		ragChunks, err := e.contextBuilder.EnrichWithRAG(
+			ctx,
+			chat.OrganizationID,
+			query,
+			5, // топ-5 релевантных фрагментов
+		)
+		if err == nil && len(ragChunks) > 0 {
+			// Добавляем релевантные документы в system prompt
+			var ragContext strings.Builder
+			ragContext.WriteString("\n\n## Релевантная документация\n\n")
+			ragContext.WriteString("Используй следующую информацию из документов для ответа на вопрос пользователя:\n\n")
+			for i, chunk := range ragChunks {
+				ragContext.WriteString(fmt.Sprintf("%d. %s\n\n", i+1, chunk))
+			}
+			systemPrompt += ragContext.String()
+		}
+	}
+
+	return systemPrompt, nil
+}
+
+// buildLLMMessages строит сообщения для LLM из БД
+func (e *Executor) buildLLMMessages(
+	messages []*domain.Message,
+) ([]llm.MessageParam, error) {
+	llmMessages := make([]llm.MessageParam, 0, len(messages))
 
 	// Добавляем историю сообщений
 	for _, msg := range messages {

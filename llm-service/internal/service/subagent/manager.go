@@ -62,26 +62,6 @@ func (m *Manager) SwitchToSubagent(ctx context.Context, parentChatID domain.ID, 
 		return nil, err
 	}
 
-	// Сохраняем первое системное сообщение субагента
-	if err := m.chatManager.SaveMessage(ctx, &domain.Message{
-		Model:   domain.NewModel(),
-		ChatID:  childChat.ID,
-		Role:    domain.MessageRoleSystem,
-		Content: subagentDef.GetSystemPrompt(),
-		Sender:  &subagentKey,
-	}); err != nil {
-		return nil, err
-	}
-
-	if err := m.chatManager.SaveMessage(ctx, &domain.Message{
-		Model:   domain.NewModel(),
-		ChatID:  childChat.ID,
-		Role:    domain.MessageRoleSystem,
-		Content: fmt.Sprintf("Task: %s", task),
-	}); err != nil {
-		return nil, err
-	}
-
 	return childChat, nil
 }
 
