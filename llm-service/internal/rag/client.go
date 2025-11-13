@@ -8,6 +8,7 @@ import (
 	"llm-service/internal/logger"
 	desc "llm-service/pkg/document"
 
+	"github.com/opentracing/opentracing-go"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/credentials/insecure"
 )
@@ -52,6 +53,9 @@ func (c *Client) SearchRelevantChunks(
 	limit int,
 	minScore float32,
 ) ([]string, error) {
+	span, ctx := opentracing.StartSpanFromContext(ctx, "client.rag.SearchRelevantChunks")
+	defer span.Finish()
+
 	if limit <= 0 {
 		limit = 5
 	}

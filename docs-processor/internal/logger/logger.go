@@ -31,7 +31,7 @@ func Init() {
 
 	// Добавляем базовые поля, которые будут в каждом логе
 	defaultFields := []zap.Field{
-		zap.String("service", "llm-agent"),
+		zap.String("service", "docs-processor"),
 		zap.String("env", os.Getenv("ENV")),
 	}
 

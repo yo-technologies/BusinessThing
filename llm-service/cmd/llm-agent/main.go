@@ -36,6 +36,8 @@ import (
 	"github.com/joho/godotenv"
 	"github.com/openai/openai-go/v3"
 	"github.com/openai/openai-go/v3/option"
+	"google.golang.org/grpc"
+	"google.golang.org/grpc/credentials/insecure"
 )
 
 func init() {
@@ -151,6 +153,16 @@ func Run() error {
 	}
 	jwtProvider := jwt.NewProvider(jwt.WithCredentials(jwt.NewSecretCredentials(jwtSecret)))
 
+	// Create gRPC client connection for WebSocket proxy to localhost gRPC server
+	grpcConn, err := grpc.NewClient(
+		fmt.Sprintf("localhost:%d", cfg.GetGRPCPort()),
+		grpc.WithTransportCredentials(insecure.NewCredentials()),
+	)
+	if err != nil {
+		return fmt.Errorf("failed to create gRPC client connection: %w", err)
+	}
+	defer grpcConn.Close()
+
 	app := app.New(
 		agentAPIService,
 		memoryAPIService,
@@ -159,6 +171,7 @@ func Run() error {
 		app.WithGrpcPort(cfg.GetGRPCPort()),
 		app.WithGatewayPort(cfg.GetHTTPPort()),
 		app.WithEnableGateway(cfg.GetHTTPEnabled()),
+		app.WithWSGrpcConn(grpcConn),
 	)
 
 	if err := app.Run(ctx); err != nil {

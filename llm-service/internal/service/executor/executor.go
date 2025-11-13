@@ -429,7 +429,16 @@ func (e *Executor) runAgentLoopStream(
 					Role:    domain.MessageRoleSystem,
 					Content: subagentSystemPrompt,
 				}
+				taskSystemMessage := &domain.Message{
+					Model:   domain.NewModel(),
+					ChatID:  currentChat.ID,
+					Role:    domain.MessageRoleSystem,
+					Content: fmt.Sprintf("Задача субагента: %s", task),
+				}
 				if err := e.chatManager.SaveMessage(ctx, systemMessage); err != nil {
+					return stream.SendError(err)
+				}
+				if err := e.chatManager.SaveMessage(ctx, taskSystemMessage); err != nil {
 					return stream.SendError(err)
 				}
 
