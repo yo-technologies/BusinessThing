@@ -71,19 +71,24 @@ type CoreService struct {
 	Address string `mapstructure:"address"`
 }
 
+type DocsProcessor struct {
+	Address string `mapstructure:"address"`
+}
+
 // Config holds all runtime-configurable settings
 type Config struct {
 	mu sync.RWMutex
 
-	ServiceName string      `mapstructure:"service_name"`
-	HTTP        HTTP        `mapstructure:"http"`
-	GRPC        GRPC        `mapstructure:"grpc"`
-	DB          DB          `mapstructure:"db"`
-	LLM         LLM         `mapstructure:"llm"`
-	Proxy       *Proxy      `mapstructure:"proxy"`
-	JWT         JWT         `mapstructure:"jwt"`
-	Jaeger      Jaeger      `mapstructure:"jaeger"`
-	CoreService CoreService `mapstructure:"core_service"`
+	ServiceName   string        `mapstructure:"service_name"`
+	HTTP          HTTP          `mapstructure:"http"`
+	GRPC          GRPC          `mapstructure:"grpc"`
+	DB            DB            `mapstructure:"db"`
+	LLM           LLM           `mapstructure:"llm"`
+	Proxy         *Proxy        `mapstructure:"proxy"`
+	JWT           JWT           `mapstructure:"jwt"`
+	Jaeger        Jaeger        `mapstructure:"jaeger"`
+	CoreService   CoreService   `mapstructure:"core_service"`
+	DocsProcessor DocsProcessor `mapstructure:"docs_processor"`
 }
 
 var (
@@ -145,6 +150,7 @@ func (c *Config) loadDefaults() {
 	viper.SetDefault("llm.token_limit", 500000)
 	viper.SetDefault("jwt.secret", "")
 	viper.SetDefault("core_service.address", "localhost:50051")
+	viper.SetDefault("docs_processor.address", "localhost:50052")
 }
 
 // reload reads the config file and updates all values
@@ -286,4 +292,11 @@ func (c *Config) GetCoreServiceAddress() string {
 	c.mu.RLock()
 	defer c.mu.RUnlock()
 	return c.CoreService.Address
+}
+
+// GetDocsProcessorAddress returns the Docs Processor address from config
+func (c *Config) GetDocsProcessorAddress() string {
+	c.mu.RLock()
+	defer c.mu.RUnlock()
+	return c.DocsProcessor.Address
 }

@@ -4,7 +4,7 @@ include:
     - jaeger/compose.yaml
     - rabbitmq/compose.yaml
     - opensearch/compose.yaml
-    - doc-processing/compose.yaml
+    - docs-processor/compose.yaml
 
 services:
     dozzle:
