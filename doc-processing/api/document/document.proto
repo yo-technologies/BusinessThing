@@ -1,0 +1,65 @@
+syntax = "proto3";
+
+package document;
+
+option go_package = "doc-processing/pkg/document";
+
+import "google/api/annotations.proto";
+import "protoc-gen-openapiv2/options/annotations.proto";
+
+option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_swagger) = {
+  info: {
+    title: "Document Processing API"
+    version: "1.0.0"
+    description: "API for Document Processing Service of BusinessThing"
+  };
+  consumes: "application/json"
+  produces: "application/json"
+  base_path: "/api"
+  schemes: HTTP
+  schemes: HTTPS
+};
+
+
+// DocumentService предоставляет API для поиска релевантных фрагментов документов
+service DocumentService {
+  // SearchChunks ищет релевантные фрагменты документов по запросу
+  rpc SearchChunks(SearchChunksRequest) returns (SearchChunksResponse) {
+    option (google.api.http) = {
+      post: "/v1/documents/search"
+      body: "*"
+    };
+  }
+}
+
+message SearchChunksRequest {
+  // query - текст запроса для поиска
+  string query = 1;
+  // organization_id - ID организации для фильтрации документов
+  string organization_id = 2;
+  // limit - максимальное количество результатов
+  int32 limit = 3;
+  // min_score - минимальный порог релевантности (0.0 - 1.0)
+  float min_score = 4;
+}
+
+message SearchChunksResponse {
+  repeated DocumentChunk chunks = 1;
+}
+
+message DocumentChunk {
+  // chunk_id - уникальный ID фрагмента
+  string chunk_id = 1;
+  // document_id - ID исходного документа
+  string document_id = 2;
+  // document_name - имя исходного документа
+  string document_name = 3;
+  // content - текстовое содержимое фрагмента
+  string content = 4;
+  // position - позиция фрагмента в документе
+  int32 position = 5;
+  // score - оценка релевантности (0.0 - 1.0)
+  float score = 6;
+  // metadata - дополнительные метаданные фрагмента
+  map<string, string> metadata = 7;
+}

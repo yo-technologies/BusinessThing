@@ -1,0 +1,21 @@
+services:
+  opensearch:
+    image: opensearchproject/opensearch:2
+    profiles: [dev, full]
+    container_name: opensearch
+    environment:
+      - discovery.type=single-node
+      - "OPENSEARCH_JAVA_OPTS=-Xms512m -Xmx512m"
+      - plugins.security.disabled=true
+    ports:
+      - "9200:9200"
+      - "9600:9600"
+    volumes:
+      - opensearch-data:/usr/share/opensearch/data
+    env_file:
+      - .env
+    restart: unless-stopped
+
+volumes:
+  opensearch-data:
+    name: opensearch-data

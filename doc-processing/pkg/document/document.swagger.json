@@ -1,0 +1,162 @@
+{
+  "swagger": "2.0",
+  "info": {
+    "title": "Document Processing API",
+    "description": "API for Document Processing Service of BusinessThing",
+    "version": "1.0.0"
+  },
+  "tags": [
+    {
+      "name": "DocumentService"
+    }
+  ],
+  "basePath": "/api",
+  "schemes": [
+    "http",
+    "https"
+  ],
+  "consumes": [
+    "application/json"
+  ],
+  "produces": [
+    "application/json"
+  ],
+  "paths": {
+    "/v1/documents/search": {
+      "post": {
+        "summary": "SearchChunks ищет релевантные фрагменты документов по запросу",
+        "operationId": "DocumentService_SearchChunks",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/documentSearchChunksResponse"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/rpcStatus"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/documentSearchChunksRequest"
+            }
+          }
+        ],
+        "tags": [
+          "DocumentService"
+        ]
+      }
+    }
+  },
+  "definitions": {
+    "documentDocumentChunk": {
+      "type": "object",
+      "properties": {
+        "chunkId": {
+          "type": "string",
+          "title": "chunk_id - уникальный ID фрагмента"
+        },
+        "documentId": {
+          "type": "string",
+          "title": "document_id - ID исходного документа"
+        },
+        "documentName": {
+          "type": "string",
+          "title": "document_name - имя исходного документа"
+        },
+        "content": {
+          "type": "string",
+          "title": "content - текстовое содержимое фрагмента"
+        },
+        "position": {
+          "type": "integer",
+          "format": "int32",
+          "title": "position - позиция фрагмента в документе"
+        },
+        "score": {
+          "type": "number",
+          "format": "float",
+          "title": "score - оценка релевантности (0.0 - 1.0)"
+        },
+        "metadata": {
+          "type": "object",
+          "additionalProperties": {
+            "type": "string"
+          },
+          "title": "metadata - дополнительные метаданные фрагмента"
+        }
+      }
+    },
+    "documentSearchChunksRequest": {
+      "type": "object",
+      "properties": {
+        "query": {
+          "type": "string",
+          "title": "query - текст запроса для поиска"
+        },
+        "organizationId": {
+          "type": "string",
+          "title": "organization_id - ID организации для фильтрации документов"
+        },
+        "limit": {
+          "type": "integer",
+          "format": "int32",
+          "title": "limit - максимальное количество результатов"
+        },
+        "minScore": {
+          "type": "number",
+          "format": "float",
+          "title": "min_score - минимальный порог релевантности (0.0 - 1.0)"
+        }
+      }
+    },
+    "documentSearchChunksResponse": {
+      "type": "object",
+      "properties": {
+        "chunks": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "$ref": "#/definitions/documentDocumentChunk"
+          }
+        }
+      }
+    },
+    "protobufAny": {
+      "type": "object",
+      "properties": {
+        "@type": {
+          "type": "string"
+        }
+      },
+      "additionalProperties": {}
+    },
+    "rpcStatus": {
+      "type": "object",
+      "properties": {
+        "code": {
+          "type": "integer",
+          "format": "int32"
+        },
+        "message": {
+          "type": "string"
+        },
+        "details": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "$ref": "#/definitions/protobufAny"
+          }
+        }
+      }
+    }
+  }
+}
