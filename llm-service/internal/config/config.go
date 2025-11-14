@@ -37,6 +37,8 @@ type LLM struct {
 	Model           string `mapstructure:"model"`
 	ReasoningEffort string `mapstructure:"reasoning_effort"`
 	TokenLimit      int    `mapstructure:"token_limit"`
+	// Специальные модели для конкретных задач
+	TitleGenerationModel string `mapstructure:"title_generation_model"`
 }
 
 type JWT struct {
@@ -276,6 +278,17 @@ func (c *Config) GetLLMTokenLimit() int {
 	c.mu.RLock()
 	defer c.mu.RUnlock()
 	return c.LLM.TokenLimit
+}
+
+// GetLLMTitleGenerationModel returns the model for title generation
+func (c *Config) GetLLMTitleGenerationModel() string {
+	c.mu.RLock()
+	defer c.mu.RUnlock()
+	// Fallback to main model if not specified
+	if c.LLM.TitleGenerationModel == "" {
+		return c.LLM.Model
+	}
+	return c.LLM.TitleGenerationModel
 }
 
 // GetJWTSecret returns the JWT secret from config

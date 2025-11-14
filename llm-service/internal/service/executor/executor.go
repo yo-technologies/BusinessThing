@@ -4,6 +4,7 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	"llm-service/internal/config"
 	"llm-service/internal/domain"
 	"llm-service/internal/domain/dto"
 	"llm-service/internal/llm"
@@ -27,6 +28,7 @@ type Executor struct {
 	toolExecutor    service.ToolExecutor
 	subagentManager service.SubagentManager
 	llmProvider     llm.CompletionProvider
+	cfg             *config.Config
 }
 
 // NewExecutor создает новый executor
@@ -37,6 +39,7 @@ func NewExecutor(
 	toolExecutor service.ToolExecutor,
 	subagentManager service.SubagentManager,
 	llmProvider llm.CompletionProvider,
+	cfg *config.Config,
 ) *Executor {
 	return &Executor{
 		chatManager:     chatManager,
@@ -45,6 +48,7 @@ func NewExecutor(
 		toolExecutor:    toolExecutor,
 		subagentManager: subagentManager,
 		llmProvider:     llmProvider,
+		cfg:             cfg,
 	}
 }
 
@@ -674,16 +678,21 @@ func (e *Executor) generateChatTitle(ctx context.Context, userMessage string) (s
 	span, ctx := opentracing.StartSpanFromContext(ctx, "executor.generateChatTitle")
 	defer span.Finish()
 
-	prompt := fmt.Sprintf("Сгенерируй краткое и ёмкое название для этого чата на основе первого сообщения пользователя. Название должно быть коротким, не более 50 символов. Сообщение: %s", userMessage)
+	prompt := "Сгенерируй краткое и ёмкое название для этого чата на основе первого сообщения пользователя. Название должно быть коротким, не более 50 символов. В ответе укажи только одно название без лишних символов"
+
+	// Используем специальную модель для генерации названий
+	titleModel := e.cfg.GetLLMTitleGenerationModel()
 
 	params := llm.ChatParams{
 		Messages: []llm.MessageParam{
-			{Role: llm.RoleUser, Content: prompt},
+			{Role: llm.RoleSystem, Content: prompt},
+			{Role: llm.RoleUser, Content: userMessage},
 		},
 		IncludeUsage: false,
+		Model:        &titleModel,
 	}
 
-	logger.Infof(ctx, "Generating chat title with prompt: %s", prompt)
+	logger.Infof(ctx, "Generating chat title with model: %s, prompt: %s", titleModel, prompt)
 
 	title, _, err := e.llmProvider.CreateCompletion(ctx, params)
 	if err != nil {

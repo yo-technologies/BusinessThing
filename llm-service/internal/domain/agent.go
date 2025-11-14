@@ -14,7 +14,7 @@ const (
 	ToolNameSwitchToSubagent ToolName = "switch_to_subagent"
 	ToolNameFinishSubagent   ToolName = "finish_subagent"
 	// Инструменты поиска
-	ToolNameWebSearch        ToolName = "web_search"
+	ToolNameWebSearch ToolName = "web_search"
 )
 
 var AllowedToolNames = []ToolName{

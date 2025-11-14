@@ -142,6 +142,7 @@ func Run() error {
 		toolExecutor,
 		subagentManager,
 		llmClient,
+		cfg,
 	)
 
 	// Create API services
