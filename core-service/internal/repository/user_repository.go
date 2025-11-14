@@ -18,21 +18,18 @@ func (r *PGXRepository) CreateUser(ctx context.Context, user domain.User) (domai
 
 	engine := r.engineFactory.Get(ctx)
 	query := `
-        INSERT INTO users (id, organization_id, email, telegram_id, first_name, last_name, role, status, created_at, updated_at)
-        VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10)
-        RETURNING id, organization_id, email, telegram_id, first_name, last_name, role, status, created_at, updated_at
+        INSERT INTO users (id, telegram_id, first_name, last_name, is_active, created_at, updated_at)
+        VALUES ($1, $2, $3, $4, $5, $6, $7)
+        RETURNING id, telegram_id, first_name, last_name, is_active, created_at, updated_at
     `
 
 	var created domain.User
 	err := pgxscan.Get(ctx, engine, &created, query,
 		uuidToPgtype(user.ID),
-		uuidToPgtype(user.OrganizationID),
-		user.Email,
 		user.TelegramID,
 		user.FirstName,
 		user.LastName,
-		user.Role,
-		user.Status,
+		user.IsActive,
 		user.CreatedAt,
 		user.UpdatedAt,
 	)
@@ -51,7 +48,7 @@ func (r *PGXRepository) GetUser(ctx context.Context, id domain.ID) (domain.User,
 
 	engine := r.engineFactory.Get(ctx)
 	query := `
-        SELECT id, organization_id, email, telegram_id, first_name, last_name, role, status, created_at, updated_at
+        SELECT id, telegram_id, first_name, last_name, is_active, created_at, updated_at
         FROM users
         WHERE id = $1
     `
@@ -76,7 +73,7 @@ func (r *PGXRepository) GetUserByTelegramID(ctx context.Context, telegramID stri
 
 	engine := r.engineFactory.Get(ctx)
 	query := `
-        SELECT id, organization_id, email, telegram_id, first_name, last_name, role, status, created_at, updated_at
+        SELECT id, telegram_id, first_name, last_name, is_active, created_at, updated_at
         FROM users
         WHERE telegram_id = $1
     `
@@ -102,7 +99,12 @@ func (r *PGXRepository) ListUsers(ctx context.Context, organizationID domain.ID,
 	engine := r.engineFactory.Get(ctx)
 
 	// Get total count
-	countQuery := `SELECT COUNT(*) FROM users WHERE organization_id = $1`
+	countQuery := `
+		SELECT COUNT(*) 
+		FROM users u
+		INNER JOIN organization_members om ON u.id = om.user_id
+		WHERE om.organization_id = $1
+	`
 	var total int
 	err := pgxscan.Get(ctx, engine, &total, countQuery, uuidToPgtype(organizationID))
 	if err != nil {
@@ -112,10 +114,11 @@ func (r *PGXRepository) ListUsers(ctx context.Context, organizationID domain.ID,
 
 	// Get users
 	query := `
-        SELECT id, organization_id, email, telegram_id, first_name, last_name, role, status, created_at, updated_at
-        FROM users
-        WHERE organization_id = $1
-        ORDER BY created_at DESC
+        SELECT u.id, u.telegram_id, u.first_name, u.last_name, u.is_active, u.created_at, u.updated_at
+        FROM users u
+        INNER JOIN organization_members om ON u.id = om.user_id
+        WHERE om.organization_id = $1
+        ORDER BY om.joined_at DESC
         LIMIT $2 OFFSET $3
     `
 
@@ -137,20 +140,18 @@ func (r *PGXRepository) UpdateUser(ctx context.Context, user domain.User) (domai
 	engine := r.engineFactory.Get(ctx)
 	query := `
         UPDATE users
-        SET email = $2, telegram_id = $3, first_name = $4, last_name = $5, role = $6, status = $7, updated_at = $8
+        SET telegram_id = $2, first_name = $3, last_name = $4, is_active = $5, updated_at = $6
         WHERE id = $1
-        RETURNING id, organization_id, email, telegram_id, first_name, last_name, role, status, created_at, updated_at
+        RETURNING id, telegram_id, first_name, last_name, is_active, created_at, updated_at
     `
 
 	var updated domain.User
 	err := pgxscan.Get(ctx, engine, &updated, query,
 		uuidToPgtype(user.ID),
-		user.Email,
 		user.TelegramID,
 		user.FirstName,
 		user.LastName,
-		user.Role,
-		user.Status,
+		user.IsActive,
 		user.UpdatedAt,
 	)
 	if err != nil {
@@ -164,13 +165,13 @@ func (r *PGXRepository) UpdateUser(ctx context.Context, user domain.User) (domai
 	return updated, nil
 }
 
-// UpdateUserRole updates a user's role
+// UpdateUserRole updates a user's role in an organization (deprecated - use UpdateOrganizationMemberRole)
 func (r *PGXRepository) UpdateUserRole(ctx context.Context, id domain.ID, role domain.UserRole) error {
 	span, ctx := opentracing.StartSpanFromContext(ctx, "repository.UpdateUserRole")
 	defer span.Finish()
 
 	engine := r.engineFactory.Get(ctx)
-	query := `UPDATE users SET role = $2, updated_at = NOW() WHERE id = $1`
+	query := `UPDATE organization_members SET role = $2, updated_at = NOW() WHERE user_id = $1`
 
 	tag, err := engine.Exec(ctx, query, uuidToPgtype(id), role)
 	if err != nil {
@@ -190,7 +191,7 @@ func (r *PGXRepository) DeactivateUser(ctx context.Context, id domain.ID) error 
 	defer span.Finish()
 
 	engine := r.engineFactory.Get(ctx)
-	query := `UPDATE users SET status = 'inactive', updated_at = NOW() WHERE id = $1`
+	query := `UPDATE users SET is_active = false, updated_at = NOW() WHERE id = $1`
 
 	tag, err := engine.Exec(ctx, query, uuidToPgtype(id))
 	if err != nil {
@@ -277,4 +278,115 @@ func (r *PGXRepository) MarkInvitationAsUsed(ctx context.Context, id domain.ID) 
 	}
 
 	return nil
+}
+
+// CreateOrganizationMember creates a new organization membership
+func (r *PGXRepository) CreateOrganizationMember(ctx context.Context, member domain.OrganizationMember) (domain.OrganizationMember, error) {
+	span, ctx := opentracing.StartSpanFromContext(ctx, "repository.CreateOrganizationMember")
+	defer span.Finish()
+
+	engine := r.engineFactory.Get(ctx)
+	query := `
+        INSERT INTO organization_members (id, organization_id, user_id, email, role, status, joined_at, updated_at)
+        VALUES ($1, $2, $3, $4, $5, $6, $7, $8)
+        RETURNING id, organization_id, user_id, email, role, status, joined_at, updated_at
+    `
+
+	var created domain.OrganizationMember
+	err := pgxscan.Get(ctx, engine, &created, query,
+		uuidToPgtype(member.ID),
+		uuidToPgtype(member.OrganizationID),
+		uuidToPgtype(member.UserID),
+		member.Email,
+		member.Role,
+		member.Status,
+		member.JoinedAt,
+		member.UpdatedAt,
+	)
+	if err != nil {
+		logger.Errorf(ctx, "failed to create organization member: %v", err)
+		return domain.OrganizationMember{}, err
+	}
+
+	return created, nil
+}
+
+// GetOrganizationMember retrieves a membership by user and organization
+func (r *PGXRepository) GetOrganizationMember(ctx context.Context, userID, organizationID domain.ID) (*domain.OrganizationMember, error) {
+	span, ctx := opentracing.StartSpanFromContext(ctx, "repository.GetOrganizationMember")
+	defer span.Finish()
+
+	engine := r.engineFactory.Get(ctx)
+	query := `
+        SELECT id, organization_id, user_id, email, role, status, joined_at, updated_at
+        FROM organization_members
+        WHERE user_id = $1 AND organization_id = $2
+    `
+
+	var member domain.OrganizationMember
+	err := pgxscan.Get(ctx, engine, &member, query, uuidToPgtype(userID), uuidToPgtype(organizationID))
+	if err != nil {
+		if errors.Is(err, pgx.ErrNoRows) {
+			return nil, domain.ErrNotFound
+		}
+		logger.Errorf(ctx, "failed to get organization member: %v", err)
+		return nil, err
+	}
+
+	return &member, nil
+}
+
+// UpdateOrganizationMember updates an organization membership
+func (r *PGXRepository) UpdateOrganizationMember(ctx context.Context, member domain.OrganizationMember) (domain.OrganizationMember, error) {
+	span, ctx := opentracing.StartSpanFromContext(ctx, "repository.UpdateOrganizationMember")
+	defer span.Finish()
+
+	engine := r.engineFactory.Get(ctx)
+	query := `
+        UPDATE organization_members
+        SET email = $2, role = $3, status = $4, updated_at = $5
+        WHERE id = $1
+        RETURNING id, organization_id, user_id, email, role, status, joined_at, updated_at
+    `
+
+	var updated domain.OrganizationMember
+	err := pgxscan.Get(ctx, engine, &updated, query,
+		uuidToPgtype(member.ID),
+		member.Email,
+		member.Role,
+		member.Status,
+		member.UpdatedAt,
+	)
+	if err != nil {
+		if errors.Is(err, pgx.ErrNoRows) {
+			return domain.OrganizationMember{}, domain.ErrNotFound
+		}
+		logger.Errorf(ctx, "failed to update organization member: %v", err)
+		return domain.OrganizationMember{}, err
+	}
+
+	return updated, nil
+}
+
+// ListOrganizationMembersByUser lists all organization memberships for a user
+func (r *PGXRepository) ListOrganizationMembersByUser(ctx context.Context, userID domain.ID) ([]*domain.OrganizationMember, error) {
+	span, ctx := opentracing.StartSpanFromContext(ctx, "repository.ListOrganizationMembersByUser")
+	defer span.Finish()
+
+	engine := r.engineFactory.Get(ctx)
+	query := `
+        SELECT id, organization_id, user_id, email, role, status, joined_at, updated_at
+        FROM organization_members
+        WHERE user_id = $1
+        ORDER BY joined_at DESC
+    `
+
+	var members []*domain.OrganizationMember
+	err := pgxscan.Select(ctx, engine, &members, query, uuidToPgtype(userID))
+	if err != nil {
+		logger.Errorf(ctx, "failed to list organization members by user: %v", err)
+		return nil, err
+	}
+
+	return members, nil
 }

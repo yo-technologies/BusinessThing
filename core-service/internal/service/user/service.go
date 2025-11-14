@@ -23,6 +23,9 @@ type repository interface {
 	CreateInvitation(ctx context.Context, invitation domain.Invitation) (domain.Invitation, error)
 	GetInvitationByToken(ctx context.Context, token string) (domain.Invitation, error)
 	MarkInvitationAsUsed(ctx context.Context, id domain.ID) error
+	CreateOrganizationMember(ctx context.Context, member domain.OrganizationMember) (domain.OrganizationMember, error)
+	GetOrganizationMember(ctx context.Context, userID, organizationID domain.ID) (*domain.OrganizationMember, error)
+	UpdateOrganizationMember(ctx context.Context, member domain.OrganizationMember) (domain.OrganizationMember, error)
 }
 
 type Service struct {
@@ -87,15 +90,15 @@ func (s *Service) AcceptInvitation(ctx context.Context, userID domain.ID, token 
 		return nil, err
 	}
 
-	// Check if user already has organization
-	if user.Status == domain.UserStatusActive && user.OrganizationID != (domain.ID{}) {
-		return nil, domain.NewInvalidArgumentError("user already belongs to an organization")
+	// Check if user already member of this organization
+	existingMember, err := s.repo.GetOrganizationMember(ctx, userID, invitation.OrganizationID)
+	if err == nil && existingMember != nil && existingMember.Status == domain.UserStatusActive {
+		return nil, domain.NewInvalidArgumentError("user is already a member of this organization")
 	}
 
-	// Join organization
-	user.JoinOrganization(invitation.OrganizationID, invitation.Email, invitation.Role)
-
-	updated, err := s.repo.UpdateUser(ctx, user)
+	// Create organization membership
+	member := domain.NewOrganizationMember(invitation.OrganizationID, userID, invitation.Email, invitation.Role)
+	_, err = s.repo.CreateOrganizationMember(ctx, member)
 	if err != nil {
 		return nil, err
 	}
@@ -106,8 +109,10 @@ func (s *Service) AcceptInvitation(ctx context.Context, userID domain.ID, token 
 		return nil, err
 	}
 
-	return &updated, nil
-} // ListUsers retrieves users for an organization
+	return &user, nil
+}
+
+// ListUsers retrieves users for an organization
 func (s *Service) ListUsers(ctx context.Context, organizationID domain.ID, page, pageSize int) ([]domain.User, int, error) {
 	span, ctx := opentracing.StartSpanFromContext(ctx, "service.user.ListUsers")
 	defer span.Finish()

@@ -16,6 +16,8 @@ type userRepository interface {
 	GetUser(ctx context.Context, id domain.ID) (domain.User, error)
 	CreateUser(ctx context.Context, user domain.User) (domain.User, error)
 	UpdateUser(ctx context.Context, user domain.User) (domain.User, error)
+	GetOrganizationMember(ctx context.Context, organizationID, userID domain.ID) (*domain.OrganizationMember, error)
+	ListOrganizationMembersByUser(ctx context.Context, userID domain.ID) ([]*domain.OrganizationMember, error)
 }
 
 // Service handles authentication flows.
@@ -45,7 +47,7 @@ func (s *Service) AuthenticateWithTelegram(ctx context.Context, initData string)
 	user, err := s.users.GetUserByTelegramID(ctx, telegramID)
 	if err != nil {
 		if errors.Is(err, domain.ErrNotFound) {
-			// Создаем нового пользователя со статусом pending
+			// Создаем нового пользователя
 			newUser := domain.NewUser(telegramID)
 			created, err := s.users.CreateUser(ctx, newUser)
 			if err != nil {
@@ -53,20 +55,39 @@ func (s *Service) AuthenticateWithTelegram(ctx context.Context, initData string)
 				return "", nil, false, err
 			}
 
-			// Для нового пользователя генерируем временный токен
-			token, err := s.jwt.GenerateAccessToken(ctx, created.ID, created.OrganizationID, created.Role)
-			if err != nil {
-				logger.Errorf(ctx, "failed to generate token for new user: %v", err)
-				return "", nil, false, err
-			}
-
-			return token, &created, true, nil
+			// Для нового пользователя не генерируем токен - он должен принять приглашение
+			return "", &created, true, nil
 		}
 		return "", nil, false, err
 	}
 
-	// Существующий пользователь
-	token, err := s.jwt.GenerateAccessToken(ctx, user.ID, user.OrganizationID, user.Role)
+	// Существующий пользователь - берем первую организацию из его memberships
+	memberships, err := s.users.ListOrganizationMembersByUser(ctx, user.ID)
+	if err != nil {
+		logger.Errorf(ctx, "failed to get user memberships: %v", err)
+		return "", nil, false, err
+	}
+
+	if len(memberships) == 0 {
+		// Пользователь существует но не состоит ни в одной организации
+		return "", &user, false, nil
+	}
+
+	// Генерируем токен для первой активной membership
+	var activeMembership *domain.OrganizationMember
+	for _, m := range memberships {
+		if m.Status == domain.UserStatusActive {
+			activeMembership = m
+			break
+		}
+	}
+
+	if activeMembership == nil {
+		// Нет активных membership
+		return "", &user, false, nil
+	}
+
+	token, err := s.jwt.GenerateAccessToken(ctx, user.ID, activeMembership.OrganizationID, activeMembership.Role)
 	if err != nil {
 		logger.Errorf(ctx, "failed to generate token: %v", err)
 		return "", nil, false, err
@@ -80,10 +101,6 @@ func (s *Service) CompleteRegistration(ctx context.Context, userID domain.ID, fi
 	user, err := s.users.GetUser(ctx, userID)
 	if err != nil {
 		return nil, domain.NewNotFoundError("user not found")
-	}
-
-	if user.Status != domain.UserStatusPending {
-		return nil, domain.NewInvalidArgumentError("user registration already completed")
 	}
 
 	user.CompleteProfile(firstName, lastName)
