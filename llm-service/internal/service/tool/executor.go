@@ -16,7 +16,7 @@ type Executor struct {
 	subagentManager  service.SubagentManager
 	websearchClient  service.WebSearchClient
 	orgMemoryService service.OrganizationMemoryService
-	// Здесь будут добавляться конкретные исполнители для каждого типа tools
+	mcpClient        service.MCPClient
 }
 
 // NewExecutor создает новый executor для инструментов
@@ -25,12 +25,14 @@ func NewExecutor(
 	subagentManager service.SubagentManager,
 	websearchClient service.WebSearchClient,
 	orgMemoryService service.OrganizationMemoryService,
+	mcpClient service.MCPClient,
 ) *Executor {
 	return &Executor{
 		agentManager:     agentManager,
 		subagentManager:  subagentManager,
 		websearchClient:  websearchClient,
 		orgMemoryService: orgMemoryService,
+		mcpClient:        mcpClient,
 	}
 }
 
@@ -48,6 +50,13 @@ func (e *Executor) Execute(
 	// Проверяем разрешения
 	if !e.CanExecute(toolName, execCtx.AgentKey) {
 		return nil, domain.NewForbiddenError(fmt.Sprintf("agent %s is not allowed to use tool %s", execCtx.AgentKey, toolName))
+	}
+
+	// Проверяем, является ли инструмент MCP инструментом
+	if domain.IsMCPTool(toolName) {
+		// Извлекаем имя инструмента без префикса
+		mcpToolName := domain.GetMCPToolName(toolName)
+		return e.executeMCPTool(ctx, mcpToolName, arguments)
 	}
 
 	// Роутинг по типу инструмента
@@ -213,6 +222,29 @@ func (e *Executor) executeSaveOrganizationNote(
 		"status":  "success",
 		"message": "Факт об организации успешно сохранён",
 		"fact_id": fact.ID.String(),
+	}
+
+	return result, nil
+}
+
+// executeMCPTool выполняет вызов MCP инструмента
+func (e *Executor) executeMCPTool(
+	ctx context.Context,
+	toolName string,
+	arguments map[string]interface{},
+) (interface{}, error) {
+	span, ctx := opentracing.StartSpanFromContext(ctx, "tool.Executor.executeMCPTool")
+	defer span.Finish()
+
+	// Проверяем, что MCP клиент доступен
+	if e.mcpClient == nil {
+		return nil, domain.NewInternalError("MCP client is not initialized", nil)
+	}
+
+	// Вызываем инструмент через MCP клиент
+	result, err := e.mcpClient.CallTool(ctx, toolName, arguments)
+	if err != nil {
+		return nil, err
 	}
 
 	return result, nil

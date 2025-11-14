@@ -1,17 +1,20 @@
 package agent
 
 import (
+	"context"
 	"fmt"
 	"llm-service/internal/domain"
+	"llm-service/internal/service"
 	"llm-service/internal/service/tool"
 	"sync"
 )
 
 // Manager - менеджер агентов, загружает определения из кодовых реестров
 type Manager struct {
-	mu     sync.RWMutex
-	agents map[string]*domain.AgentDefinition
-	tools  map[domain.ToolName]*domain.ToolDefinition
+	mu        sync.RWMutex
+	agents    map[string]*domain.AgentDefinition
+	tools     map[domain.ToolName]*domain.ToolDefinition
+	mcpClient service.MCPClient
 }
 
 // NewManager создает новый менеджер агентов
@@ -22,6 +25,38 @@ func NewManager() (*Manager, error) {
 	}
 
 	return m, nil
+}
+
+// SetMCPClient устанавливает MCP клиент для динамического получения инструментов
+func (m *Manager) SetMCPClient(ctx context.Context, mcpClient service.MCPClient) error {
+	m.mu.Lock()
+	m.mcpClient = mcpClient
+	m.mu.Unlock()
+
+	// Синхронизируем инструменты сразу после установки клиента
+	return m.syncMCPTools(ctx)
+}
+
+// syncMCPTools синхронизирует инструменты из MCP клиента
+func (m *Manager) syncMCPTools(ctx context.Context) error {
+	if m.mcpClient == nil {
+		return nil
+	}
+
+	mcpTools, err := m.mcpClient.GetTools(ctx)
+	if err != nil {
+		return fmt.Errorf("failed to get MCP tools: %w", err)
+	}
+
+	m.mu.Lock()
+	defer m.mu.Unlock()
+
+	// Добавляем MCP инструменты с префиксом
+	for _, mcpTool := range mcpTools {
+		m.tools[domain.ToolName(mcpTool.Name)] = mcpTool
+	}
+
+	return nil
 }
 
 // GetAgent получает определение агента по ключу
@@ -87,11 +122,16 @@ func (m *Manager) GetAgentTools(agentKey string) ([]*domain.ToolDefinition, erro
 	defer m.mu.RUnlock()
 
 	allowedToolNames := agent.GetAllowedToolNames()
-	tools := make([]*domain.ToolDefinition, 0, len(allowedToolNames))
+	tools := make([]*domain.ToolDefinition, 0)
 
-	for _, toolName := range allowedToolNames {
-		if tool, exists := m.tools[toolName]; exists {
-			tools = append(tools, tool)
+	// Проверяем каждый инструмент из реестра
+	for toolName, tool := range m.tools {
+		// Проверяем прямое совпадение или паттерн
+		for _, allowedPattern := range allowedToolNames {
+			if domain.MatchesToolPattern(string(toolName), string(allowedPattern)) {
+				tools = append(tools, tool)
+				break
+			}
 		}
 	}
 

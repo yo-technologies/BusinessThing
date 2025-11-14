@@ -14,6 +14,7 @@ import (
 	"time"
 
 	"github.com/opentracing/opentracing-go"
+	"github.com/samber/lo"
 )
 
 const (
@@ -140,28 +141,19 @@ func (e *Executor) SendMessageStream(ctx context.Context, req dto.SendMessageDTO
 		err  error
 	)
 	if req.ChatID == nil {
+		title, genErr := e.generateChatTitle(ctx, req.Content)
+		if genErr != nil {
+			logger.Errorf(ctx, "failed to generate chat title: %v", genErr)
+		}
 		chat, err = e.chatManager.CreateChat(ctx, dto.CreateChatDTO{
 			OrganizationID: req.OrgID,
 			UserID:         req.UserID,
 			AgentKey:       "main", // основной агент по умолчанию
-			Title:          "Новый чат",
+			Title:          lo.Ternary(title != "", title, "New Chat"),
 		})
 		if err != nil {
 			return stream.SendError(err)
 		}
-
-		innerCtx := context.WithoutCancel(ctx)
-		go func() {
-			title, genErr := e.generateChatTitle(innerCtx, req.Content)
-			if genErr != nil {
-				logger.Errorf(innerCtx, "failed to generate chat title: %v", genErr)
-			}
-			chat.Title = title
-			if updateErr := e.chatManager.UpdateChat(innerCtx, chat); updateErr == nil {
-				// Отправляем событие с новым названием на фронт
-				_ = stream.SendChat(chat)
-			}
-		}()
 
 		// Получаем агента и сохраняем system message с RAG
 		agentDef, err := e.agentManager.GetAgent("main")
@@ -641,15 +633,14 @@ func (e *Executor) buildLLMMessages(
 
 // buildLLMTools строит список инструментов для LLM
 func (e *Executor) buildLLMTools(agentDef *domain.AgentDefinition) ([]llm.ToolDefinition, error) {
-	toolNames := agentDef.GetAllowedToolNames()
-	tools := make([]llm.ToolDefinition, 0, len(toolNames))
+	// Используем GetAgentTools для правильной обработки паттернов (например, "ammo-crm-*")
+	agentTools, err := e.agentManager.GetAgentTools(agentDef.Key)
+	if err != nil {
+		return nil, err
+	}
 
-	for _, toolName := range toolNames {
-		toolDef, err := e.agentManager.GetTool(toolName)
-		if err != nil {
-			return nil, err
-		}
-
+	tools := make([]llm.ToolDefinition, 0, len(agentTools))
+	for _, toolDef := range agentTools {
 		tools = append(tools, toolDef.ToLLMObject())
 	}
 
