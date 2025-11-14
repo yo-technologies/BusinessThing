@@ -7,6 +7,7 @@ import (
 	"llm-service/internal/domain"
 	"llm-service/internal/domain/dto"
 	"llm-service/internal/llm"
+	"llm-service/internal/logger"
 	"llm-service/internal/service"
 	"strings"
 	"time"
@@ -139,11 +140,24 @@ func (e *Executor) SendMessageStream(ctx context.Context, req dto.SendMessageDTO
 			OrganizationID: req.OrgID,
 			UserID:         req.UserID,
 			AgentKey:       "main", // основной агент по умолчанию
-			Title:          req.Content,
+			Title:          "Новый чат",
 		})
 		if err != nil {
 			return stream.SendError(err)
 		}
+
+		innerCtx := context.WithoutCancel(ctx)
+		go func() {
+			title, genErr := e.generateChatTitle(innerCtx, req.Content)
+			if genErr != nil {
+				logger.Errorf(innerCtx, "failed to generate chat title: %v", genErr)
+			}
+			chat.Title = title
+			if updateErr := e.chatManager.UpdateChat(innerCtx, chat); updateErr == nil {
+				// Отправляем событие с новым названием на фронт
+				_ = stream.SendChat(chat)
+			}
+		}()
 
 		// Получаем агента и сохраняем system message с RAG
 		agentDef, err := e.agentManager.GetAgent("main")
@@ -215,7 +229,12 @@ func (e *Executor) SendMessageStream(ctx context.Context, req dto.SendMessageDTO
 	}
 
 	// Выполняем стриминг с активным чатом
-	return e.runAgentLoopStream(ctx, activeChat, agentDef, execCtx, stream)
+	err = e.runAgentLoopStream(ctx, activeChat, agentDef, execCtx, stream)
+	if err != nil {
+		return err
+	}
+
+	return nil
 }
 
 // getActiveChatID определяет ID активного чата (может быть субагент)
@@ -648,4 +667,36 @@ func (e *Executor) mapMessageRole(role domain.MessageRole) string {
 	default:
 		return llm.RoleUser
 	}
+}
+
+// generateChatTitle генерирует название чата на основе первого сообщения пользователя
+func (e *Executor) generateChatTitle(ctx context.Context, userMessage string) (string, error) {
+	span, ctx := opentracing.StartSpanFromContext(ctx, "executor.generateChatTitle")
+	defer span.Finish()
+
+	prompt := fmt.Sprintf("Сгенерируй краткое и ёмкое название для этого чата на основе первого сообщения пользователя. Название должно быть коротким, не более 50 символов. Сообщение: %s", userMessage)
+
+	params := llm.ChatParams{
+		Messages: []llm.MessageParam{
+			{Role: llm.RoleUser, Content: prompt},
+		},
+		IncludeUsage: false,
+	}
+
+	logger.Infof(ctx, "Generating chat title with prompt: %s", prompt)
+
+	title, _, err := e.llmProvider.CreateCompletion(ctx, params)
+	if err != nil {
+		return "", fmt.Errorf("failed to generate chat title: %w", err)
+	}
+
+	// Trim and limit length
+	title = strings.TrimSpace(title)
+	if len(title) > 50 {
+		title = title[:50]
+	}
+
+	logger.Infof(ctx, "Generated chat title: %s", title)
+
+	return title, nil
 }
