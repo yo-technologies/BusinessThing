@@ -2,6 +2,7 @@ package domain
 
 import (
 	"encoding/json"
+	"fmt"
 
 	"github.com/google/uuid"
 )
@@ -61,7 +62,7 @@ func (i *ID) UnmarshalJSON(data []byte) error {
 func ParseID(s string) (ID, error) {
 	id, err := uuid.Parse(s)
 	if err != nil {
-		return ID{}, err
+		return ID{}, fmt.Errorf("%w: %w", err, ErrInvalidArgument)
 	}
 	return ID(id), nil
 }
