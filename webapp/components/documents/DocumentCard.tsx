@@ -4,6 +4,8 @@ import { Image } from "@heroui/image";
 import { Button } from "@heroui/button";
 import { DocumentInfo } from "@/types/document";
 import { TrashIcon, DocumentIcon } from "@heroicons/react/24/outline";
+import { useState } from "react";
+import { Modal, ModalContent, ModalHeader, ModalBody, ModalFooter, useDisclosure } from "@heroui/modal"; // Assuming @heroui has a Modal component
 
 interface DocumentCardProps {
   documentInfo: DocumentInfo;
@@ -12,15 +14,34 @@ interface DocumentCardProps {
 }
 
 export const DocumentCard = ({ documentInfo, onDelete, isAdmin }: DocumentCardProps) => {
+  const { isOpen, onOpen, onOpenChange } = useDisclosure();
+  const [isDeleting, setIsDeleting] = useState(false);
+
   const getStatusColor = (status: DocumentInfo["status"]) => {
     switch (status) {
       case "indexed":
         return "success";
       case "processing":
-      case "error": // Treat error as warning for color
         return "warning";
+      case "error":
+        return "danger"
       default:
         return "default";
+    }
+  };
+
+  const handleDeleteClick = () => {
+    onOpen();
+  };
+
+  const handleConfirmDelete = () => {
+    if (onDelete) {
+      setIsDeleting(true);
+      onDelete(documentInfo.id);
+      // In a real app, you'd handle the actual deletion and then close the modal
+      // For now, we'll just close it after calling onDelete
+      onOpenChange();
+      setIsDeleting(false);
     }
   };
 
@@ -60,16 +81,38 @@ export const DocumentCard = ({ documentInfo, onDelete, isAdmin }: DocumentCardPr
             color="danger"
             variant="solid"
             size="sm"
-            onPress={() => onDelete(documentInfo.id)}
+            radius="full"
+            onPress={handleDeleteClick} // Open modal instead of direct delete
           >
             <TrashIcon className="w-4 h-4" />
           </Button>
         </div>
       )}
 
-      <CardFooter className="absolute bottom-0 left-0 right-0 px-4 pb-2 z-20 justify-between backdrop-blur-md bg-default/70">
+      <CardFooter className="absolute bottom-0 left-0 right-0 px-4 pb-2 z-20 justify-between backdrop-blur-md bg-default-200/70">
         <h4 className="font-bold text-large">{documentInfo.name}</h4>
       </CardFooter>
+
+      <Modal isOpen={isOpen} onOpenChange={onOpenChange}>
+        <ModalContent>
+          {(onClose) => (
+            <>
+              <ModalHeader className="flex flex-col gap-1">Вы уверены?</ModalHeader>
+              <ModalBody>
+                <p className="text-default-400">Вы уверены, что хотите удалить <b>{documentInfo.name}</b>? Это действие нельзя будет отменить.</p>
+              </ModalBody>
+              <ModalFooter>
+                <Button color="default" variant="light" onPress={onClose}>
+                  Отмена
+                </Button>
+                <Button color="danger" onPress={handleConfirmDelete} isLoading={isDeleting}>
+                  Удалить
+                </Button>
+              </ModalFooter>
+            </>
+          )}
+        </ModalContent>
+      </Modal>
     </Card>
   );
 };

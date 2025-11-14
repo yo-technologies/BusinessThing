@@ -19,25 +19,25 @@ import { clsx } from "clsx";
 const navigationItems = [
   {
     href: "/chat",
-    label: "Chat",
+    label: "Чат",
     Icon: ChatBubbleOvalLeftEllipsisIcon,
     SolidIcon: SolidChatBubbleIcon,
   },
   {
     href: "/documents",
-    label: "Documents",
+    label: "База знаний",
     Icon: DocumentTextIcon,
     SolidIcon: SolidDocumentTextIcon,
   },
   {
     href: "/generator",
-    label: "Generator",
+    label: "Генератор",
     Icon: DocumentDuplicateIcon,
     SolidIcon: SolidDocumentDuplicateIcon,
   },
   {
     href: "/management",
-    label: "Management",
+    label: "Управление",
     Icon: Cog6ToothIcon,
     SolidIcon: SolidCog6ToothIcon,
     adminOnly: true, // We can use this later for role-based rendering

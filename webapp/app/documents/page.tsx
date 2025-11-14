@@ -5,6 +5,7 @@ import { DocumentCard } from "@/components/documents/DocumentCard";
 import { DocumentInfo } from "@/types/document";
 import { Button } from "@heroui/button";
 import { PlusIcon } from "@heroicons/react/24/outline";
+import { useAuth } from "@/hooks/useAuth"; // Import useAuth hook
 
 export default function DocumentsPage() {
   const [documents, setDocuments] = useState<DocumentInfo[]>([
@@ -38,23 +39,21 @@ export default function DocumentsPage() {
     },
   ]);
 
+  const { isAdmin, loading } = useAuth(); // Use the useAuth hook
+
   const handleDelete = (id: string) => {
     console.log(`Deleting document with ID: ${id}`);
     setDocuments((prevDocs) => prevDocs.filter((doc) => doc.id !== id));
   };
 
-  // For now, we'll assume isAdmin is true for demonstration purposes
-  const isAdmin = true;
+  if (loading) {
+    return <div>Loading authentication...</div>; // Or a spinner
+  }
+  console.log(isAdmin)
 
   return (
     <div className="p-4">
-      <h1 className="text-3xl font-bold mb-4">Documents</h1>
-
-      <div className="flex justify-end mb-4 w-full">
-        <Button size="sm" startContent={<PlusIcon className="w-5 h-5" />} className="w-full">
-          Upload Document
-        </Button>
-      </div>
+      <h1 className="text-3xl font-bold mb-4">База знаний</h1> {/* Renamed title */}
 
       <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
         {documents.map((doc) => (
@@ -66,6 +65,14 @@ export default function DocumentsPage() {
           />
         ))}
       </div>
+
+      {isAdmin && ( // Conditionally render upload button for admin
+        <div className="fixed bottom-20 right-6 z-40"> {/* Fixed position, bottom-right */}
+          <Button isIconOnly color="primary" size="lg" radius="full" className="w-16 h-16 md:w-20 sm:h-20 ring-2 ring-white">
+            <PlusIcon className="w-7 h-7" />
+          </Button>
+        </div>
+      )}
     </div>
   );
 }
