@@ -14,6 +14,7 @@ import (
 type Executor struct {
 	agentManager    service.AgentManager
 	subagentManager service.SubagentManager
+	websearchClient service.WebSearchClient
 	// Здесь будут добавляться конкретные исполнители для каждого типа tools
 }
 
@@ -21,10 +22,12 @@ type Executor struct {
 func NewExecutor(
 	agentManager service.AgentManager,
 	subagentManager service.SubagentManager,
+	websearchClient service.WebSearchClient,
 ) *Executor {
 	return &Executor{
 		agentManager:    agentManager,
 		subagentManager: subagentManager,
+		websearchClient: websearchClient,
 	}
 }
 
@@ -46,6 +49,8 @@ func (e *Executor) Execute(
 
 	// Роутинг по типу инструмента
 	switch domain.ToolName(toolName) {
+	case domain.ToolNameWebSearch:
+		return e.executeWebSearch(ctx, arguments)
 	case domain.ToolNameSwitchToSubagent:
 		return e.executeSwitchToSubagent(ctx, arguments, execCtx, toolCallID)
 	case domain.ToolNameFinishSubagent:
@@ -147,4 +152,32 @@ func MarshalToolResult(result interface{}) (json.RawMessage, error) {
 		return nil, domain.NewInternalError("failed to marshal tool result", err)
 	}
 	return data, nil
+}
+
+// executeWebSearch выполняет веб-поиск
+func (e *Executor) executeWebSearch(
+	ctx context.Context,
+	arguments map[string]interface{},
+) (interface{}, error) {
+	span, ctx := opentracing.StartSpanFromContext(ctx, "tool.Executor.executeWebSearch")
+	defer span.Finish()
+
+	// Парсим аргументы
+	query, ok := arguments["query"].(string)
+	if !ok || query == "" {
+		return nil, domain.NewInvalidArgumentError("query is required and must be a non-empty string")
+	}
+
+	maxResults := 5 // default
+	if mr, ok := arguments["max_results"].(float64); ok {
+		maxResults = int(mr)
+	}
+
+	// Выполняем поиск
+	searchResult, err := e.websearchClient.Search(ctx, query, maxResults)
+	if err != nil {
+		return nil, err
+	}
+
+	return searchResult, nil
 }

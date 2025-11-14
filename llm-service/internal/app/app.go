@@ -15,6 +15,7 @@ import (
 	"llm-service/internal/app/interceptors"
 	"llm-service/internal/app/llm-agent/api/agent"
 	"llm-service/internal/app/llm-agent/api/memory"
+	"llm-service/internal/app/websocket"
 	"llm-service/internal/jwt"
 	"llm-service/internal/logger"
 	desc "llm-service/pkg/agent"
@@ -38,6 +39,7 @@ type Options struct {
 	swaggerFile      []byte
 	bypassCors       bool
 	jwtProvider      *jwt.Provider
+	wsGrpcConn       *grpc.ClientConn
 }
 
 var defaultOptions = &Options{
@@ -89,6 +91,12 @@ func WithHTTPPathPrefix(httpPathPrefix string) OptionsFunc {
 func WithBypassCors(bypassCors bool) OptionsFunc {
 	return func(o *Options) {
 		o.bypassCors = bypassCors
+	}
+}
+
+func WithWSGrpcConn(conn *grpc.ClientConn) OptionsFunc {
+	return func(o *Options) {
+		o.wsGrpcConn = conn
 	}
 }
 
@@ -180,8 +188,11 @@ func (a *App) Run(ctx context.Context) error {
 	// Create swagger ui
 	httpMux := chi.NewRouter()
 
-	// WebSocket endpoint для будущей реализации
-	// httpMux.HandleFunc("/ws/v1/chat", wsHandler.HandleChatStream)
+	// WebSocket endpoint для стриминга сообщений
+	if a.options.wsGrpcConn != nil {
+		wsHandler := websocket.NewChatHandler(a.options.wsGrpcConn, a.jwtProvider)
+		httpMux.HandleFunc("/ws/chat", wsHandler.HandleChatStream)
+	}
 
 	httpMux.HandleFunc("/swagger", func(w http.ResponseWriter, request *http.Request) {
 		logger.Info(request.Context(), "serving swagger file")

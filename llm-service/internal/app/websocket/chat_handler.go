@@ -2,13 +2,17 @@ package websocket
 
 import (
 	"encoding/json"
+	"io"
 	"net/http"
 
 	"llm-service/internal/jwt"
 	"llm-service/internal/logger"
+	desc "llm-service/pkg/agent"
 
 	"github.com/gorilla/websocket"
 	"google.golang.org/grpc"
+	"google.golang.org/grpc/metadata"
+	"google.golang.org/protobuf/encoding/protojson"
 )
 
 const (
@@ -55,6 +59,7 @@ func (h *ChatHandler) HandleChatStream(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	// Upgrade to WebSocket
 	conn, err := upgrader.Upgrade(w, r, nil)
 	if err != nil {
 		logger.Errorf(ctx, "Failed to upgrade connection: %v", err)
@@ -62,7 +67,94 @@ func (h *ChatHandler) HandleChatStream(w http.ResponseWriter, r *http.Request) {
 	}
 	defer conn.Close()
 
-	// Send close message
+	// Create gRPC client with authorization metadata
+	md := metadata.Pairs("authorization", token)
+	grpcCtx := metadata.NewOutgoingContext(ctx, md)
+
+	// Create gRPC stream
+	client := desc.NewAgentServiceClient(h.grpcConn)
+	stream, err := client.StreamMessage(grpcCtx)
+	if err != nil {
+		logger.Errorf(ctx, "Failed to create gRPC stream: %v", err)
+		h.sendError(conn, "Failed to establish connection")
+		return
+	}
+	defer stream.CloseSend()
+
+	// Channel for coordinating goroutines
+	done := make(chan struct{})
+	errCh := make(chan error, 2)
+
+	// Goroutine для чтения из WebSocket и отправки в gRPC
+	go func() {
+		defer close(done)
+		for {
+			_, msgBytes, err := conn.ReadMessage()
+			if err != nil {
+				if websocket.IsUnexpectedCloseError(err, websocket.CloseGoingAway, websocket.CloseNormalClosure) {
+					logger.Errorf(ctx, "WebSocket read error: %v", err)
+					errCh <- err
+				}
+				return
+			}
+
+			// Десериализуем JSON в proto message используя protojson
+			var req desc.StreamMessageRequest
+			if err := protojson.Unmarshal(msgBytes, &req); err != nil {
+				logger.Errorf(ctx, "Failed to unmarshal request: %v", err)
+				h.sendError(conn, "Invalid message format")
+				continue
+			}
+
+			// Отправляем в gRPC stream
+			if err := stream.Send(&req); err != nil {
+				logger.Errorf(ctx, "Failed to send to gRPC stream: %v", err)
+				errCh <- err
+				return
+			}
+		}
+	}()
+
+	// Goroutine для чтения из gRPC и отправки в WebSocket
+	go func() {
+		for {
+			resp, err := stream.Recv()
+			if err == io.EOF {
+				// Стрим закрыт сервером
+				return
+			}
+			if err != nil {
+				logger.Errorf(ctx, "Failed to receive from gRPC stream: %v", err)
+				errCh <- err
+				return
+			}
+
+			// Сериализуем proto message в JSON используя protojson
+			respBytes, err := protojson.Marshal(resp)
+			if err != nil {
+				logger.Errorf(ctx, "Failed to marshal response: %v", err)
+				continue
+			}
+
+			// Отправляем в WebSocket
+			if err := conn.WriteMessage(websocket.TextMessage, respBytes); err != nil {
+				logger.Errorf(ctx, "Failed to write to WebSocket: %v", err)
+				errCh <- err
+				return
+			}
+		}
+	}()
+
+	// Ждем завершения или ошибки
+	select {
+	case <-done:
+		logger.Info(ctx, "WebSocket connection closed by client")
+	case err := <-errCh:
+		logger.Errorf(ctx, "Connection error: %v", err)
+	case <-ctx.Done():
+		logger.Info(ctx, "Context cancelled")
+	}
+
 	conn.WriteMessage(websocket.CloseMessage, websocket.FormatCloseMessage(websocket.CloseNormalClosure, ""))
 	logger.Info(ctx, "Closing WebSocket connection")
 }

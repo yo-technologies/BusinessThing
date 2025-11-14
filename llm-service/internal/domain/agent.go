@@ -13,9 +13,13 @@ const (
 	// Системные инструменты
 	ToolNameSwitchToSubagent ToolName = "switch_to_subagent"
 	ToolNameFinishSubagent   ToolName = "finish_subagent"
+	// Инструменты поиска
+	ToolNameWebSearch        ToolName = "web_search"
 )
 
-var AllowedToolNames = []ToolName{}
+var AllowedToolNames = []ToolName{
+	ToolNameWebSearch,
+}
 
 // AgentDefinition - декларативное определение агента из конфигурации
 type AgentDefinition struct {

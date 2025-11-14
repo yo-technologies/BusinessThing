@@ -5,6 +5,22 @@ import "llm-service/internal/domain"
 // GetToolsRegistry возвращает реестр всех доступных инструментов
 func GetToolsRegistry() map[domain.ToolName]*domain.ToolDefinition {
 	return map[domain.ToolName]*domain.ToolDefinition{
+		// Инструменты поиска
+		domain.ToolNameWebSearch: {
+			Name:        string(domain.ToolNameWebSearch),
+			Description: "Выполнить веб-поиск для получения актуальной информации из интернета",
+			Parameters: map[string]interface{}{
+				"query": map[string]interface{}{
+					"type":        "string",
+					"description": "Поисковый запрос для поиска информации в интернете",
+				},
+				"max_results": map[string]interface{}{
+					"type":        "integer",
+					"description": "Максимальное количество результатов (по умолчанию 5)",
+				},
+			},
+			Required: []string{"query"},
+		},
 		// Системные инструменты
 		domain.ToolNameSwitchToSubagent: {
 			Name:        string(domain.ToolNameSwitchToSubagent),

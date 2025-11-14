@@ -48,7 +48,7 @@ func (b *Builder) EnrichWithRAG(
 		return []string{}, nil
 	}
 
-	chunks, err := b.ragClient.SearchRelevantChunks(ctx, organizationID, query, limit, 0.5)
+	chunks, err := b.ragClient.SearchRelevantChunks(ctx, organizationID, query, limit, 0.9)
 	if err != nil {
 		return nil, err
 	}

@@ -17,7 +17,7 @@ var MainAgent = &domain.AgentDefinition{
 
 СТИЛЬ РЕЧИ:
 Говори живо и просто, по‑пацански. КРАЙНЕ ЧАСТО используй слово "брат". Используй искренние, прямые фразы, не усложняй. Подчёркивай дружбу, братство, уличный слог. Темы — про жизнь на районе, машины, мечты, боль и любовь. Стиль эмоциональный, с долей самоиронии и ноткой гордости. Общайся как с другом, не как с аудиторией.`,
-	AllowedTools:     []domain.ToolName{},
+	AllowedTools:     []domain.ToolName{domain.ToolNameWebSearch},
 	CanCallSubagents: true,
 	IsSubagent:       false,
 }
@@ -45,7 +45,7 @@ var MarketingAgent = &domain.AgentDefinition{
 Проработка оффера и сценариев воронки продаж.
 Оптимизация рекламных кампаний и каналов трафика.
 Анализ конкурентов и трендов.`,
-	AllowedTools:     []domain.ToolName{},
+	AllowedTools:     []domain.ToolName{domain.ToolNameWebSearch},
 	CanCallSubagents: false,
 	IsSubagent:       true,
 }
@@ -77,7 +77,7 @@ var LegalAgent = &domain.AgentDefinition{
 Консультирование по регистрации, лицензированию и корпоративной структуре.
 Разбор правовых споров, претензий, ответственности и способов защиты интересов.
 Формирование правовых заключений и аргументации для переговоров.`,
-	AllowedTools:     []domain.ToolName{},
+	AllowedTools:     []domain.ToolName{domain.ToolNameWebSearch},
 	CanCallSubagents: false,
 	IsSubagent:       true,
 }
@@ -117,7 +117,7 @@ var FinancialAgent = &domain.AgentDefinition{
 Определение оптимального распределения бюджета.
 Подготовка финансовой модели стартапа.
 Оценка ликвидности, долговой нагрузки и запаса прочности бизнеса.`,
-	AllowedTools:     []domain.ToolName{},
+	AllowedTools:     []domain.ToolName{domain.ToolNameWebSearch},
 	CanCallSubagents: false,
 	IsSubagent:       true,
 }

@@ -31,11 +31,14 @@ import (
 	"llm-service/internal/service/subagent"
 	"llm-service/internal/service/tool"
 	"llm-service/internal/tracer"
+	"llm-service/internal/websearch"
 
 	"github.com/jackc/pgx/v5/pgxpool"
 	"github.com/joho/godotenv"
 	"github.com/openai/openai-go/v3"
 	"github.com/openai/openai-go/v3/option"
+	"google.golang.org/grpc"
+	"google.golang.org/grpc/credentials/insecure"
 )
 
 func init() {
@@ -121,8 +124,15 @@ func Run() error {
 	// Initialize subagent manager
 	subagentManager := subagent.NewManager(chatManager, agentManager)
 
+	// Initialize Tavily web search client
+	tavilyAPIKey := cfg.GetTavilyAPIKey()
+	if tavilyAPIKey == "" {
+		logger.Warn(ctx, "Tavily API key not set, web search will not be available")
+	}
+	tavilyClient := websearch.NewTavilyClient(tavilyAPIKey)
+
 	// Initialize tool executor
-	toolExecutor := tool.NewExecutor(agentManager, subagentManager)
+	toolExecutor := tool.NewExecutor(agentManager, subagentManager, tavilyClient)
 
 	// Initialize agent executor
 	agentExecutor := executor.NewExecutor(
@@ -151,6 +161,16 @@ func Run() error {
 	}
 	jwtProvider := jwt.NewProvider(jwt.WithCredentials(jwt.NewSecretCredentials(jwtSecret)))
 
+	// Create gRPC client connection for WebSocket proxy to localhost gRPC server
+	grpcConn, err := grpc.NewClient(
+		fmt.Sprintf("localhost:%d", cfg.GetGRPCPort()),
+		grpc.WithTransportCredentials(insecure.NewCredentials()),
+	)
+	if err != nil {
+		return fmt.Errorf("failed to create gRPC client connection: %w", err)
+	}
+	defer grpcConn.Close()
+
 	app := app.New(
 		agentAPIService,
 		memoryAPIService,
@@ -159,6 +179,7 @@ func Run() error {
 		app.WithGrpcPort(cfg.GetGRPCPort()),
 		app.WithGatewayPort(cfg.GetHTTPPort()),
 		app.WithEnableGateway(cfg.GetHTTPEnabled()),
+		app.WithWSGrpcConn(grpcConn),
 	)
 
 	if err := app.Run(ctx); err != nil {
