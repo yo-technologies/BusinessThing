@@ -18,8 +18,8 @@ services:
         read_only: true
       - /etc/localtime:/etc/localtime:ro
     depends_on:
-      - rabbitmq
-      - opensearch
+      opensearch:
+        condition: service_healthy
 
   worker:
     container_name: docs-processor-worker
@@ -37,5 +37,7 @@ services:
         read_only: true
       - /etc/localtime:/etc/localtime:ro
     depends_on:
-      - rabbitmq
-      - opensearch
+      rabbitmq:
+        condition: service_healthy
+      opensearch:
+        condition: service_healthy
