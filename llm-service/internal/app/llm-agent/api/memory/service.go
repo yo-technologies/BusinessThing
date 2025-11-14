@@ -8,20 +8,20 @@ import (
 	desc "llm-service/pkg/agent"
 )
 
-type MemoryService interface {
-	ListFacts(ctx context.Context, userID domain.ID) ([]domain.UserMemoryFact, error)
-	AddFact(ctx context.Context, userID domain.ID, content string) (domain.UserMemoryFact, error)
-	DeleteFact(ctx context.Context, userID domain.ID, factID domain.ID) error
+type OrganizationMemoryService interface {
+	ListFacts(ctx context.Context, organizationID domain.ID) ([]domain.OrganizationMemoryFact, error)
+	AddFact(ctx context.Context, organizationID domain.ID, content string) (domain.OrganizationMemoryFact, error)
+	DeleteFact(ctx context.Context, organizationID domain.ID, factID domain.ID) error
 }
 
 type Service struct {
-	memoryService MemoryService
+	orgMemoryService OrganizationMemoryService
 
 	desc.UnimplementedMemoryServiceServer
 }
 
-func NewService(memoryService MemoryService) *Service {
+func NewService(orgMemoryService OrganizationMemoryService) *Service {
 	return &Service{
-		memoryService: memoryService,
+		orgMemoryService: orgMemoryService,
 	}
 }

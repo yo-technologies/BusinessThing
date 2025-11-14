@@ -7,8 +7,8 @@ import (
 	"google.golang.org/protobuf/types/known/timestamppb"
 )
 
-// DomainMemoryFactToProto конвертирует domain.UserMemoryFact в proto MemoryFact
-func DomainMemoryFactToProto(fact *domain.UserMemoryFact) *pb.MemoryFact {
+// DomainOrganizationMemoryFactToProto конвертирует domain.OrganizationMemoryFact в proto MemoryFact
+func DomainOrganizationMemoryFactToProto(fact *domain.OrganizationMemoryFact) *pb.MemoryFact {
 	if fact == nil {
 		return nil
 	}

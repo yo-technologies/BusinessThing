@@ -4,37 +4,26 @@ import (
 	"context"
 	"llm-service/internal/domain"
 	"llm-service/internal/rag"
+	"strings"
 )
 
 // Builder - построитель контекста для LLM
 type Builder struct {
-	ragClient *rag.Client
+	ragClient        *rag.Client
+	orgMemoryService OrganizationMemoryService
+}
+
+// OrganizationMemoryService - интерфейс для работы с фактами об организации
+type OrganizationMemoryService interface {
+	ListFacts(ctx context.Context, organizationID domain.ID) ([]domain.OrganizationMemoryFact, error)
 }
 
 // NewBuilder создает новый builder контекста
-func NewBuilder(ragClient *rag.Client) *Builder {
+func NewBuilder(ragClient *rag.Client, orgMemoryService OrganizationMemoryService) *Builder {
 	return &Builder{
-		ragClient: ragClient,
+		ragClient:        ragClient,
+		orgMemoryService: orgMemoryService,
 	}
-}
-
-// BuildContext строит контекст для агента на основе истории чата и дополнительных данных
-func (b *Builder) BuildContext(
-	ctx context.Context,
-	chat *domain.Chat,
-	messages []*domain.Message,
-) ([]interface{}, error) {
-	// TODO: Реализовать построение контекста
-	// 1. Базовая история сообщений
-	// 2. Обогащение через RAG
-	// 3. Добавление фактов из памяти
-
-	context := make([]interface{}, 0)
-
-	// Пока просто возвращаем пустой контекст
-	// Логика будет добавлена при интеграции с vector search и memory service
-
-	return context, nil
 }
 
 // EnrichWithRAG обогащает контекст данными из RAG (векторный поиск)
@@ -43,30 +32,48 @@ func (b *Builder) EnrichWithRAG(
 	organizationID domain.ID,
 	query string,
 	limit int,
-) ([]string, error) {
+) (string, error) {
 	if b.ragClient == nil {
-		return []string{}, nil
+		return "", nil
 	}
 
-	chunks, err := b.ragClient.SearchRelevantChunks(ctx, organizationID, query, limit, 0.9)
+	chunks, err := b.ragClient.SearchRelevantChunks(ctx, organizationID, query, limit, 1.0)
 	if err != nil {
-		return nil, err
+		return "", err
 	}
 
-	return chunks, nil
+	var result strings.Builder
+	result.WriteString("Релевантные фрагменты документов:\n")
+	for _, chunk := range chunks {
+		result.WriteString("- ")
+		result.WriteString(chunk)
+		result.WriteString("\n")
+	}
+
+	return result.String(), nil
 }
 
-// EnrichWithMemoryFacts добавляет факты из памяти пользователя
-func (b *Builder) EnrichWithMemoryFacts(
+// EnrichWithOrganizationFacts добавляет факты об организации в контекст
+func (b *Builder) EnrichWithOrganizationFacts(
 	ctx context.Context,
-	userID domain.ID,
-) ([]string, error) {
-	// TODO: Реализовать получение фактов из memory service
-	// 1. Запросить факты пользователя
-	// 2. Форматировать для включения в system prompt
+	organizationID domain.ID,
+) (string, error) {
+	if b.orgMemoryService == nil {
+		return "", nil
+	}
 
-	// Заглушка
-	facts := make([]string, 0)
+	facts, err := b.orgMemoryService.ListFacts(ctx, organizationID)
+	if err != nil {
+		return "", err
+	}
 
-	return facts, nil
+	var result strings.Builder
+	result.WriteString("Факты об организации:\n")
+	for _, fact := range facts {
+		result.WriteString("- ")
+		result.WriteString(fact.Content)
+		result.WriteString("\n")
+	}
+
+	return result.String(), nil
 }

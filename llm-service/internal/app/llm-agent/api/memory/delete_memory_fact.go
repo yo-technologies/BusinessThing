@@ -3,7 +3,6 @@ package memory
 import (
 	"context"
 
-	"llm-service/internal/app/interceptors"
 	"llm-service/internal/domain"
 	desc "llm-service/pkg/agent"
 
@@ -15,7 +14,7 @@ func (s *Service) DeleteMemoryFact(ctx context.Context, req *desc.DeleteMemoryFa
 	span, ctx := opentracing.StartSpanFromContext(ctx, "api.chat.DeleteMemoryFact")
 	defer span.Finish()
 
-	userID, err := interceptors.UserIDFromContext(ctx)
+	organizationID, err := domain.ParseID(req.GetOrgId())
 	if err != nil {
 		return nil, err
 	}
@@ -25,7 +24,7 @@ func (s *Service) DeleteMemoryFact(ctx context.Context, req *desc.DeleteMemoryFa
 		return nil, err
 	}
 
-	if err := s.memoryService.DeleteFact(ctx, userID, fid); err != nil {
+	if err := s.orgMemoryService.DeleteFact(ctx, organizationID, fid); err != nil {
 		return nil, err
 	}
 

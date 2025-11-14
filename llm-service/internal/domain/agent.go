@@ -15,10 +15,13 @@ const (
 	ToolNameFinishSubagent   ToolName = "finish_subagent"
 	// Инструменты поиска
 	ToolNameWebSearch ToolName = "web_search"
+	// Инструменты памяти
+	ToolNameSaveOrganizationNote ToolName = "save_organization_note"
 )
 
 var AllowedToolNames = []ToolName{
 	ToolNameWebSearch,
+	ToolNameSaveOrganizationNote,
 }
 
 // AgentDefinition - декларативное определение агента из конфигурации

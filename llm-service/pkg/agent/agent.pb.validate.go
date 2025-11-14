@@ -2989,6 +2989,119 @@ var _ interface {
 	ErrorName() string
 } = MemoryFactValidationError{}
 
+// Validate checks the field values on ListMemoryFactsRequest with the rules
+// defined in the proto definition for this message. If any rules are
+// violated, the first error encountered is returned, or nil if there are no violations.
+func (m *ListMemoryFactsRequest) Validate() error {
+	return m.validate(false)
+}
+
+// ValidateAll checks the field values on ListMemoryFactsRequest with the rules
+// defined in the proto definition for this message. If any rules are
+// violated, the result is a list of violation errors wrapped in
+// ListMemoryFactsRequestMultiError, or nil if none found.
+func (m *ListMemoryFactsRequest) ValidateAll() error {
+	return m.validate(true)
+}
+
+func (m *ListMemoryFactsRequest) validate(all bool) error {
+	if m == nil {
+		return nil
+	}
+
+	var errors []error
+
+	if utf8.RuneCountInString(m.GetOrgId()) < 1 {
+		err := ListMemoryFactsRequestValidationError{
+			field:  "OrgId",
+			reason: "value length must be at least 1 runes",
+		}
+		if !all {
+			return err
+		}
+		errors = append(errors, err)
+	}
+
+	if len(errors) > 0 {
+		return ListMemoryFactsRequestMultiError(errors)
+	}
+
+	return nil
+}
+
+// ListMemoryFactsRequestMultiError is an error wrapping multiple validation
+// errors returned by ListMemoryFactsRequest.ValidateAll() if the designated
+// constraints aren't met.
+type ListMemoryFactsRequestMultiError []error
+
+// Error returns a concatenation of all the error messages it wraps.
+func (m ListMemoryFactsRequestMultiError) Error() string {
+	msgs := make([]string, 0, len(m))
+	for _, err := range m {
+		msgs = append(msgs, err.Error())
+	}
+	return strings.Join(msgs, "; ")
+}
+
+// AllErrors returns a list of validation violation errors.
+func (m ListMemoryFactsRequestMultiError) AllErrors() []error { return m }
+
+// ListMemoryFactsRequestValidationError is the validation error returned by
+// ListMemoryFactsRequest.Validate if the designated constraints aren't met.
+type ListMemoryFactsRequestValidationError struct {
+	field  string
+	reason string
+	cause  error
+	key    bool
+}
+
+// Field function returns field value.
+func (e ListMemoryFactsRequestValidationError) Field() string { return e.field }
+
+// Reason function returns reason value.
+func (e ListMemoryFactsRequestValidationError) Reason() string { return e.reason }
+
+// Cause function returns cause value.
+func (e ListMemoryFactsRequestValidationError) Cause() error { return e.cause }
+
+// Key function returns key value.
+func (e ListMemoryFactsRequestValidationError) Key() bool { return e.key }
+
+// ErrorName returns error name.
+func (e ListMemoryFactsRequestValidationError) ErrorName() string {
+	return "ListMemoryFactsRequestValidationError"
+}
+
+// Error satisfies the builtin error interface
+func (e ListMemoryFactsRequestValidationError) Error() string {
+	cause := ""
+	if e.cause != nil {
+		cause = fmt.Sprintf(" | caused by: %v", e.cause)
+	}
+
+	key := ""
+	if e.key {
+		key = "key for "
+	}
+
+	return fmt.Sprintf(
+		"invalid %sListMemoryFactsRequest.%s: %s%s",
+		key,
+		e.field,
+		e.reason,
+		cause)
+}
+
+var _ error = ListMemoryFactsRequestValidationError{}
+
+var _ interface {
+	Field() string
+	Reason() string
+	Key() bool
+	Cause() error
+	ErrorName() string
+} = ListMemoryFactsRequestValidationError{}
+
 // Validate checks the field values on ListMemoryFactsResponse with the rules
 // defined in the proto definition for this message. If any rules are
 // violated, the first error encountered is returned, or nil if there are no violations.
@@ -3147,10 +3260,21 @@ func (m *CreateMemoryFactRequest) validate(all bool) error {
 
 	var errors []error
 
-	if l := utf8.RuneCountInString(m.GetContent()); l < 1 || l > 200 {
+	if utf8.RuneCountInString(m.GetOrgId()) < 1 {
+		err := CreateMemoryFactRequestValidationError{
+			field:  "OrgId",
+			reason: "value length must be at least 1 runes",
+		}
+		if !all {
+			return err
+		}
+		errors = append(errors, err)
+	}
+
+	if l := utf8.RuneCountInString(m.GetContent()); l < 1 || l > 500 {
 		err := CreateMemoryFactRequestValidationError{
 			field:  "Content",
-			reason: "value length must be between 1 and 200 runes, inclusive",
+			reason: "value length must be between 1 and 500 runes, inclusive",
 		}
 		if !all {
 			return err
@@ -3394,6 +3518,17 @@ func (m *DeleteMemoryFactRequest) validate(all bool) error {
 	if utf8.RuneCountInString(m.GetId()) < 1 {
 		err := DeleteMemoryFactRequestValidationError{
 			field:  "Id",
+			reason: "value length must be at least 1 runes",
+		}
+		if !all {
+			return err
+		}
+		errors = append(errors, err)
+	}
+
+	if utf8.RuneCountInString(m.GetOrgId()) < 1 {
+		err := DeleteMemoryFactRequestValidationError{
+			field:  "OrgId",
 			reason: "value length must be at least 1 runes",
 		}
 		if !all {

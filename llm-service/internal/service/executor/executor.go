@@ -581,23 +581,22 @@ func (e *Executor) buildSystemPromptWithRAG(
 	systemPrompt := fmt.Sprintf("Текущее время: %s\n\n", time.Now().Format("2006-01-02 15:04:05"))
 	systemPrompt += agentDef.GetSystemPrompt()
 
+	// Обогащаем контекст фактами об организации
+	orgContext, err := e.contextBuilder.EnrichWithOrganizationFacts(ctx, chat.OrganizationID)
+	if err == nil && orgContext != "" {
+		systemPrompt += orgContext
+	}
+
 	// Обогащаем контекст через RAG если есть query
 	if query != "" {
-		ragChunks, err := e.contextBuilder.EnrichWithRAG(
+		ragContext, err := e.contextBuilder.EnrichWithRAG(
 			ctx,
 			chat.OrganizationID,
 			query,
 			5, // топ-5 релевантных фрагментов
 		)
-		if err == nil && len(ragChunks) > 0 {
-			// Добавляем релевантные документы в system prompt
-			var ragContext strings.Builder
-			ragContext.WriteString("\n\n## Релевантная документация\n\n")
-			ragContext.WriteString("Используй следующую информацию из документов для ответа на вопрос пользователя:\n\n")
-			for i, chunk := range ragChunks {
-				ragContext.WriteString(fmt.Sprintf("%d. %s\n\n", i+1, chunk))
-			}
-			systemPrompt += ragContext.String()
+		if err == nil && ragContext != "" {
+			systemPrompt += ragContext
 		}
 	}
 

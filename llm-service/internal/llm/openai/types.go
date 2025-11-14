@@ -115,13 +115,13 @@ func (c *CompletionProvider) newOpenAIParams(p llm.ChatParams) openai.ChatComple
 		Model:    shared.ChatModel(model),
 		Messages: c.toOpenAIMessages(p.Messages),
 	}
-	
+
 	// Передаем reasoning effort только если он не пустая строка
 	// Некоторые модели не поддерживают этот параметр и выдадут ошибку
 	if reasoningEffort != "" {
 		o.ReasoningEffort = shared.ReasoningEffort(reasoningEffort)
 	}
-	
+
 	if len(p.Tools) > 0 {
 		o.Tools = c.toOpenAITools(p.Tools)
 		o.ToolChoice = openai.ChatCompletionToolChoiceOptionUnionParam{OfAuto: openai.String("auto")}

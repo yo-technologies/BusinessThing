@@ -26,7 +26,7 @@ import (
 	"llm-service/internal/service/chat"
 	contextbuilder "llm-service/internal/service/context"
 	"llm-service/internal/service/executor"
-	"llm-service/internal/service/memory"
+	"llm-service/internal/service/orgmemory"
 	"llm-service/internal/service/quota"
 	"llm-service/internal/service/subagent"
 	"llm-service/internal/service/tool"
@@ -93,7 +93,7 @@ func Run() error {
 	repo := repository.NewPGXRepository(transactor)
 
 	// Initialize services
-	memoryService := memory.New(repo)
+	orgMemoryService := orgmemory.New(repo)
 	quotaService := quota.New(repo, func(ctx context.Context, userID domain.ID) int {
 		return cfg.GetLLMTokenLimit()
 	})
@@ -119,7 +119,7 @@ func Run() error {
 	defer ragClient.Close()
 
 	// Initialize context builder
-	ctxBuilder := contextbuilder.NewBuilder(ragClient)
+	ctxBuilder := contextbuilder.NewBuilder(ragClient, orgMemoryService)
 
 	// Initialize subagent manager
 	subagentManager := subagent.NewManager(chatManager, agentManager)
@@ -132,7 +132,7 @@ func Run() error {
 	tavilyClient := websearch.NewTavilyClient(tavilyAPIKey)
 
 	// Initialize tool executor
-	toolExecutor := tool.NewExecutor(agentManager, subagentManager, tavilyClient)
+	toolExecutor := tool.NewExecutor(agentManager, subagentManager, tavilyClient, orgMemoryService)
 
 	// Initialize agent executor
 	agentExecutor := executor.NewExecutor(
@@ -147,7 +147,7 @@ func Run() error {
 
 	// Create API services
 	agentAPIService := agentapi.NewService(chatManager, agentExecutor, quotaService)
-	memoryAPIService := memoryapi.NewService(memoryService)
+	memoryAPIService := memoryapi.NewService(orgMemoryService)
 
 	// Initialize JWT provider from config (fallbacks: env JWT_SECRET -> dev-secret)
 	jwtSecret := cfg.GetJWTSecret()
