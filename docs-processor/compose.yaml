@@ -4,7 +4,7 @@ services:
     profiles: [backend, full]
     build:
       context: .
-      target: doc-processor
+      target: final
     ports:
       - "50052:50052"
       - "8081:8081"
