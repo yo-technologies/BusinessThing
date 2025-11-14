@@ -5,6 +5,7 @@ include:
     - rabbitmq/compose.yaml
     - opensearch/compose.yaml
     - docs-processor/compose.yaml
+    - traefik/compose.yaml
 
 services:
     dozzle:
