@@ -15,7 +15,7 @@ services:
             - "8084:8084"
             - "50063:50063"
         depends_on:
-            llm-agent-db:
+            llm-service-db:
                 condition: service_healthy
             jaeger:
                 condition: service_started
