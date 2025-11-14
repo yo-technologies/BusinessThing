@@ -39,9 +39,11 @@ type MessageParam struct {
 
 // ChatParams groups arguments for chat completion
 type ChatParams struct {
-	Messages     []MessageParam
-	Tools        []ToolDefinition
-	IncludeUsage bool
+	Messages        []MessageParam
+	Tools           []ToolDefinition
+	IncludeUsage    bool
+	Model           *string // Optional: override default model from config
+	ReasoningEffort *string // Optional: override default reasoning effort from config
 }
 
 // Usage token accounting

@@ -3,24 +3,23 @@ package memory
 import (
 	"context"
 
-	"llm-service/internal/app/interceptors"
+	"llm-service/internal/domain"
 	desc "llm-service/pkg/agent"
 
 	"github.com/opentracing/opentracing-go"
-	"google.golang.org/protobuf/types/known/emptypb"
 	"google.golang.org/protobuf/types/known/timestamppb"
 )
 
-func (s *Service) ListMemoryFacts(ctx context.Context, _ *emptypb.Empty) (*desc.ListMemoryFactsResponse, error) {
+func (s *Service) ListMemoryFacts(ctx context.Context, req *desc.ListMemoryFactsRequest) (*desc.ListMemoryFactsResponse, error) {
 	span, ctx := opentracing.StartSpanFromContext(ctx, "api.chat.ListMemoryFacts")
 	defer span.Finish()
 
-	userID, err := interceptors.UserIDFromContext(ctx)
+	organizationID, err := domain.ParseID(req.GetOrgId())
 	if err != nil {
 		return nil, err
 	}
 
-	facts, err := s.memoryService.ListFacts(ctx, userID)
+	facts, err := s.orgMemoryService.ListFacts(ctx, organizationID)
 	if err != nil {
 		return nil, err
 	}

@@ -4,6 +4,7 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	"llm-service/internal/config"
 	"llm-service/internal/domain"
 	"llm-service/internal/domain/dto"
 	"llm-service/internal/llm"
@@ -27,6 +28,7 @@ type Executor struct {
 	toolExecutor    service.ToolExecutor
 	subagentManager service.SubagentManager
 	llmProvider     llm.CompletionProvider
+	cfg             *config.Config
 }
 
 // NewExecutor создает новый executor
@@ -37,6 +39,7 @@ func NewExecutor(
 	toolExecutor service.ToolExecutor,
 	subagentManager service.SubagentManager,
 	llmProvider llm.CompletionProvider,
+	cfg *config.Config,
 ) *Executor {
 	return &Executor{
 		chatManager:     chatManager,
@@ -45,6 +48,7 @@ func NewExecutor(
 		toolExecutor:    toolExecutor,
 		subagentManager: subagentManager,
 		llmProvider:     llmProvider,
+		cfg:             cfg,
 	}
 }
 
@@ -577,23 +581,22 @@ func (e *Executor) buildSystemPromptWithRAG(
 	systemPrompt := fmt.Sprintf("Текущее время: %s\n\n", time.Now().Format("2006-01-02 15:04:05"))
 	systemPrompt += agentDef.GetSystemPrompt()
 
+	// Обогащаем контекст фактами об организации
+	orgContext, err := e.contextBuilder.EnrichWithOrganizationFacts(ctx, chat.OrganizationID)
+	if err == nil && orgContext != "" {
+		systemPrompt += orgContext
+	}
+
 	// Обогащаем контекст через RAG если есть query
 	if query != "" {
-		ragChunks, err := e.contextBuilder.EnrichWithRAG(
+		ragContext, err := e.contextBuilder.EnrichWithRAG(
 			ctx,
 			chat.OrganizationID,
 			query,
 			5, // топ-5 релевантных фрагментов
 		)
-		if err == nil && len(ragChunks) > 0 {
-			// Добавляем релевантные документы в system prompt
-			var ragContext strings.Builder
-			ragContext.WriteString("\n\n## Релевантная документация\n\n")
-			ragContext.WriteString("Используй следующую информацию из документов для ответа на вопрос пользователя:\n\n")
-			for i, chunk := range ragChunks {
-				ragContext.WriteString(fmt.Sprintf("%d. %s\n\n", i+1, chunk))
-			}
-			systemPrompt += ragContext.String()
+		if err == nil && ragContext != "" {
+			systemPrompt += ragContext
 		}
 	}
 
@@ -674,16 +677,21 @@ func (e *Executor) generateChatTitle(ctx context.Context, userMessage string) (s
 	span, ctx := opentracing.StartSpanFromContext(ctx, "executor.generateChatTitle")
 	defer span.Finish()
 
-	prompt := fmt.Sprintf("Сгенерируй краткое и ёмкое название для этого чата на основе первого сообщения пользователя. Название должно быть коротким, не более 50 символов. Сообщение: %s", userMessage)
+	prompt := "Сгенерируй краткое и ёмкое название для этого чата на основе первого сообщения пользователя. Название должно быть коротким, не более 50 символов. В ответе укажи только одно название без лишних символов"
+
+	// Используем специальную модель для генерации названий
+	titleModel := e.cfg.GetLLMTitleGenerationModel()
 
 	params := llm.ChatParams{
 		Messages: []llm.MessageParam{
-			{Role: llm.RoleUser, Content: prompt},
+			{Role: llm.RoleSystem, Content: prompt},
+			{Role: llm.RoleUser, Content: userMessage},
 		},
 		IncludeUsage: false,
+		Model:        &titleModel,
 	}
 
-	logger.Infof(ctx, "Generating chat title with prompt: %s", prompt)
+	logger.Infof(ctx, "Generating chat title with model: %s, prompt: %s", titleModel, prompt)
 
 	title, _, err := e.llmProvider.CreateCompletion(ctx, params)
 	if err != nil {

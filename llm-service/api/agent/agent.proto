@@ -84,8 +84,8 @@ service AgentService {
 
 // ===== Memory Service =====
 service MemoryService {
-    // Список всех фактов о пользователе
-    rpc ListMemoryFacts(google.protobuf.Empty) returns (ListMemoryFactsResponse) {
+    // Список всех фактов об организации
+    rpc ListMemoryFacts(ListMemoryFactsRequest) returns (ListMemoryFactsResponse) {
         option (google.api.http) = {
             get: "/v1/memory/facts"
         };
@@ -279,12 +279,17 @@ message MemoryFact {
     google.protobuf.Timestamp created_at = 3;
 }
 
+message ListMemoryFactsRequest {
+    string org_id = 1 [(validate.rules).string.min_len = 1];
+}
+
 message ListMemoryFactsResponse {
     repeated MemoryFact facts = 1;
 }
 
 message CreateMemoryFactRequest {
-    string content = 1 [(validate.rules).string = {min_len: 1, max_len: 200}];
+    string org_id = 1 [(validate.rules).string.min_len = 1];
+    string content = 2 [(validate.rules).string = {min_len: 1, max_len: 500}];
 }
 
 message CreateMemoryFactResponse {
@@ -293,4 +298,5 @@ message CreateMemoryFactResponse {
 
 message DeleteMemoryFactRequest {
     string id = 1 [(validate.rules).string.min_len = 1];
+    string org_id = 2 [(validate.rules).string.min_len = 1];
 }

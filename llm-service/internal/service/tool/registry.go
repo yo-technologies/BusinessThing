@@ -21,6 +21,18 @@ func GetToolsRegistry() map[domain.ToolName]*domain.ToolDefinition {
 			},
 			Required: []string{"query"},
 		},
+		// Инструменты памяти
+		domain.ToolNameSaveOrganizationNote: {
+			Name:        string(domain.ToolNameSaveOrganizationNote),
+			Description: "Сохранить важный факт об организации для использования в будущих диалогах. Используй этот инструмент, когда узнаешь важную информацию об организации (ключевые процессы, особенности, предпочтения и т.д.)",
+			Parameters: map[string]interface{}{
+				"content": map[string]interface{}{
+					"type":        "string",
+					"description": "Краткий факт об организации (максимум 100 символов)",
+				},
+			},
+			Required: []string{"content"},
+		},
 		// Системные инструменты
 		domain.ToolNameSwitchToSubagent: {
 			Name:        string(domain.ToolNameSwitchToSubagent),

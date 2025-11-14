@@ -12,9 +12,10 @@ import (
 
 // Executor - исполнитель инструментов
 type Executor struct {
-	agentManager    service.AgentManager
-	subagentManager service.SubagentManager
-	websearchClient service.WebSearchClient
+	agentManager     service.AgentManager
+	subagentManager  service.SubagentManager
+	websearchClient  service.WebSearchClient
+	orgMemoryService service.OrganizationMemoryService
 	// Здесь будут добавляться конкретные исполнители для каждого типа tools
 }
 
@@ -23,11 +24,13 @@ func NewExecutor(
 	agentManager service.AgentManager,
 	subagentManager service.SubagentManager,
 	websearchClient service.WebSearchClient,
+	orgMemoryService service.OrganizationMemoryService,
 ) *Executor {
 	return &Executor{
-		agentManager:    agentManager,
-		subagentManager: subagentManager,
-		websearchClient: websearchClient,
+		agentManager:     agentManager,
+		subagentManager:  subagentManager,
+		websearchClient:  websearchClient,
+		orgMemoryService: orgMemoryService,
 	}
 }
 
@@ -51,6 +54,8 @@ func (e *Executor) Execute(
 	switch domain.ToolName(toolName) {
 	case domain.ToolNameWebSearch:
 		return e.executeWebSearch(ctx, arguments)
+	case domain.ToolNameSaveOrganizationNote:
+		return e.executeSaveOrganizationNote(ctx, arguments, execCtx)
 	case domain.ToolNameSwitchToSubagent:
 		return e.executeSwitchToSubagent(ctx, arguments, execCtx, toolCallID)
 	case domain.ToolNameFinishSubagent:
@@ -180,4 +185,35 @@ func (e *Executor) executeWebSearch(
 	}
 
 	return searchResult, nil
+}
+
+// executeSaveOrganizationNote сохраняет заметку об организации
+func (e *Executor) executeSaveOrganizationNote(
+	ctx context.Context,
+	arguments map[string]interface{},
+	execCtx *domain.ExecutionContext,
+) (interface{}, error) {
+	span, ctx := opentracing.StartSpanFromContext(ctx, "tool.Executor.executeSaveOrganizationNote")
+	defer span.Finish()
+
+	// Парсим аргументы
+	content, ok := arguments["content"].(string)
+	if !ok || content == "" {
+		return nil, domain.NewInvalidArgumentError("content is required and must be a non-empty string")
+	}
+
+	// Сохраняем факт об организации
+	fact, err := e.orgMemoryService.AddFact(ctx, execCtx.OrganizationID, content)
+	if err != nil {
+		return nil, err
+	}
+
+	// Возвращаем результат
+	result := map[string]interface{}{
+		"status":  "success",
+		"message": "Факт об организации успешно сохранён",
+		"fact_id": fact.ID.String(),
+	}
+
+	return result, nil
 }

@@ -5,6 +5,7 @@ import (
 	"fmt"
 
 	"llm-service/internal/domain"
+	"llm-service/internal/grpcutils"
 	"llm-service/internal/logger"
 	desc "llm-service/pkg/document"
 
@@ -24,6 +25,7 @@ func NewClient(address string) (*Client, error) {
 	conn, err := grpc.NewClient(
 		address,
 		grpc.WithTransportCredentials(insecure.NewCredentials()),
+		grpc.WithUnaryInterceptor(grpcutils.UnaryClientInterceptor),
 	)
 	if err != nil {
 		return nil, fmt.Errorf("failed to connect to docs processor: %w", err)
