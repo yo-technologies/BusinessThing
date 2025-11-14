@@ -7,6 +7,7 @@ import (
 	"fmt"
 	"io"
 	"net/http"
+	"time"
 
 	"github.com/opentracing/opentracing-go"
 )
@@ -20,10 +21,12 @@ type Client struct {
 
 func NewClient(baseURL, apiKey, model string) *Client {
 	return &Client{
-		baseURL:    baseURL,
-		apiKey:     apiKey,
-		model:      model,
-		httpClient: &http.Client{},
+		baseURL: baseURL,
+		apiKey:  apiKey,
+		model:   model,
+		httpClient: &http.Client{
+			Timeout: 2 * time.Second,
+		},
 	}
 }
 

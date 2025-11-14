@@ -81,6 +81,10 @@ type Tavily struct {
 	APIKey string `mapstructure:"api_key"`
 }
 
+type AmoCRMMCP struct {
+	Address string `mapstructure:"address"`
+}
+
 // Config holds all runtime-configurable settings
 type Config struct {
 	mu sync.RWMutex
@@ -96,6 +100,7 @@ type Config struct {
 	CoreService   CoreService   `mapstructure:"core_service"`
 	DocsProcessor DocsProcessor `mapstructure:"docs_processor"`
 	Tavily        Tavily        `mapstructure:"tavily"`
+	AmoCRMMCP     AmoCRMMCP     `mapstructure:"amocrm_mcp"`
 }
 
 var (
@@ -158,6 +163,7 @@ func (c *Config) loadDefaults() {
 	viper.SetDefault("jwt.secret", "")
 	viper.SetDefault("core_service.address", "localhost:50051")
 	viper.SetDefault("docs_processor.address", "localhost:50052")
+	viper.SetDefault("amocrm_mcp.address", "localhost:50053")
 }
 
 // reload reads the config file and updates all values
@@ -324,4 +330,11 @@ func (c *Config) GetTavilyAPIKey() string {
 	c.mu.RLock()
 	defer c.mu.RUnlock()
 	return c.Tavily.APIKey
+}
+
+// GetAmoCRMMCPAddress returns the AmoCRM MCP server address from config
+func (c *Config) GetAmoCRMMCPAddress() string {
+	c.mu.RLock()
+	defer c.mu.RUnlock()
+	return c.AmoCRMMCP.Address
 }
