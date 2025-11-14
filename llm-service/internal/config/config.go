@@ -75,6 +75,10 @@ type DocsProcessor struct {
 	Address string `mapstructure:"address"`
 }
 
+type Tavily struct {
+	APIKey string `mapstructure:"api_key"`
+}
+
 // Config holds all runtime-configurable settings
 type Config struct {
 	mu sync.RWMutex
@@ -89,6 +93,7 @@ type Config struct {
 	Jaeger        Jaeger        `mapstructure:"jaeger"`
 	CoreService   CoreService   `mapstructure:"core_service"`
 	DocsProcessor DocsProcessor `mapstructure:"docs_processor"`
+	Tavily        Tavily        `mapstructure:"tavily"`
 }
 
 var (
@@ -299,4 +304,11 @@ func (c *Config) GetDocsProcessorAddress() string {
 	c.mu.RLock()
 	defer c.mu.RUnlock()
 	return c.DocsProcessor.Address
+}
+
+// GetTavilyAPIKey returns the Tavily API key from config
+func (c *Config) GetTavilyAPIKey() string {
+	c.mu.RLock()
+	defer c.mu.RUnlock()
+	return c.Tavily.APIKey
 }

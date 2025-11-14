@@ -9,6 +9,7 @@ import (
 	"llm-service/internal/llm"
 	"llm-service/internal/service"
 	"strings"
+	"time"
 
 	"github.com/opentracing/opentracing-go"
 )
@@ -488,11 +489,6 @@ func (e *Executor) runAgentLoopStream(
 					return stream.SendError(err)
 				}
 
-				// Отправляем tool result в стрим
-				if err := stream.SendMessage(toolResultMessage); err != nil {
-					return err
-				}
-
 				// ПЕРЕКЛЮЧАЕМ КОНТЕКСТ обратно на родителя
 				currentChat = parentChat
 				currentAgent = parentAgentDef
@@ -513,11 +509,6 @@ func (e *Executor) runAgentLoopStream(
 
 			if err := e.chatManager.SaveMessage(ctx, toolResultMessage); err != nil {
 				return stream.SendError(err)
-			}
-
-			// Отправляем tool result message
-			if err := stream.SendMessage(toolResultMessage); err != nil {
-				return err
 			}
 
 			hasActiveTools = true
@@ -564,7 +555,8 @@ func (e *Executor) buildSystemPromptWithRAG(
 	agentDef *domain.AgentDefinition,
 	query string,
 ) (string, error) {
-	systemPrompt := agentDef.GetSystemPrompt()
+	systemPrompt := fmt.Sprintf("Текущее время: %s\n\n", time.Now().Format("2006-01-02 15:04:05"))
+	systemPrompt += agentDef.GetSystemPrompt()
 
 	// Обогащаем контекст через RAG если есть query
 	if query != "" {
@@ -636,11 +628,7 @@ func (e *Executor) buildLLMTools(agentDef *domain.AgentDefinition) ([]llm.ToolDe
 			return nil, err
 		}
 
-		tools = append(tools, llm.ToolDefinition{
-			Name:        toolDef.Name,
-			Description: toolDef.Description,
-			Parameters:  toolDef.Parameters,
-		})
+		tools = append(tools, toolDef.ToLLMObject())
 	}
 
 	return tools, nil

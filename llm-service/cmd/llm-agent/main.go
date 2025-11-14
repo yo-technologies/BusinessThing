@@ -31,6 +31,7 @@ import (
 	"llm-service/internal/service/subagent"
 	"llm-service/internal/service/tool"
 	"llm-service/internal/tracer"
+	"llm-service/internal/websearch"
 
 	"github.com/jackc/pgx/v5/pgxpool"
 	"github.com/joho/godotenv"
@@ -123,8 +124,15 @@ func Run() error {
 	// Initialize subagent manager
 	subagentManager := subagent.NewManager(chatManager, agentManager)
 
+	// Initialize Tavily web search client
+	tavilyAPIKey := cfg.GetTavilyAPIKey()
+	if tavilyAPIKey == "" {
+		logger.Warn(ctx, "Tavily API key not set, web search will not be available")
+	}
+	tavilyClient := websearch.NewTavilyClient(tavilyAPIKey)
+
 	// Initialize tool executor
-	toolExecutor := tool.NewExecutor(agentManager, subagentManager)
+	toolExecutor := tool.NewExecutor(agentManager, subagentManager, tavilyClient)
 
 	// Initialize agent executor
 	agentExecutor := executor.NewExecutor(

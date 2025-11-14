@@ -2,6 +2,7 @@ package domain
 
 import (
 	"encoding/json"
+	"llm-service/internal/llm"
 	"time"
 )
 
@@ -68,18 +69,15 @@ type ToolDefinition struct {
 	Required    []string               `yaml:"required" json:"required"`
 }
 
-// ToOpenAIFormat - конвертирует определение инструмента в формат OpenAI
-func (td *ToolDefinition) ToOpenAIFormat() map[string]interface{} {
-	return map[string]interface{}{
-		"type": "function",
-		"function": map[string]interface{}{
-			"name":        td.Name,
-			"description": td.Description,
-			"parameters": map[string]interface{}{
-				"type":       "object",
-				"properties": td.Parameters,
-				"required":   td.Required,
-			},
+// ToLLMObject - конвертирует определение инструмента в формат LLM
+func (td *ToolDefinition) ToLLMObject() llm.ToolDefinition {
+	return llm.ToolDefinition{
+		Name:        td.Name,
+		Description: td.Description,
+		Parameters: map[string]interface{}{
+			"type":       "object",
+			"properties": td.Parameters,
+			"required":   td.Required,
 		},
 	}
 }

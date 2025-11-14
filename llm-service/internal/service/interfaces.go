@@ -116,3 +116,9 @@ type SubagentManager interface {
 	// GetActiveChatID возвращает ID активного чата (может быть субагент)
 	GetActiveChatID(ctx context.Context, chatID domain.ID) (domain.ID, error)
 }
+
+// WebSearchClient - клиент для веб-поиска
+type WebSearchClient interface {
+	// Search выполняет поиск и возвращает результаты
+	Search(ctx context.Context, query string, maxResults int) (interface{}, error)
+}
