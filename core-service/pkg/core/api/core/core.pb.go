@@ -487,6 +487,86 @@ func (x *GetOrganizationResponse) GetOrganization() *Organization {
 	return nil
 }
 
+type ListMyOrganizationsRequest struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *ListMyOrganizationsRequest) Reset() {
+	*x = ListMyOrganizationsRequest{}
+	mi := &file_api_core_core_proto_msgTypes[6]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *ListMyOrganizationsRequest) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*ListMyOrganizationsRequest) ProtoMessage() {}
+
+func (x *ListMyOrganizationsRequest) ProtoReflect() protoreflect.Message {
+	mi := &file_api_core_core_proto_msgTypes[6]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use ListMyOrganizationsRequest.ProtoReflect.Descriptor instead.
+func (*ListMyOrganizationsRequest) Descriptor() ([]byte, []int) {
+	return file_api_core_core_proto_rawDescGZIP(), []int{6}
+}
+
+type ListMyOrganizationsResponse struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	Organizations []*Organization        `protobuf:"bytes,1,rep,name=organizations,proto3" json:"organizations,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *ListMyOrganizationsResponse) Reset() {
+	*x = ListMyOrganizationsResponse{}
+	mi := &file_api_core_core_proto_msgTypes[7]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *ListMyOrganizationsResponse) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*ListMyOrganizationsResponse) ProtoMessage() {}
+
+func (x *ListMyOrganizationsResponse) ProtoReflect() protoreflect.Message {
+	mi := &file_api_core_core_proto_msgTypes[7]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use ListMyOrganizationsResponse.ProtoReflect.Descriptor instead.
+func (*ListMyOrganizationsResponse) Descriptor() ([]byte, []int) {
+	return file_api_core_core_proto_rawDescGZIP(), []int{7}
+}
+
+func (x *ListMyOrganizationsResponse) GetOrganizations() []*Organization {
+	if x != nil {
+		return x.Organizations
+	}
+	return nil
+}
+
 type UpdateOrganizationRequest struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
 	Id            string                 `protobuf:"bytes,1,opt,name=id,proto3" json:"id,omitempty"`
@@ -501,7 +581,7 @@ type UpdateOrganizationRequest struct {
 
 func (x *UpdateOrganizationRequest) Reset() {
 	*x = UpdateOrganizationRequest{}
-	mi := &file_api_core_core_proto_msgTypes[6]
+	mi := &file_api_core_core_proto_msgTypes[8]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -513,7 +593,7 @@ func (x *UpdateOrganizationRequest) String() string {
 func (*UpdateOrganizationRequest) ProtoMessage() {}
 
 func (x *UpdateOrganizationRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_api_core_core_proto_msgTypes[6]
+	mi := &file_api_core_core_proto_msgTypes[8]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -526,7 +606,7 @@ func (x *UpdateOrganizationRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use UpdateOrganizationRequest.ProtoReflect.Descriptor instead.
 func (*UpdateOrganizationRequest) Descriptor() ([]byte, []int) {
-	return file_api_core_core_proto_rawDescGZIP(), []int{6}
+	return file_api_core_core_proto_rawDescGZIP(), []int{8}
 }
 
 func (x *UpdateOrganizationRequest) GetId() string {
@@ -580,7 +660,7 @@ type UpdateOrganizationResponse struct {
 
 func (x *UpdateOrganizationResponse) Reset() {
 	*x = UpdateOrganizationResponse{}
-	mi := &file_api_core_core_proto_msgTypes[7]
+	mi := &file_api_core_core_proto_msgTypes[9]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -592,7 +672,7 @@ func (x *UpdateOrganizationResponse) String() string {
 func (*UpdateOrganizationResponse) ProtoMessage() {}
 
 func (x *UpdateOrganizationResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_api_core_core_proto_msgTypes[7]
+	mi := &file_api_core_core_proto_msgTypes[9]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -605,7 +685,7 @@ func (x *UpdateOrganizationResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use UpdateOrganizationResponse.ProtoReflect.Descriptor instead.
 func (*UpdateOrganizationResponse) Descriptor() ([]byte, []int) {
-	return file_api_core_core_proto_rawDescGZIP(), []int{7}
+	return file_api_core_core_proto_rawDescGZIP(), []int{9}
 }
 
 func (x *UpdateOrganizationResponse) GetOrganization() *Organization {
@@ -624,7 +704,7 @@ type DeleteOrganizationRequest struct {
 
 func (x *DeleteOrganizationRequest) Reset() {
 	*x = DeleteOrganizationRequest{}
-	mi := &file_api_core_core_proto_msgTypes[8]
+	mi := &file_api_core_core_proto_msgTypes[10]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -636,7 +716,7 @@ func (x *DeleteOrganizationRequest) String() string {
 func (*DeleteOrganizationRequest) ProtoMessage() {}
 
 func (x *DeleteOrganizationRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_api_core_core_proto_msgTypes[8]
+	mi := &file_api_core_core_proto_msgTypes[10]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -649,7 +729,7 @@ func (x *DeleteOrganizationRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use DeleteOrganizationRequest.ProtoReflect.Descriptor instead.
 func (*DeleteOrganizationRequest) Descriptor() ([]byte, []int) {
-	return file_api_core_core_proto_rawDescGZIP(), []int{8}
+	return file_api_core_core_proto_rawDescGZIP(), []int{10}
 }
 
 func (x *DeleteOrganizationRequest) GetId() string {
@@ -670,7 +750,7 @@ type InviteUserRequest struct {
 
 func (x *InviteUserRequest) Reset() {
 	*x = InviteUserRequest{}
-	mi := &file_api_core_core_proto_msgTypes[9]
+	mi := &file_api_core_core_proto_msgTypes[11]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -682,7 +762,7 @@ func (x *InviteUserRequest) String() string {
 func (*InviteUserRequest) ProtoMessage() {}
 
 func (x *InviteUserRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_api_core_core_proto_msgTypes[9]
+	mi := &file_api_core_core_proto_msgTypes[11]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -695,7 +775,7 @@ func (x *InviteUserRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use InviteUserRequest.ProtoReflect.Descriptor instead.
 func (*InviteUserRequest) Descriptor() ([]byte, []int) {
-	return file_api_core_core_proto_rawDescGZIP(), []int{9}
+	return file_api_core_core_proto_rawDescGZIP(), []int{11}
 }
 
 func (x *InviteUserRequest) GetOrganizationId() string {
@@ -730,7 +810,7 @@ type InviteUserResponse struct {
 
 func (x *InviteUserResponse) Reset() {
 	*x = InviteUserResponse{}
-	mi := &file_api_core_core_proto_msgTypes[10]
+	mi := &file_api_core_core_proto_msgTypes[12]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -742,7 +822,7 @@ func (x *InviteUserResponse) String() string {
 func (*InviteUserResponse) ProtoMessage() {}
 
 func (x *InviteUserResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_api_core_core_proto_msgTypes[10]
+	mi := &file_api_core_core_proto_msgTypes[12]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -755,7 +835,7 @@ func (x *InviteUserResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use InviteUserResponse.ProtoReflect.Descriptor instead.
 func (*InviteUserResponse) Descriptor() ([]byte, []int) {
-	return file_api_core_core_proto_rawDescGZIP(), []int{10}
+	return file_api_core_core_proto_rawDescGZIP(), []int{12}
 }
 
 func (x *InviteUserResponse) GetInvitationToken() string {
@@ -791,7 +871,7 @@ type AcceptInvitationRequest struct {
 
 func (x *AcceptInvitationRequest) Reset() {
 	*x = AcceptInvitationRequest{}
-	mi := &file_api_core_core_proto_msgTypes[11]
+	mi := &file_api_core_core_proto_msgTypes[13]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -803,7 +883,7 @@ func (x *AcceptInvitationRequest) String() string {
 func (*AcceptInvitationRequest) ProtoMessage() {}
 
 func (x *AcceptInvitationRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_api_core_core_proto_msgTypes[11]
+	mi := &file_api_core_core_proto_msgTypes[13]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -816,7 +896,7 @@ func (x *AcceptInvitationRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use AcceptInvitationRequest.ProtoReflect.Descriptor instead.
 func (*AcceptInvitationRequest) Descriptor() ([]byte, []int) {
-	return file_api_core_core_proto_rawDescGZIP(), []int{11}
+	return file_api_core_core_proto_rawDescGZIP(), []int{13}
 }
 
 func (x *AcceptInvitationRequest) GetToken() string {
@@ -856,7 +936,7 @@ type AcceptInvitationResponse struct {
 
 func (x *AcceptInvitationResponse) Reset() {
 	*x = AcceptInvitationResponse{}
-	mi := &file_api_core_core_proto_msgTypes[12]
+	mi := &file_api_core_core_proto_msgTypes[14]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -868,7 +948,7 @@ func (x *AcceptInvitationResponse) String() string {
 func (*AcceptInvitationResponse) ProtoMessage() {}
 
 func (x *AcceptInvitationResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_api_core_core_proto_msgTypes[12]
+	mi := &file_api_core_core_proto_msgTypes[14]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -881,7 +961,7 @@ func (x *AcceptInvitationResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use AcceptInvitationResponse.ProtoReflect.Descriptor instead.
 func (*AcceptInvitationResponse) Descriptor() ([]byte, []int) {
-	return file_api_core_core_proto_rawDescGZIP(), []int{12}
+	return file_api_core_core_proto_rawDescGZIP(), []int{14}
 }
 
 func (x *AcceptInvitationResponse) GetUser() *User {
@@ -902,7 +982,7 @@ type ListUsersRequest struct {
 
 func (x *ListUsersRequest) Reset() {
 	*x = ListUsersRequest{}
-	mi := &file_api_core_core_proto_msgTypes[13]
+	mi := &file_api_core_core_proto_msgTypes[15]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -914,7 +994,7 @@ func (x *ListUsersRequest) String() string {
 func (*ListUsersRequest) ProtoMessage() {}
 
 func (x *ListUsersRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_api_core_core_proto_msgTypes[13]
+	mi := &file_api_core_core_proto_msgTypes[15]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -927,7 +1007,7 @@ func (x *ListUsersRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use ListUsersRequest.ProtoReflect.Descriptor instead.
 func (*ListUsersRequest) Descriptor() ([]byte, []int) {
-	return file_api_core_core_proto_rawDescGZIP(), []int{13}
+	return file_api_core_core_proto_rawDescGZIP(), []int{15}
 }
 
 func (x *ListUsersRequest) GetOrganizationId() string {
@@ -963,7 +1043,7 @@ type ListUsersResponse struct {
 
 func (x *ListUsersResponse) Reset() {
 	*x = ListUsersResponse{}
-	mi := &file_api_core_core_proto_msgTypes[14]
+	mi := &file_api_core_core_proto_msgTypes[16]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -975,7 +1055,7 @@ func (x *ListUsersResponse) String() string {
 func (*ListUsersResponse) ProtoMessage() {}
 
 func (x *ListUsersResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_api_core_core_proto_msgTypes[14]
+	mi := &file_api_core_core_proto_msgTypes[16]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -988,7 +1068,7 @@ func (x *ListUsersResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use ListUsersResponse.ProtoReflect.Descriptor instead.
 func (*ListUsersResponse) Descriptor() ([]byte, []int) {
-	return file_api_core_core_proto_rawDescGZIP(), []int{14}
+	return file_api_core_core_proto_rawDescGZIP(), []int{16}
 }
 
 func (x *ListUsersResponse) GetUsers() []*User {
@@ -1028,7 +1108,7 @@ type GetUserRequest struct {
 
 func (x *GetUserRequest) Reset() {
 	*x = GetUserRequest{}
-	mi := &file_api_core_core_proto_msgTypes[15]
+	mi := &file_api_core_core_proto_msgTypes[17]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -1040,7 +1120,7 @@ func (x *GetUserRequest) String() string {
 func (*GetUserRequest) ProtoMessage() {}
 
 func (x *GetUserRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_api_core_core_proto_msgTypes[15]
+	mi := &file_api_core_core_proto_msgTypes[17]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -1053,7 +1133,7 @@ func (x *GetUserRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use GetUserRequest.ProtoReflect.Descriptor instead.
 func (*GetUserRequest) Descriptor() ([]byte, []int) {
-	return file_api_core_core_proto_rawDescGZIP(), []int{15}
+	return file_api_core_core_proto_rawDescGZIP(), []int{17}
 }
 
 func (x *GetUserRequest) GetId() string {
@@ -1072,7 +1152,7 @@ type GetUserResponse struct {
 
 func (x *GetUserResponse) Reset() {
 	*x = GetUserResponse{}
-	mi := &file_api_core_core_proto_msgTypes[16]
+	mi := &file_api_core_core_proto_msgTypes[18]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -1084,7 +1164,7 @@ func (x *GetUserResponse) String() string {
 func (*GetUserResponse) ProtoMessage() {}
 
 func (x *GetUserResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_api_core_core_proto_msgTypes[16]
+	mi := &file_api_core_core_proto_msgTypes[18]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -1097,7 +1177,7 @@ func (x *GetUserResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use GetUserResponse.ProtoReflect.Descriptor instead.
 func (*GetUserResponse) Descriptor() ([]byte, []int) {
-	return file_api_core_core_proto_rawDescGZIP(), []int{16}
+	return file_api_core_core_proto_rawDescGZIP(), []int{18}
 }
 
 func (x *GetUserResponse) GetUser() *User {
@@ -1117,7 +1197,7 @@ type UpdateUserRoleRequest struct {
 
 func (x *UpdateUserRoleRequest) Reset() {
 	*x = UpdateUserRoleRequest{}
-	mi := &file_api_core_core_proto_msgTypes[17]
+	mi := &file_api_core_core_proto_msgTypes[19]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -1129,7 +1209,7 @@ func (x *UpdateUserRoleRequest) String() string {
 func (*UpdateUserRoleRequest) ProtoMessage() {}
 
 func (x *UpdateUserRoleRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_api_core_core_proto_msgTypes[17]
+	mi := &file_api_core_core_proto_msgTypes[19]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -1142,7 +1222,7 @@ func (x *UpdateUserRoleRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use UpdateUserRoleRequest.ProtoReflect.Descriptor instead.
 func (*UpdateUserRoleRequest) Descriptor() ([]byte, []int) {
-	return file_api_core_core_proto_rawDescGZIP(), []int{17}
+	return file_api_core_core_proto_rawDescGZIP(), []int{19}
 }
 
 func (x *UpdateUserRoleRequest) GetId() string {
@@ -1168,7 +1248,7 @@ type UpdateUserRoleResponse struct {
 
 func (x *UpdateUserRoleResponse) Reset() {
 	*x = UpdateUserRoleResponse{}
-	mi := &file_api_core_core_proto_msgTypes[18]
+	mi := &file_api_core_core_proto_msgTypes[20]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -1180,7 +1260,7 @@ func (x *UpdateUserRoleResponse) String() string {
 func (*UpdateUserRoleResponse) ProtoMessage() {}
 
 func (x *UpdateUserRoleResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_api_core_core_proto_msgTypes[18]
+	mi := &file_api_core_core_proto_msgTypes[20]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -1193,7 +1273,7 @@ func (x *UpdateUserRoleResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use UpdateUserRoleResponse.ProtoReflect.Descriptor instead.
 func (*UpdateUserRoleResponse) Descriptor() ([]byte, []int) {
-	return file_api_core_core_proto_rawDescGZIP(), []int{18}
+	return file_api_core_core_proto_rawDescGZIP(), []int{20}
 }
 
 func (x *UpdateUserRoleResponse) GetUser() *User {
@@ -1212,7 +1292,7 @@ type DeactivateUserRequest struct {
 
 func (x *DeactivateUserRequest) Reset() {
 	*x = DeactivateUserRequest{}
-	mi := &file_api_core_core_proto_msgTypes[19]
+	mi := &file_api_core_core_proto_msgTypes[21]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -1224,7 +1304,7 @@ func (x *DeactivateUserRequest) String() string {
 func (*DeactivateUserRequest) ProtoMessage() {}
 
 func (x *DeactivateUserRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_api_core_core_proto_msgTypes[19]
+	mi := &file_api_core_core_proto_msgTypes[21]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -1237,7 +1317,7 @@ func (x *DeactivateUserRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use DeactivateUserRequest.ProtoReflect.Descriptor instead.
 func (*DeactivateUserRequest) Descriptor() ([]byte, []int) {
-	return file_api_core_core_proto_rawDescGZIP(), []int{19}
+	return file_api_core_core_proto_rawDescGZIP(), []int{21}
 }
 
 func (x *DeactivateUserRequest) GetId() string {
@@ -1260,7 +1340,7 @@ type RegisterDocumentRequest struct {
 
 func (x *RegisterDocumentRequest) Reset() {
 	*x = RegisterDocumentRequest{}
-	mi := &file_api_core_core_proto_msgTypes[20]
+	mi := &file_api_core_core_proto_msgTypes[22]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -1272,7 +1352,7 @@ func (x *RegisterDocumentRequest) String() string {
 func (*RegisterDocumentRequest) ProtoMessage() {}
 
 func (x *RegisterDocumentRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_api_core_core_proto_msgTypes[20]
+	mi := &file_api_core_core_proto_msgTypes[22]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -1285,7 +1365,7 @@ func (x *RegisterDocumentRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use RegisterDocumentRequest.ProtoReflect.Descriptor instead.
 func (*RegisterDocumentRequest) Descriptor() ([]byte, []int) {
-	return file_api_core_core_proto_rawDescGZIP(), []int{20}
+	return file_api_core_core_proto_rawDescGZIP(), []int{22}
 }
 
 func (x *RegisterDocumentRequest) GetOrganizationId() string {
@@ -1332,7 +1412,7 @@ type RegisterDocumentResponse struct {
 
 func (x *RegisterDocumentResponse) Reset() {
 	*x = RegisterDocumentResponse{}
-	mi := &file_api_core_core_proto_msgTypes[21]
+	mi := &file_api_core_core_proto_msgTypes[23]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -1344,7 +1424,7 @@ func (x *RegisterDocumentResponse) String() string {
 func (*RegisterDocumentResponse) ProtoMessage() {}
 
 func (x *RegisterDocumentResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_api_core_core_proto_msgTypes[21]
+	mi := &file_api_core_core_proto_msgTypes[23]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -1357,7 +1437,7 @@ func (x *RegisterDocumentResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use RegisterDocumentResponse.ProtoReflect.Descriptor instead.
 func (*RegisterDocumentResponse) Descriptor() ([]byte, []int) {
-	return file_api_core_core_proto_rawDescGZIP(), []int{21}
+	return file_api_core_core_proto_rawDescGZIP(), []int{23}
 }
 
 func (x *RegisterDocumentResponse) GetDocument() *Document {
@@ -1376,7 +1456,7 @@ type GetDocumentRequest struct {
 
 func (x *GetDocumentRequest) Reset() {
 	*x = GetDocumentRequest{}
-	mi := &file_api_core_core_proto_msgTypes[22]
+	mi := &file_api_core_core_proto_msgTypes[24]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -1388,7 +1468,7 @@ func (x *GetDocumentRequest) String() string {
 func (*GetDocumentRequest) ProtoMessage() {}
 
 func (x *GetDocumentRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_api_core_core_proto_msgTypes[22]
+	mi := &file_api_core_core_proto_msgTypes[24]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -1401,7 +1481,7 @@ func (x *GetDocumentRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use GetDocumentRequest.ProtoReflect.Descriptor instead.
 func (*GetDocumentRequest) Descriptor() ([]byte, []int) {
-	return file_api_core_core_proto_rawDescGZIP(), []int{22}
+	return file_api_core_core_proto_rawDescGZIP(), []int{24}
 }
 
 func (x *GetDocumentRequest) GetId() string {
@@ -1420,7 +1500,7 @@ type GetDocumentResponse struct {
 
 func (x *GetDocumentResponse) Reset() {
 	*x = GetDocumentResponse{}
-	mi := &file_api_core_core_proto_msgTypes[23]
+	mi := &file_api_core_core_proto_msgTypes[25]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -1432,7 +1512,7 @@ func (x *GetDocumentResponse) String() string {
 func (*GetDocumentResponse) ProtoMessage() {}
 
 func (x *GetDocumentResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_api_core_core_proto_msgTypes[23]
+	mi := &file_api_core_core_proto_msgTypes[25]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -1445,7 +1525,7 @@ func (x *GetDocumentResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use GetDocumentResponse.ProtoReflect.Descriptor instead.
 func (*GetDocumentResponse) Descriptor() ([]byte, []int) {
-	return file_api_core_core_proto_rawDescGZIP(), []int{23}
+	return file_api_core_core_proto_rawDescGZIP(), []int{25}
 }
 
 func (x *GetDocumentResponse) GetDocument() *Document {
@@ -1467,7 +1547,7 @@ type ListDocumentsRequest struct {
 
 func (x *ListDocumentsRequest) Reset() {
 	*x = ListDocumentsRequest{}
-	mi := &file_api_core_core_proto_msgTypes[24]
+	mi := &file_api_core_core_proto_msgTypes[26]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -1479,7 +1559,7 @@ func (x *ListDocumentsRequest) String() string {
 func (*ListDocumentsRequest) ProtoMessage() {}
 
 func (x *ListDocumentsRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_api_core_core_proto_msgTypes[24]
+	mi := &file_api_core_core_proto_msgTypes[26]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -1492,7 +1572,7 @@ func (x *ListDocumentsRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use ListDocumentsRequest.ProtoReflect.Descriptor instead.
 func (*ListDocumentsRequest) Descriptor() ([]byte, []int) {
-	return file_api_core_core_proto_rawDescGZIP(), []int{24}
+	return file_api_core_core_proto_rawDescGZIP(), []int{26}
 }
 
 func (x *ListDocumentsRequest) GetOrganizationId() string {
@@ -1535,7 +1615,7 @@ type ListDocumentsResponse struct {
 
 func (x *ListDocumentsResponse) Reset() {
 	*x = ListDocumentsResponse{}
-	mi := &file_api_core_core_proto_msgTypes[25]
+	mi := &file_api_core_core_proto_msgTypes[27]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -1547,7 +1627,7 @@ func (x *ListDocumentsResponse) String() string {
 func (*ListDocumentsResponse) ProtoMessage() {}
 
 func (x *ListDocumentsResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_api_core_core_proto_msgTypes[25]
+	mi := &file_api_core_core_proto_msgTypes[27]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -1560,7 +1640,7 @@ func (x *ListDocumentsResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use ListDocumentsResponse.ProtoReflect.Descriptor instead.
 func (*ListDocumentsResponse) Descriptor() ([]byte, []int) {
-	return file_api_core_core_proto_rawDescGZIP(), []int{25}
+	return file_api_core_core_proto_rawDescGZIP(), []int{27}
 }
 
 func (x *ListDocumentsResponse) GetDocuments() []*Document {
@@ -1602,7 +1682,7 @@ type UpdateDocumentStatusRequest struct {
 
 func (x *UpdateDocumentStatusRequest) Reset() {
 	*x = UpdateDocumentStatusRequest{}
-	mi := &file_api_core_core_proto_msgTypes[26]
+	mi := &file_api_core_core_proto_msgTypes[28]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -1614,7 +1694,7 @@ func (x *UpdateDocumentStatusRequest) String() string {
 func (*UpdateDocumentStatusRequest) ProtoMessage() {}
 
 func (x *UpdateDocumentStatusRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_api_core_core_proto_msgTypes[26]
+	mi := &file_api_core_core_proto_msgTypes[28]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -1627,7 +1707,7 @@ func (x *UpdateDocumentStatusRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use UpdateDocumentStatusRequest.ProtoReflect.Descriptor instead.
 func (*UpdateDocumentStatusRequest) Descriptor() ([]byte, []int) {
-	return file_api_core_core_proto_rawDescGZIP(), []int{26}
+	return file_api_core_core_proto_rawDescGZIP(), []int{28}
 }
 
 func (x *UpdateDocumentStatusRequest) GetId() string {
@@ -1660,7 +1740,7 @@ type DeleteDocumentRequest struct {
 
 func (x *DeleteDocumentRequest) Reset() {
 	*x = DeleteDocumentRequest{}
-	mi := &file_api_core_core_proto_msgTypes[27]
+	mi := &file_api_core_core_proto_msgTypes[29]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -1672,7 +1752,7 @@ func (x *DeleteDocumentRequest) String() string {
 func (*DeleteDocumentRequest) ProtoMessage() {}
 
 func (x *DeleteDocumentRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_api_core_core_proto_msgTypes[27]
+	mi := &file_api_core_core_proto_msgTypes[29]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -1685,7 +1765,7 @@ func (x *DeleteDocumentRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use DeleteDocumentRequest.ProtoReflect.Descriptor instead.
 func (*DeleteDocumentRequest) Descriptor() ([]byte, []int) {
-	return file_api_core_core_proto_rawDescGZIP(), []int{27}
+	return file_api_core_core_proto_rawDescGZIP(), []int{29}
 }
 
 func (x *DeleteDocumentRequest) GetId() string {
@@ -1705,7 +1785,7 @@ type CreateNoteRequest struct {
 
 func (x *CreateNoteRequest) Reset() {
 	*x = CreateNoteRequest{}
-	mi := &file_api_core_core_proto_msgTypes[28]
+	mi := &file_api_core_core_proto_msgTypes[30]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -1717,7 +1797,7 @@ func (x *CreateNoteRequest) String() string {
 func (*CreateNoteRequest) ProtoMessage() {}
 
 func (x *CreateNoteRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_api_core_core_proto_msgTypes[28]
+	mi := &file_api_core_core_proto_msgTypes[30]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -1730,7 +1810,7 @@ func (x *CreateNoteRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use CreateNoteRequest.ProtoReflect.Descriptor instead.
 func (*CreateNoteRequest) Descriptor() ([]byte, []int) {
-	return file_api_core_core_proto_rawDescGZIP(), []int{28}
+	return file_api_core_core_proto_rawDescGZIP(), []int{30}
 }
 
 func (x *CreateNoteRequest) GetOrganizationId() string {
@@ -1756,7 +1836,7 @@ type CreateNoteResponse struct {
 
 func (x *CreateNoteResponse) Reset() {
 	*x = CreateNoteResponse{}
-	mi := &file_api_core_core_proto_msgTypes[29]
+	mi := &file_api_core_core_proto_msgTypes[31]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -1768,7 +1848,7 @@ func (x *CreateNoteResponse) String() string {
 func (*CreateNoteResponse) ProtoMessage() {}
 
 func (x *CreateNoteResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_api_core_core_proto_msgTypes[29]
+	mi := &file_api_core_core_proto_msgTypes[31]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -1781,7 +1861,7 @@ func (x *CreateNoteResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use CreateNoteResponse.ProtoReflect.Descriptor instead.
 func (*CreateNoteResponse) Descriptor() ([]byte, []int) {
-	return file_api_core_core_proto_rawDescGZIP(), []int{29}
+	return file_api_core_core_proto_rawDescGZIP(), []int{31}
 }
 
 func (x *CreateNoteResponse) GetNote() *Note {
@@ -1801,7 +1881,7 @@ type ListNotesRequest struct {
 
 func (x *ListNotesRequest) Reset() {
 	*x = ListNotesRequest{}
-	mi := &file_api_core_core_proto_msgTypes[30]
+	mi := &file_api_core_core_proto_msgTypes[32]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -1813,7 +1893,7 @@ func (x *ListNotesRequest) String() string {
 func (*ListNotesRequest) ProtoMessage() {}
 
 func (x *ListNotesRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_api_core_core_proto_msgTypes[30]
+	mi := &file_api_core_core_proto_msgTypes[32]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -1826,7 +1906,7 @@ func (x *ListNotesRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use ListNotesRequest.ProtoReflect.Descriptor instead.
 func (*ListNotesRequest) Descriptor() ([]byte, []int) {
-	return file_api_core_core_proto_rawDescGZIP(), []int{30}
+	return file_api_core_core_proto_rawDescGZIP(), []int{32}
 }
 
 func (x *ListNotesRequest) GetOrganizationId() string {
@@ -1852,7 +1932,7 @@ type ListNotesResponse struct {
 
 func (x *ListNotesResponse) Reset() {
 	*x = ListNotesResponse{}
-	mi := &file_api_core_core_proto_msgTypes[31]
+	mi := &file_api_core_core_proto_msgTypes[33]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -1864,7 +1944,7 @@ func (x *ListNotesResponse) String() string {
 func (*ListNotesResponse) ProtoMessage() {}
 
 func (x *ListNotesResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_api_core_core_proto_msgTypes[31]
+	mi := &file_api_core_core_proto_msgTypes[33]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -1877,7 +1957,7 @@ func (x *ListNotesResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use ListNotesResponse.ProtoReflect.Descriptor instead.
 func (*ListNotesResponse) Descriptor() ([]byte, []int) {
-	return file_api_core_core_proto_rawDescGZIP(), []int{31}
+	return file_api_core_core_proto_rawDescGZIP(), []int{33}
 }
 
 func (x *ListNotesResponse) GetNotes() []*Note {
@@ -1896,7 +1976,7 @@ type GetNoteRequest struct {
 
 func (x *GetNoteRequest) Reset() {
 	*x = GetNoteRequest{}
-	mi := &file_api_core_core_proto_msgTypes[32]
+	mi := &file_api_core_core_proto_msgTypes[34]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -1908,7 +1988,7 @@ func (x *GetNoteRequest) String() string {
 func (*GetNoteRequest) ProtoMessage() {}
 
 func (x *GetNoteRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_api_core_core_proto_msgTypes[32]
+	mi := &file_api_core_core_proto_msgTypes[34]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -1921,7 +2001,7 @@ func (x *GetNoteRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use GetNoteRequest.ProtoReflect.Descriptor instead.
 func (*GetNoteRequest) Descriptor() ([]byte, []int) {
-	return file_api_core_core_proto_rawDescGZIP(), []int{32}
+	return file_api_core_core_proto_rawDescGZIP(), []int{34}
 }
 
 func (x *GetNoteRequest) GetId() string {
@@ -1940,7 +2020,7 @@ type GetNoteResponse struct {
 
 func (x *GetNoteResponse) Reset() {
 	*x = GetNoteResponse{}
-	mi := &file_api_core_core_proto_msgTypes[33]
+	mi := &file_api_core_core_proto_msgTypes[35]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -1952,7 +2032,7 @@ func (x *GetNoteResponse) String() string {
 func (*GetNoteResponse) ProtoMessage() {}
 
 func (x *GetNoteResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_api_core_core_proto_msgTypes[33]
+	mi := &file_api_core_core_proto_msgTypes[35]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -1965,7 +2045,7 @@ func (x *GetNoteResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use GetNoteResponse.ProtoReflect.Descriptor instead.
 func (*GetNoteResponse) Descriptor() ([]byte, []int) {
-	return file_api_core_core_proto_rawDescGZIP(), []int{33}
+	return file_api_core_core_proto_rawDescGZIP(), []int{35}
 }
 
 func (x *GetNoteResponse) GetNote() *Note {
@@ -1984,7 +2064,7 @@ type DeleteNoteRequest struct {
 
 func (x *DeleteNoteRequest) Reset() {
 	*x = DeleteNoteRequest{}
-	mi := &file_api_core_core_proto_msgTypes[34]
+	mi := &file_api_core_core_proto_msgTypes[36]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -1996,7 +2076,7 @@ func (x *DeleteNoteRequest) String() string {
 func (*DeleteNoteRequest) ProtoMessage() {}
 
 func (x *DeleteNoteRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_api_core_core_proto_msgTypes[34]
+	mi := &file_api_core_core_proto_msgTypes[36]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -2009,7 +2089,7 @@ func (x *DeleteNoteRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use DeleteNoteRequest.ProtoReflect.Descriptor instead.
 func (*DeleteNoteRequest) Descriptor() ([]byte, []int) {
-	return file_api_core_core_proto_rawDescGZIP(), []int{34}
+	return file_api_core_core_proto_rawDescGZIP(), []int{36}
 }
 
 func (x *DeleteNoteRequest) GetId() string {
@@ -2034,7 +2114,7 @@ type CreateTemplateRequest struct {
 
 func (x *CreateTemplateRequest) Reset() {
 	*x = CreateTemplateRequest{}
-	mi := &file_api_core_core_proto_msgTypes[35]
+	mi := &file_api_core_core_proto_msgTypes[37]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -2046,7 +2126,7 @@ func (x *CreateTemplateRequest) String() string {
 func (*CreateTemplateRequest) ProtoMessage() {}
 
 func (x *CreateTemplateRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_api_core_core_proto_msgTypes[35]
+	mi := &file_api_core_core_proto_msgTypes[37]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -2059,7 +2139,7 @@ func (x *CreateTemplateRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use CreateTemplateRequest.ProtoReflect.Descriptor instead.
 func (*CreateTemplateRequest) Descriptor() ([]byte, []int) {
-	return file_api_core_core_proto_rawDescGZIP(), []int{35}
+	return file_api_core_core_proto_rawDescGZIP(), []int{37}
 }
 
 func (x *CreateTemplateRequest) GetOrganizationId() string {
@@ -2113,7 +2193,7 @@ type CreateTemplateResponse struct {
 
 func (x *CreateTemplateResponse) Reset() {
 	*x = CreateTemplateResponse{}
-	mi := &file_api_core_core_proto_msgTypes[36]
+	mi := &file_api_core_core_proto_msgTypes[38]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -2125,7 +2205,7 @@ func (x *CreateTemplateResponse) String() string {
 func (*CreateTemplateResponse) ProtoMessage() {}
 
 func (x *CreateTemplateResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_api_core_core_proto_msgTypes[36]
+	mi := &file_api_core_core_proto_msgTypes[38]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -2138,7 +2218,7 @@ func (x *CreateTemplateResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use CreateTemplateResponse.ProtoReflect.Descriptor instead.
 func (*CreateTemplateResponse) Descriptor() ([]byte, []int) {
-	return file_api_core_core_proto_rawDescGZIP(), []int{36}
+	return file_api_core_core_proto_rawDescGZIP(), []int{38}
 }
 
 func (x *CreateTemplateResponse) GetTemplate() *ContractTemplate {
@@ -2157,7 +2237,7 @@ type GetTemplateRequest struct {
 
 func (x *GetTemplateRequest) Reset() {
 	*x = GetTemplateRequest{}
-	mi := &file_api_core_core_proto_msgTypes[37]
+	mi := &file_api_core_core_proto_msgTypes[39]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -2169,7 +2249,7 @@ func (x *GetTemplateRequest) String() string {
 func (*GetTemplateRequest) ProtoMessage() {}
 
 func (x *GetTemplateRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_api_core_core_proto_msgTypes[37]
+	mi := &file_api_core_core_proto_msgTypes[39]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -2182,7 +2262,7 @@ func (x *GetTemplateRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use GetTemplateRequest.ProtoReflect.Descriptor instead.
 func (*GetTemplateRequest) Descriptor() ([]byte, []int) {
-	return file_api_core_core_proto_rawDescGZIP(), []int{37}
+	return file_api_core_core_proto_rawDescGZIP(), []int{39}
 }
 
 func (x *GetTemplateRequest) GetId() string {
@@ -2201,7 +2281,7 @@ type GetTemplateResponse struct {
 
 func (x *GetTemplateResponse) Reset() {
 	*x = GetTemplateResponse{}
-	mi := &file_api_core_core_proto_msgTypes[38]
+	mi := &file_api_core_core_proto_msgTypes[40]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -2213,7 +2293,7 @@ func (x *GetTemplateResponse) String() string {
 func (*GetTemplateResponse) ProtoMessage() {}
 
 func (x *GetTemplateResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_api_core_core_proto_msgTypes[38]
+	mi := &file_api_core_core_proto_msgTypes[40]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -2226,7 +2306,7 @@ func (x *GetTemplateResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use GetTemplateResponse.ProtoReflect.Descriptor instead.
 func (*GetTemplateResponse) Descriptor() ([]byte, []int) {
-	return file_api_core_core_proto_rawDescGZIP(), []int{38}
+	return file_api_core_core_proto_rawDescGZIP(), []int{40}
 }
 
 func (x *GetTemplateResponse) GetTemplate() *ContractTemplate {
@@ -2247,7 +2327,7 @@ type ListTemplatesRequest struct {
 
 func (x *ListTemplatesRequest) Reset() {
 	*x = ListTemplatesRequest{}
-	mi := &file_api_core_core_proto_msgTypes[39]
+	mi := &file_api_core_core_proto_msgTypes[41]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -2259,7 +2339,7 @@ func (x *ListTemplatesRequest) String() string {
 func (*ListTemplatesRequest) ProtoMessage() {}
 
 func (x *ListTemplatesRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_api_core_core_proto_msgTypes[39]
+	mi := &file_api_core_core_proto_msgTypes[41]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -2272,7 +2352,7 @@ func (x *ListTemplatesRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use ListTemplatesRequest.ProtoReflect.Descriptor instead.
 func (*ListTemplatesRequest) Descriptor() ([]byte, []int) {
-	return file_api_core_core_proto_rawDescGZIP(), []int{39}
+	return file_api_core_core_proto_rawDescGZIP(), []int{41}
 }
 
 func (x *ListTemplatesRequest) GetOrganizationId() string {
@@ -2308,7 +2388,7 @@ type ListTemplatesResponse struct {
 
 func (x *ListTemplatesResponse) Reset() {
 	*x = ListTemplatesResponse{}
-	mi := &file_api_core_core_proto_msgTypes[40]
+	mi := &file_api_core_core_proto_msgTypes[42]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -2320,7 +2400,7 @@ func (x *ListTemplatesResponse) String() string {
 func (*ListTemplatesResponse) ProtoMessage() {}
 
 func (x *ListTemplatesResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_api_core_core_proto_msgTypes[40]
+	mi := &file_api_core_core_proto_msgTypes[42]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -2333,7 +2413,7 @@ func (x *ListTemplatesResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use ListTemplatesResponse.ProtoReflect.Descriptor instead.
 func (*ListTemplatesResponse) Descriptor() ([]byte, []int) {
-	return file_api_core_core_proto_rawDescGZIP(), []int{40}
+	return file_api_core_core_proto_rawDescGZIP(), []int{42}
 }
 
 func (x *ListTemplatesResponse) GetTemplates() []*ContractTemplate {
@@ -2377,7 +2457,7 @@ type UpdateTemplateRequest struct {
 
 func (x *UpdateTemplateRequest) Reset() {
 	*x = UpdateTemplateRequest{}
-	mi := &file_api_core_core_proto_msgTypes[41]
+	mi := &file_api_core_core_proto_msgTypes[43]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -2389,7 +2469,7 @@ func (x *UpdateTemplateRequest) String() string {
 func (*UpdateTemplateRequest) ProtoMessage() {}
 
 func (x *UpdateTemplateRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_api_core_core_proto_msgTypes[41]
+	mi := &file_api_core_core_proto_msgTypes[43]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -2402,7 +2482,7 @@ func (x *UpdateTemplateRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use UpdateTemplateRequest.ProtoReflect.Descriptor instead.
 func (*UpdateTemplateRequest) Descriptor() ([]byte, []int) {
-	return file_api_core_core_proto_rawDescGZIP(), []int{41}
+	return file_api_core_core_proto_rawDescGZIP(), []int{43}
 }
 
 func (x *UpdateTemplateRequest) GetId() string {
@@ -2449,7 +2529,7 @@ type UpdateTemplateResponse struct {
 
 func (x *UpdateTemplateResponse) Reset() {
 	*x = UpdateTemplateResponse{}
-	mi := &file_api_core_core_proto_msgTypes[42]
+	mi := &file_api_core_core_proto_msgTypes[44]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -2461,7 +2541,7 @@ func (x *UpdateTemplateResponse) String() string {
 func (*UpdateTemplateResponse) ProtoMessage() {}
 
 func (x *UpdateTemplateResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_api_core_core_proto_msgTypes[42]
+	mi := &file_api_core_core_proto_msgTypes[44]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -2474,7 +2554,7 @@ func (x *UpdateTemplateResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use UpdateTemplateResponse.ProtoReflect.Descriptor instead.
 func (*UpdateTemplateResponse) Descriptor() ([]byte, []int) {
-	return file_api_core_core_proto_rawDescGZIP(), []int{42}
+	return file_api_core_core_proto_rawDescGZIP(), []int{44}
 }
 
 func (x *UpdateTemplateResponse) GetTemplate() *ContractTemplate {
@@ -2493,7 +2573,7 @@ type DeleteTemplateRequest struct {
 
 func (x *DeleteTemplateRequest) Reset() {
 	*x = DeleteTemplateRequest{}
-	mi := &file_api_core_core_proto_msgTypes[43]
+	mi := &file_api_core_core_proto_msgTypes[45]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -2505,7 +2585,7 @@ func (x *DeleteTemplateRequest) String() string {
 func (*DeleteTemplateRequest) ProtoMessage() {}
 
 func (x *DeleteTemplateRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_api_core_core_proto_msgTypes[43]
+	mi := &file_api_core_core_proto_msgTypes[45]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -2518,7 +2598,7 @@ func (x *DeleteTemplateRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use DeleteTemplateRequest.ProtoReflect.Descriptor instead.
 func (*DeleteTemplateRequest) Descriptor() ([]byte, []int) {
-	return file_api_core_core_proto_rawDescGZIP(), []int{43}
+	return file_api_core_core_proto_rawDescGZIP(), []int{45}
 }
 
 func (x *DeleteTemplateRequest) GetId() string {
@@ -2543,7 +2623,7 @@ type RegisterContractRequest struct {
 
 func (x *RegisterContractRequest) Reset() {
 	*x = RegisterContractRequest{}
-	mi := &file_api_core_core_proto_msgTypes[44]
+	mi := &file_api_core_core_proto_msgTypes[46]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -2555,7 +2635,7 @@ func (x *RegisterContractRequest) String() string {
 func (*RegisterContractRequest) ProtoMessage() {}
 
 func (x *RegisterContractRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_api_core_core_proto_msgTypes[44]
+	mi := &file_api_core_core_proto_msgTypes[46]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -2568,7 +2648,7 @@ func (x *RegisterContractRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use RegisterContractRequest.ProtoReflect.Descriptor instead.
 func (*RegisterContractRequest) Descriptor() ([]byte, []int) {
-	return file_api_core_core_proto_rawDescGZIP(), []int{44}
+	return file_api_core_core_proto_rawDescGZIP(), []int{46}
 }
 
 func (x *RegisterContractRequest) GetOrganizationId() string {
@@ -2622,7 +2702,7 @@ type RegisterContractResponse struct {
 
 func (x *RegisterContractResponse) Reset() {
 	*x = RegisterContractResponse{}
-	mi := &file_api_core_core_proto_msgTypes[45]
+	mi := &file_api_core_core_proto_msgTypes[47]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -2634,7 +2714,7 @@ func (x *RegisterContractResponse) String() string {
 func (*RegisterContractResponse) ProtoMessage() {}
 
 func (x *RegisterContractResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_api_core_core_proto_msgTypes[45]
+	mi := &file_api_core_core_proto_msgTypes[47]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -2647,7 +2727,7 @@ func (x *RegisterContractResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use RegisterContractResponse.ProtoReflect.Descriptor instead.
 func (*RegisterContractResponse) Descriptor() ([]byte, []int) {
-	return file_api_core_core_proto_rawDescGZIP(), []int{45}
+	return file_api_core_core_proto_rawDescGZIP(), []int{47}
 }
 
 func (x *RegisterContractResponse) GetContract() *GeneratedContract {
@@ -2666,7 +2746,7 @@ type GetContractRequest struct {
 
 func (x *GetContractRequest) Reset() {
 	*x = GetContractRequest{}
-	mi := &file_api_core_core_proto_msgTypes[46]
+	mi := &file_api_core_core_proto_msgTypes[48]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -2678,7 +2758,7 @@ func (x *GetContractRequest) String() string {
 func (*GetContractRequest) ProtoMessage() {}
 
 func (x *GetContractRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_api_core_core_proto_msgTypes[46]
+	mi := &file_api_core_core_proto_msgTypes[48]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -2691,7 +2771,7 @@ func (x *GetContractRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use GetContractRequest.ProtoReflect.Descriptor instead.
 func (*GetContractRequest) Descriptor() ([]byte, []int) {
-	return file_api_core_core_proto_rawDescGZIP(), []int{46}
+	return file_api_core_core_proto_rawDescGZIP(), []int{48}
 }
 
 func (x *GetContractRequest) GetId() string {
@@ -2710,7 +2790,7 @@ type GetContractResponse struct {
 
 func (x *GetContractResponse) Reset() {
 	*x = GetContractResponse{}
-	mi := &file_api_core_core_proto_msgTypes[47]
+	mi := &file_api_core_core_proto_msgTypes[49]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -2722,7 +2802,7 @@ func (x *GetContractResponse) String() string {
 func (*GetContractResponse) ProtoMessage() {}
 
 func (x *GetContractResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_api_core_core_proto_msgTypes[47]
+	mi := &file_api_core_core_proto_msgTypes[49]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -2735,7 +2815,7 @@ func (x *GetContractResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use GetContractResponse.ProtoReflect.Descriptor instead.
 func (*GetContractResponse) Descriptor() ([]byte, []int) {
-	return file_api_core_core_proto_rawDescGZIP(), []int{47}
+	return file_api_core_core_proto_rawDescGZIP(), []int{49}
 }
 
 func (x *GetContractResponse) GetContract() *GeneratedContract {
@@ -2756,7 +2836,7 @@ type ListContractsRequest struct {
 
 func (x *ListContractsRequest) Reset() {
 	*x = ListContractsRequest{}
-	mi := &file_api_core_core_proto_msgTypes[48]
+	mi := &file_api_core_core_proto_msgTypes[50]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -2768,7 +2848,7 @@ func (x *ListContractsRequest) String() string {
 func (*ListContractsRequest) ProtoMessage() {}
 
 func (x *ListContractsRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_api_core_core_proto_msgTypes[48]
+	mi := &file_api_core_core_proto_msgTypes[50]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -2781,7 +2861,7 @@ func (x *ListContractsRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use ListContractsRequest.ProtoReflect.Descriptor instead.
 func (*ListContractsRequest) Descriptor() ([]byte, []int) {
-	return file_api_core_core_proto_rawDescGZIP(), []int{48}
+	return file_api_core_core_proto_rawDescGZIP(), []int{50}
 }
 
 func (x *ListContractsRequest) GetOrganizationId() string {
@@ -2817,7 +2897,7 @@ type ListContractsResponse struct {
 
 func (x *ListContractsResponse) Reset() {
 	*x = ListContractsResponse{}
-	mi := &file_api_core_core_proto_msgTypes[49]
+	mi := &file_api_core_core_proto_msgTypes[51]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -2829,7 +2909,7 @@ func (x *ListContractsResponse) String() string {
 func (*ListContractsResponse) ProtoMessage() {}
 
 func (x *ListContractsResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_api_core_core_proto_msgTypes[49]
+	mi := &file_api_core_core_proto_msgTypes[51]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -2842,7 +2922,7 @@ func (x *ListContractsResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use ListContractsResponse.ProtoReflect.Descriptor instead.
 func (*ListContractsResponse) Descriptor() ([]byte, []int) {
-	return file_api_core_core_proto_rawDescGZIP(), []int{49}
+	return file_api_core_core_proto_rawDescGZIP(), []int{51}
 }
 
 func (x *ListContractsResponse) GetContracts() []*GeneratedContract {
@@ -2882,7 +2962,7 @@ type DeleteContractRequest struct {
 
 func (x *DeleteContractRequest) Reset() {
 	*x = DeleteContractRequest{}
-	mi := &file_api_core_core_proto_msgTypes[50]
+	mi := &file_api_core_core_proto_msgTypes[52]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -2894,7 +2974,7 @@ func (x *DeleteContractRequest) String() string {
 func (*DeleteContractRequest) ProtoMessage() {}
 
 func (x *DeleteContractRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_api_core_core_proto_msgTypes[50]
+	mi := &file_api_core_core_proto_msgTypes[52]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -2907,7 +2987,7 @@ func (x *DeleteContractRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use DeleteContractRequest.ProtoReflect.Descriptor instead.
 func (*DeleteContractRequest) Descriptor() ([]byte, []int) {
-	return file_api_core_core_proto_rawDescGZIP(), []int{50}
+	return file_api_core_core_proto_rawDescGZIP(), []int{52}
 }
 
 func (x *DeleteContractRequest) GetId() string {
@@ -2934,7 +3014,7 @@ type Organization struct {
 
 func (x *Organization) Reset() {
 	*x = Organization{}
-	mi := &file_api_core_core_proto_msgTypes[51]
+	mi := &file_api_core_core_proto_msgTypes[53]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -2946,7 +3026,7 @@ func (x *Organization) String() string {
 func (*Organization) ProtoMessage() {}
 
 func (x *Organization) ProtoReflect() protoreflect.Message {
-	mi := &file_api_core_core_proto_msgTypes[51]
+	mi := &file_api_core_core_proto_msgTypes[53]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -2959,7 +3039,7 @@ func (x *Organization) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use Organization.ProtoReflect.Descriptor instead.
 func (*Organization) Descriptor() ([]byte, []int) {
-	return file_api_core_core_proto_rawDescGZIP(), []int{51}
+	return file_api_core_core_proto_rawDescGZIP(), []int{53}
 }
 
 func (x *Organization) GetId() string {
@@ -3043,7 +3123,7 @@ type User struct {
 
 func (x *User) Reset() {
 	*x = User{}
-	mi := &file_api_core_core_proto_msgTypes[52]
+	mi := &file_api_core_core_proto_msgTypes[54]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -3055,7 +3135,7 @@ func (x *User) String() string {
 func (*User) ProtoMessage() {}
 
 func (x *User) ProtoReflect() protoreflect.Message {
-	mi := &file_api_core_core_proto_msgTypes[52]
+	mi := &file_api_core_core_proto_msgTypes[54]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -3068,7 +3148,7 @@ func (x *User) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use User.ProtoReflect.Descriptor instead.
 func (*User) Descriptor() ([]byte, []int) {
-	return file_api_core_core_proto_rawDescGZIP(), []int{52}
+	return file_api_core_core_proto_rawDescGZIP(), []int{54}
 }
 
 func (x *User) GetId() string {
@@ -3159,7 +3239,7 @@ type Document struct {
 
 func (x *Document) Reset() {
 	*x = Document{}
-	mi := &file_api_core_core_proto_msgTypes[53]
+	mi := &file_api_core_core_proto_msgTypes[55]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -3171,7 +3251,7 @@ func (x *Document) String() string {
 func (*Document) ProtoMessage() {}
 
 func (x *Document) ProtoReflect() protoreflect.Message {
-	mi := &file_api_core_core_proto_msgTypes[53]
+	mi := &file_api_core_core_proto_msgTypes[55]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -3184,7 +3264,7 @@ func (x *Document) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use Document.ProtoReflect.Descriptor instead.
 func (*Document) Descriptor() ([]byte, []int) {
-	return file_api_core_core_proto_rawDescGZIP(), []int{53}
+	return file_api_core_core_proto_rawDescGZIP(), []int{55}
 }
 
 func (x *Document) GetId() string {
@@ -3269,7 +3349,7 @@ type Note struct {
 
 func (x *Note) Reset() {
 	*x = Note{}
-	mi := &file_api_core_core_proto_msgTypes[54]
+	mi := &file_api_core_core_proto_msgTypes[56]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -3281,7 +3361,7 @@ func (x *Note) String() string {
 func (*Note) ProtoMessage() {}
 
 func (x *Note) ProtoReflect() protoreflect.Message {
-	mi := &file_api_core_core_proto_msgTypes[54]
+	mi := &file_api_core_core_proto_msgTypes[56]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -3294,7 +3374,7 @@ func (x *Note) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use Note.ProtoReflect.Descriptor instead.
 func (*Note) Descriptor() ([]byte, []int) {
-	return file_api_core_core_proto_rawDescGZIP(), []int{54}
+	return file_api_core_core_proto_rawDescGZIP(), []int{56}
 }
 
 func (x *Note) GetId() string {
@@ -3342,7 +3422,7 @@ type ContractTemplate struct {
 
 func (x *ContractTemplate) Reset() {
 	*x = ContractTemplate{}
-	mi := &file_api_core_core_proto_msgTypes[55]
+	mi := &file_api_core_core_proto_msgTypes[57]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -3354,7 +3434,7 @@ func (x *ContractTemplate) String() string {
 func (*ContractTemplate) ProtoMessage() {}
 
 func (x *ContractTemplate) ProtoReflect() protoreflect.Message {
-	mi := &file_api_core_core_proto_msgTypes[55]
+	mi := &file_api_core_core_proto_msgTypes[57]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -3367,7 +3447,7 @@ func (x *ContractTemplate) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use ContractTemplate.ProtoReflect.Descriptor instead.
 func (*ContractTemplate) Descriptor() ([]byte, []int) {
-	return file_api_core_core_proto_rawDescGZIP(), []int{55}
+	return file_api_core_core_proto_rawDescGZIP(), []int{57}
 }
 
 func (x *ContractTemplate) GetId() string {
@@ -3449,7 +3529,7 @@ type GeneratedContract struct {
 
 func (x *GeneratedContract) Reset() {
 	*x = GeneratedContract{}
-	mi := &file_api_core_core_proto_msgTypes[56]
+	mi := &file_api_core_core_proto_msgTypes[58]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -3461,7 +3541,7 @@ func (x *GeneratedContract) String() string {
 func (*GeneratedContract) ProtoMessage() {}
 
 func (x *GeneratedContract) ProtoReflect() protoreflect.Message {
-	mi := &file_api_core_core_proto_msgTypes[56]
+	mi := &file_api_core_core_proto_msgTypes[58]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -3474,7 +3554,7 @@ func (x *GeneratedContract) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use GeneratedContract.ProtoReflect.Descriptor instead.
 func (*GeneratedContract) Descriptor() ([]byte, []int) {
-	return file_api_core_core_proto_rawDescGZIP(), []int{56}
+	return file_api_core_core_proto_rawDescGZIP(), []int{58}
 }
 
 func (x *GeneratedContract) GetId() string {
@@ -3555,7 +3635,10 @@ const file_api_core_core_proto_rawDesc = "" +
 	"\x16GetOrganizationRequest\x12\x17\n" +
 	"\x02id\x18\x01 \x01(\tB\a\xfaB\x04r\x02\x10\x01R\x02id\"Z\n" +
 	"\x17GetOrganizationResponse\x12?\n" +
-	"\forganization\x18\x01 \x01(\v2\x1b.core.api.core.OrganizationR\forganization\"\x9c\x02\n" +
+	"\forganization\x18\x01 \x01(\v2\x1b.core.api.core.OrganizationR\forganization\"\x1c\n" +
+	"\x1aListMyOrganizationsRequest\"`\n" +
+	"\x1bListMyOrganizationsResponse\x12A\n" +
+	"\rorganizations\x18\x01 \x03(\v2\x1b.core.api.core.OrganizationR\rorganizations\"\x9c\x02\n" +
 	"\x19UpdateOrganizationRequest\x12\x17\n" +
 	"\x02id\x18\x01 \x01(\tB\a\xfaB\x04r\x02\x10\x01R\x02id\x12\x17\n" +
 	"\x04name\x18\x02 \x01(\tH\x00R\x04name\x88\x01\x01\x12\x1f\n" +
@@ -3812,10 +3895,11 @@ const file_api_core_core_proto_rawDesc = "" +
 	"\x17DOCUMENT_STATUS_INDEXED\x10\x03\x12\x1a\n" +
 	"\x16DOCUMENT_STATUS_FAILED\x10\x042\xa9\x01\n" +
 	"\vAuthService\x12\x99\x01\n" +
-	"\x18AuthenticateWithTelegram\x12..core.api.core.AuthenticateWithTelegramRequest\x1a/.core.api.core.AuthenticateWithTelegramResponse\"\x1c\x82\xd3\xe4\x93\x02\x16:\x01*\"\x11/v1/auth/telegram2\xa9\x04\n" +
+	"\x18AuthenticateWithTelegram\x12..core.api.core.AuthenticateWithTelegramRequest\x1a/.core.api.core.AuthenticateWithTelegramResponse\"\x1c\x82\xd3\xe4\x93\x02\x16:\x01*\"\x11/v1/auth/telegram2\xb6\x05\n" +
 	"\x13OrganizationService\x12\x87\x01\n" +
 	"\x12CreateOrganization\x12(.core.api.core.CreateOrganizationRequest\x1a).core.api.core.CreateOrganizationResponse\"\x1c\x82\xd3\xe4\x93\x02\x16:\x01*\"\x11/v1/organizations\x12\x80\x01\n" +
-	"\x0fGetOrganization\x12%.core.api.core.GetOrganizationRequest\x1a&.core.api.core.GetOrganizationResponse\"\x1e\x82\xd3\xe4\x93\x02\x18\x12\x16/v1/organizations/{id}\x12\x8c\x01\n" +
+	"\x0fGetOrganization\x12%.core.api.core.GetOrganizationRequest\x1a&.core.api.core.GetOrganizationResponse\"\x1e\x82\xd3\xe4\x93\x02\x18\x12\x16/v1/organizations/{id}\x12\x8a\x01\n" +
+	"\x13ListMyOrganizations\x12).core.api.core.ListMyOrganizationsRequest\x1a*.core.api.core.ListMyOrganizationsResponse\"\x1c\x82\xd3\xe4\x93\x02\x16\x12\x14/v1/organizations/me\x12\x8c\x01\n" +
 	"\x12UpdateOrganization\x12(.core.api.core.UpdateOrganizationRequest\x1a).core.api.core.UpdateOrganizationResponse\"!\x82\xd3\xe4\x93\x02\x1b:\x01*\x1a\x16/v1/organizations/{id}\x12v\n" +
 	"\x12DeleteOrganization\x12(.core.api.core.DeleteOrganizationRequest\x1a\x16.google.protobuf.Empty\"\x1e\x82\xd3\xe4\x93\x02\x18*\x16/v1/organizations/{id}2\x8a\x06\n" +
 	"\vUserService\x12\x8e\x01\n" +
@@ -3870,7 +3954,7 @@ func file_api_core_core_proto_rawDescGZIP() []byte {
 }
 
 var file_api_core_core_proto_enumTypes = make([]protoimpl.EnumInfo, 3)
-var file_api_core_core_proto_msgTypes = make([]protoimpl.MessageInfo, 57)
+var file_api_core_core_proto_msgTypes = make([]protoimpl.MessageInfo, 59)
 var file_api_core_core_proto_goTypes = []any{
 	(UserRole)(0),                            // 0: core.api.core.UserRole
 	(UserStatus)(0),                          // 1: core.api.core.UserStatus
@@ -3881,164 +3965,169 @@ var file_api_core_core_proto_goTypes = []any{
 	(*CreateOrganizationResponse)(nil),       // 6: core.api.core.CreateOrganizationResponse
 	(*GetOrganizationRequest)(nil),           // 7: core.api.core.GetOrganizationRequest
 	(*GetOrganizationResponse)(nil),          // 8: core.api.core.GetOrganizationResponse
-	(*UpdateOrganizationRequest)(nil),        // 9: core.api.core.UpdateOrganizationRequest
-	(*UpdateOrganizationResponse)(nil),       // 10: core.api.core.UpdateOrganizationResponse
-	(*DeleteOrganizationRequest)(nil),        // 11: core.api.core.DeleteOrganizationRequest
-	(*InviteUserRequest)(nil),                // 12: core.api.core.InviteUserRequest
-	(*InviteUserResponse)(nil),               // 13: core.api.core.InviteUserResponse
-	(*AcceptInvitationRequest)(nil),          // 14: core.api.core.AcceptInvitationRequest
-	(*AcceptInvitationResponse)(nil),         // 15: core.api.core.AcceptInvitationResponse
-	(*ListUsersRequest)(nil),                 // 16: core.api.core.ListUsersRequest
-	(*ListUsersResponse)(nil),                // 17: core.api.core.ListUsersResponse
-	(*GetUserRequest)(nil),                   // 18: core.api.core.GetUserRequest
-	(*GetUserResponse)(nil),                  // 19: core.api.core.GetUserResponse
-	(*UpdateUserRoleRequest)(nil),            // 20: core.api.core.UpdateUserRoleRequest
-	(*UpdateUserRoleResponse)(nil),           // 21: core.api.core.UpdateUserRoleResponse
-	(*DeactivateUserRequest)(nil),            // 22: core.api.core.DeactivateUserRequest
-	(*RegisterDocumentRequest)(nil),          // 23: core.api.core.RegisterDocumentRequest
-	(*RegisterDocumentResponse)(nil),         // 24: core.api.core.RegisterDocumentResponse
-	(*GetDocumentRequest)(nil),               // 25: core.api.core.GetDocumentRequest
-	(*GetDocumentResponse)(nil),              // 26: core.api.core.GetDocumentResponse
-	(*ListDocumentsRequest)(nil),             // 27: core.api.core.ListDocumentsRequest
-	(*ListDocumentsResponse)(nil),            // 28: core.api.core.ListDocumentsResponse
-	(*UpdateDocumentStatusRequest)(nil),      // 29: core.api.core.UpdateDocumentStatusRequest
-	(*DeleteDocumentRequest)(nil),            // 30: core.api.core.DeleteDocumentRequest
-	(*CreateNoteRequest)(nil),                // 31: core.api.core.CreateNoteRequest
-	(*CreateNoteResponse)(nil),               // 32: core.api.core.CreateNoteResponse
-	(*ListNotesRequest)(nil),                 // 33: core.api.core.ListNotesRequest
-	(*ListNotesResponse)(nil),                // 34: core.api.core.ListNotesResponse
-	(*GetNoteRequest)(nil),                   // 35: core.api.core.GetNoteRequest
-	(*GetNoteResponse)(nil),                  // 36: core.api.core.GetNoteResponse
-	(*DeleteNoteRequest)(nil),                // 37: core.api.core.DeleteNoteRequest
-	(*CreateTemplateRequest)(nil),            // 38: core.api.core.CreateTemplateRequest
-	(*CreateTemplateResponse)(nil),           // 39: core.api.core.CreateTemplateResponse
-	(*GetTemplateRequest)(nil),               // 40: core.api.core.GetTemplateRequest
-	(*GetTemplateResponse)(nil),              // 41: core.api.core.GetTemplateResponse
-	(*ListTemplatesRequest)(nil),             // 42: core.api.core.ListTemplatesRequest
-	(*ListTemplatesResponse)(nil),            // 43: core.api.core.ListTemplatesResponse
-	(*UpdateTemplateRequest)(nil),            // 44: core.api.core.UpdateTemplateRequest
-	(*UpdateTemplateResponse)(nil),           // 45: core.api.core.UpdateTemplateResponse
-	(*DeleteTemplateRequest)(nil),            // 46: core.api.core.DeleteTemplateRequest
-	(*RegisterContractRequest)(nil),          // 47: core.api.core.RegisterContractRequest
-	(*RegisterContractResponse)(nil),         // 48: core.api.core.RegisterContractResponse
-	(*GetContractRequest)(nil),               // 49: core.api.core.GetContractRequest
-	(*GetContractResponse)(nil),              // 50: core.api.core.GetContractResponse
-	(*ListContractsRequest)(nil),             // 51: core.api.core.ListContractsRequest
-	(*ListContractsResponse)(nil),            // 52: core.api.core.ListContractsResponse
-	(*DeleteContractRequest)(nil),            // 53: core.api.core.DeleteContractRequest
-	(*Organization)(nil),                     // 54: core.api.core.Organization
-	(*User)(nil),                             // 55: core.api.core.User
-	(*Document)(nil),                         // 56: core.api.core.Document
-	(*Note)(nil),                             // 57: core.api.core.Note
-	(*ContractTemplate)(nil),                 // 58: core.api.core.ContractTemplate
-	(*GeneratedContract)(nil),                // 59: core.api.core.GeneratedContract
-	(*timestamppb.Timestamp)(nil),            // 60: google.protobuf.Timestamp
-	(*emptypb.Empty)(nil),                    // 61: google.protobuf.Empty
+	(*ListMyOrganizationsRequest)(nil),       // 9: core.api.core.ListMyOrganizationsRequest
+	(*ListMyOrganizationsResponse)(nil),      // 10: core.api.core.ListMyOrganizationsResponse
+	(*UpdateOrganizationRequest)(nil),        // 11: core.api.core.UpdateOrganizationRequest
+	(*UpdateOrganizationResponse)(nil),       // 12: core.api.core.UpdateOrganizationResponse
+	(*DeleteOrganizationRequest)(nil),        // 13: core.api.core.DeleteOrganizationRequest
+	(*InviteUserRequest)(nil),                // 14: core.api.core.InviteUserRequest
+	(*InviteUserResponse)(nil),               // 15: core.api.core.InviteUserResponse
+	(*AcceptInvitationRequest)(nil),          // 16: core.api.core.AcceptInvitationRequest
+	(*AcceptInvitationResponse)(nil),         // 17: core.api.core.AcceptInvitationResponse
+	(*ListUsersRequest)(nil),                 // 18: core.api.core.ListUsersRequest
+	(*ListUsersResponse)(nil),                // 19: core.api.core.ListUsersResponse
+	(*GetUserRequest)(nil),                   // 20: core.api.core.GetUserRequest
+	(*GetUserResponse)(nil),                  // 21: core.api.core.GetUserResponse
+	(*UpdateUserRoleRequest)(nil),            // 22: core.api.core.UpdateUserRoleRequest
+	(*UpdateUserRoleResponse)(nil),           // 23: core.api.core.UpdateUserRoleResponse
+	(*DeactivateUserRequest)(nil),            // 24: core.api.core.DeactivateUserRequest
+	(*RegisterDocumentRequest)(nil),          // 25: core.api.core.RegisterDocumentRequest
+	(*RegisterDocumentResponse)(nil),         // 26: core.api.core.RegisterDocumentResponse
+	(*GetDocumentRequest)(nil),               // 27: core.api.core.GetDocumentRequest
+	(*GetDocumentResponse)(nil),              // 28: core.api.core.GetDocumentResponse
+	(*ListDocumentsRequest)(nil),             // 29: core.api.core.ListDocumentsRequest
+	(*ListDocumentsResponse)(nil),            // 30: core.api.core.ListDocumentsResponse
+	(*UpdateDocumentStatusRequest)(nil),      // 31: core.api.core.UpdateDocumentStatusRequest
+	(*DeleteDocumentRequest)(nil),            // 32: core.api.core.DeleteDocumentRequest
+	(*CreateNoteRequest)(nil),                // 33: core.api.core.CreateNoteRequest
+	(*CreateNoteResponse)(nil),               // 34: core.api.core.CreateNoteResponse
+	(*ListNotesRequest)(nil),                 // 35: core.api.core.ListNotesRequest
+	(*ListNotesResponse)(nil),                // 36: core.api.core.ListNotesResponse
+	(*GetNoteRequest)(nil),                   // 37: core.api.core.GetNoteRequest
+	(*GetNoteResponse)(nil),                  // 38: core.api.core.GetNoteResponse
+	(*DeleteNoteRequest)(nil),                // 39: core.api.core.DeleteNoteRequest
+	(*CreateTemplateRequest)(nil),            // 40: core.api.core.CreateTemplateRequest
+	(*CreateTemplateResponse)(nil),           // 41: core.api.core.CreateTemplateResponse
+	(*GetTemplateRequest)(nil),               // 42: core.api.core.GetTemplateRequest
+	(*GetTemplateResponse)(nil),              // 43: core.api.core.GetTemplateResponse
+	(*ListTemplatesRequest)(nil),             // 44: core.api.core.ListTemplatesRequest
+	(*ListTemplatesResponse)(nil),            // 45: core.api.core.ListTemplatesResponse
+	(*UpdateTemplateRequest)(nil),            // 46: core.api.core.UpdateTemplateRequest
+	(*UpdateTemplateResponse)(nil),           // 47: core.api.core.UpdateTemplateResponse
+	(*DeleteTemplateRequest)(nil),            // 48: core.api.core.DeleteTemplateRequest
+	(*RegisterContractRequest)(nil),          // 49: core.api.core.RegisterContractRequest
+	(*RegisterContractResponse)(nil),         // 50: core.api.core.RegisterContractResponse
+	(*GetContractRequest)(nil),               // 51: core.api.core.GetContractRequest
+	(*GetContractResponse)(nil),              // 52: core.api.core.GetContractResponse
+	(*ListContractsRequest)(nil),             // 53: core.api.core.ListContractsRequest
+	(*ListContractsResponse)(nil),            // 54: core.api.core.ListContractsResponse
+	(*DeleteContractRequest)(nil),            // 55: core.api.core.DeleteContractRequest
+	(*Organization)(nil),                     // 56: core.api.core.Organization
+	(*User)(nil),                             // 57: core.api.core.User
+	(*Document)(nil),                         // 58: core.api.core.Document
+	(*Note)(nil),                             // 59: core.api.core.Note
+	(*ContractTemplate)(nil),                 // 60: core.api.core.ContractTemplate
+	(*GeneratedContract)(nil),                // 61: core.api.core.GeneratedContract
+	(*timestamppb.Timestamp)(nil),            // 62: google.protobuf.Timestamp
+	(*emptypb.Empty)(nil),                    // 63: google.protobuf.Empty
 }
 var file_api_core_core_proto_depIdxs = []int32{
-	55, // 0: core.api.core.AuthenticateWithTelegramResponse.user:type_name -> core.api.core.User
-	54, // 1: core.api.core.CreateOrganizationResponse.organization:type_name -> core.api.core.Organization
-	54, // 2: core.api.core.GetOrganizationResponse.organization:type_name -> core.api.core.Organization
-	54, // 3: core.api.core.UpdateOrganizationResponse.organization:type_name -> core.api.core.Organization
-	0,  // 4: core.api.core.InviteUserRequest.role:type_name -> core.api.core.UserRole
-	60, // 5: core.api.core.InviteUserResponse.expires_at:type_name -> google.protobuf.Timestamp
-	55, // 6: core.api.core.AcceptInvitationResponse.user:type_name -> core.api.core.User
-	55, // 7: core.api.core.ListUsersResponse.users:type_name -> core.api.core.User
-	55, // 8: core.api.core.GetUserResponse.user:type_name -> core.api.core.User
-	0,  // 9: core.api.core.UpdateUserRoleRequest.role:type_name -> core.api.core.UserRole
-	55, // 10: core.api.core.UpdateUserRoleResponse.user:type_name -> core.api.core.User
-	56, // 11: core.api.core.RegisterDocumentResponse.document:type_name -> core.api.core.Document
-	56, // 12: core.api.core.GetDocumentResponse.document:type_name -> core.api.core.Document
-	2,  // 13: core.api.core.ListDocumentsRequest.status:type_name -> core.api.core.DocumentStatus
-	56, // 14: core.api.core.ListDocumentsResponse.documents:type_name -> core.api.core.Document
-	2,  // 15: core.api.core.UpdateDocumentStatusRequest.status:type_name -> core.api.core.DocumentStatus
-	57, // 16: core.api.core.CreateNoteResponse.note:type_name -> core.api.core.Note
-	57, // 17: core.api.core.ListNotesResponse.notes:type_name -> core.api.core.Note
-	57, // 18: core.api.core.GetNoteResponse.note:type_name -> core.api.core.Note
-	58, // 19: core.api.core.CreateTemplateResponse.template:type_name -> core.api.core.ContractTemplate
-	58, // 20: core.api.core.GetTemplateResponse.template:type_name -> core.api.core.ContractTemplate
-	58, // 21: core.api.core.ListTemplatesResponse.templates:type_name -> core.api.core.ContractTemplate
-	58, // 22: core.api.core.UpdateTemplateResponse.template:type_name -> core.api.core.ContractTemplate
-	59, // 23: core.api.core.RegisterContractResponse.contract:type_name -> core.api.core.GeneratedContract
-	59, // 24: core.api.core.GetContractResponse.contract:type_name -> core.api.core.GeneratedContract
-	59, // 25: core.api.core.ListContractsResponse.contracts:type_name -> core.api.core.GeneratedContract
-	60, // 26: core.api.core.Organization.created_at:type_name -> google.protobuf.Timestamp
-	60, // 27: core.api.core.Organization.updated_at:type_name -> google.protobuf.Timestamp
-	60, // 28: core.api.core.Organization.deleted_at:type_name -> google.protobuf.Timestamp
-	0,  // 29: core.api.core.User.role:type_name -> core.api.core.UserRole
-	1,  // 30: core.api.core.User.status:type_name -> core.api.core.UserStatus
-	60, // 31: core.api.core.User.created_at:type_name -> google.protobuf.Timestamp
-	60, // 32: core.api.core.User.updated_at:type_name -> google.protobuf.Timestamp
-	2,  // 33: core.api.core.Document.status:type_name -> core.api.core.DocumentStatus
-	60, // 34: core.api.core.Document.created_at:type_name -> google.protobuf.Timestamp
-	60, // 35: core.api.core.Document.updated_at:type_name -> google.protobuf.Timestamp
-	60, // 36: core.api.core.Note.created_at:type_name -> google.protobuf.Timestamp
-	60, // 37: core.api.core.ContractTemplate.created_at:type_name -> google.protobuf.Timestamp
-	60, // 38: core.api.core.ContractTemplate.updated_at:type_name -> google.protobuf.Timestamp
-	60, // 39: core.api.core.GeneratedContract.created_at:type_name -> google.protobuf.Timestamp
-	3,  // 40: core.api.core.AuthService.AuthenticateWithTelegram:input_type -> core.api.core.AuthenticateWithTelegramRequest
-	5,  // 41: core.api.core.OrganizationService.CreateOrganization:input_type -> core.api.core.CreateOrganizationRequest
-	7,  // 42: core.api.core.OrganizationService.GetOrganization:input_type -> core.api.core.GetOrganizationRequest
-	9,  // 43: core.api.core.OrganizationService.UpdateOrganization:input_type -> core.api.core.UpdateOrganizationRequest
-	11, // 44: core.api.core.OrganizationService.DeleteOrganization:input_type -> core.api.core.DeleteOrganizationRequest
-	12, // 45: core.api.core.UserService.InviteUser:input_type -> core.api.core.InviteUserRequest
-	14, // 46: core.api.core.UserService.AcceptInvitation:input_type -> core.api.core.AcceptInvitationRequest
-	16, // 47: core.api.core.UserService.ListUsers:input_type -> core.api.core.ListUsersRequest
-	18, // 48: core.api.core.UserService.GetUser:input_type -> core.api.core.GetUserRequest
-	20, // 49: core.api.core.UserService.UpdateUserRole:input_type -> core.api.core.UpdateUserRoleRequest
-	22, // 50: core.api.core.UserService.DeactivateUser:input_type -> core.api.core.DeactivateUserRequest
-	23, // 51: core.api.core.DocumentService.RegisterDocument:input_type -> core.api.core.RegisterDocumentRequest
-	25, // 52: core.api.core.DocumentService.GetDocument:input_type -> core.api.core.GetDocumentRequest
-	27, // 53: core.api.core.DocumentService.ListDocuments:input_type -> core.api.core.ListDocumentsRequest
-	29, // 54: core.api.core.DocumentService.UpdateDocumentStatus:input_type -> core.api.core.UpdateDocumentStatusRequest
-	30, // 55: core.api.core.DocumentService.DeleteDocument:input_type -> core.api.core.DeleteDocumentRequest
-	31, // 56: core.api.core.NoteService.CreateNote:input_type -> core.api.core.CreateNoteRequest
-	33, // 57: core.api.core.NoteService.ListNotes:input_type -> core.api.core.ListNotesRequest
-	35, // 58: core.api.core.NoteService.GetNote:input_type -> core.api.core.GetNoteRequest
-	37, // 59: core.api.core.NoteService.DeleteNote:input_type -> core.api.core.DeleteNoteRequest
-	38, // 60: core.api.core.ContractTemplateService.CreateTemplate:input_type -> core.api.core.CreateTemplateRequest
-	40, // 61: core.api.core.ContractTemplateService.GetTemplate:input_type -> core.api.core.GetTemplateRequest
-	42, // 62: core.api.core.ContractTemplateService.ListTemplates:input_type -> core.api.core.ListTemplatesRequest
-	44, // 63: core.api.core.ContractTemplateService.UpdateTemplate:input_type -> core.api.core.UpdateTemplateRequest
-	46, // 64: core.api.core.ContractTemplateService.DeleteTemplate:input_type -> core.api.core.DeleteTemplateRequest
-	47, // 65: core.api.core.GeneratedContractService.RegisterContract:input_type -> core.api.core.RegisterContractRequest
-	49, // 66: core.api.core.GeneratedContractService.GetContract:input_type -> core.api.core.GetContractRequest
-	51, // 67: core.api.core.GeneratedContractService.ListContracts:input_type -> core.api.core.ListContractsRequest
-	53, // 68: core.api.core.GeneratedContractService.DeleteContract:input_type -> core.api.core.DeleteContractRequest
-	4,  // 69: core.api.core.AuthService.AuthenticateWithTelegram:output_type -> core.api.core.AuthenticateWithTelegramResponse
-	6,  // 70: core.api.core.OrganizationService.CreateOrganization:output_type -> core.api.core.CreateOrganizationResponse
-	8,  // 71: core.api.core.OrganizationService.GetOrganization:output_type -> core.api.core.GetOrganizationResponse
-	10, // 72: core.api.core.OrganizationService.UpdateOrganization:output_type -> core.api.core.UpdateOrganizationResponse
-	61, // 73: core.api.core.OrganizationService.DeleteOrganization:output_type -> google.protobuf.Empty
-	13, // 74: core.api.core.UserService.InviteUser:output_type -> core.api.core.InviteUserResponse
-	15, // 75: core.api.core.UserService.AcceptInvitation:output_type -> core.api.core.AcceptInvitationResponse
-	17, // 76: core.api.core.UserService.ListUsers:output_type -> core.api.core.ListUsersResponse
-	19, // 77: core.api.core.UserService.GetUser:output_type -> core.api.core.GetUserResponse
-	21, // 78: core.api.core.UserService.UpdateUserRole:output_type -> core.api.core.UpdateUserRoleResponse
-	61, // 79: core.api.core.UserService.DeactivateUser:output_type -> google.protobuf.Empty
-	24, // 80: core.api.core.DocumentService.RegisterDocument:output_type -> core.api.core.RegisterDocumentResponse
-	26, // 81: core.api.core.DocumentService.GetDocument:output_type -> core.api.core.GetDocumentResponse
-	28, // 82: core.api.core.DocumentService.ListDocuments:output_type -> core.api.core.ListDocumentsResponse
-	61, // 83: core.api.core.DocumentService.UpdateDocumentStatus:output_type -> google.protobuf.Empty
-	61, // 84: core.api.core.DocumentService.DeleteDocument:output_type -> google.protobuf.Empty
-	32, // 85: core.api.core.NoteService.CreateNote:output_type -> core.api.core.CreateNoteResponse
-	34, // 86: core.api.core.NoteService.ListNotes:output_type -> core.api.core.ListNotesResponse
-	36, // 87: core.api.core.NoteService.GetNote:output_type -> core.api.core.GetNoteResponse
-	61, // 88: core.api.core.NoteService.DeleteNote:output_type -> google.protobuf.Empty
-	39, // 89: core.api.core.ContractTemplateService.CreateTemplate:output_type -> core.api.core.CreateTemplateResponse
-	41, // 90: core.api.core.ContractTemplateService.GetTemplate:output_type -> core.api.core.GetTemplateResponse
-	43, // 91: core.api.core.ContractTemplateService.ListTemplates:output_type -> core.api.core.ListTemplatesResponse
-	45, // 92: core.api.core.ContractTemplateService.UpdateTemplate:output_type -> core.api.core.UpdateTemplateResponse
-	61, // 93: core.api.core.ContractTemplateService.DeleteTemplate:output_type -> google.protobuf.Empty
-	48, // 94: core.api.core.GeneratedContractService.RegisterContract:output_type -> core.api.core.RegisterContractResponse
-	50, // 95: core.api.core.GeneratedContractService.GetContract:output_type -> core.api.core.GetContractResponse
-	52, // 96: core.api.core.GeneratedContractService.ListContracts:output_type -> core.api.core.ListContractsResponse
-	61, // 97: core.api.core.GeneratedContractService.DeleteContract:output_type -> google.protobuf.Empty
-	69, // [69:98] is the sub-list for method output_type
-	40, // [40:69] is the sub-list for method input_type
-	40, // [40:40] is the sub-list for extension type_name
-	40, // [40:40] is the sub-list for extension extendee
-	0,  // [0:40] is the sub-list for field type_name
+	57, // 0: core.api.core.AuthenticateWithTelegramResponse.user:type_name -> core.api.core.User
+	56, // 1: core.api.core.CreateOrganizationResponse.organization:type_name -> core.api.core.Organization
+	56, // 2: core.api.core.GetOrganizationResponse.organization:type_name -> core.api.core.Organization
+	56, // 3: core.api.core.ListMyOrganizationsResponse.organizations:type_name -> core.api.core.Organization
+	56, // 4: core.api.core.UpdateOrganizationResponse.organization:type_name -> core.api.core.Organization
+	0,  // 5: core.api.core.InviteUserRequest.role:type_name -> core.api.core.UserRole
+	62, // 6: core.api.core.InviteUserResponse.expires_at:type_name -> google.protobuf.Timestamp
+	57, // 7: core.api.core.AcceptInvitationResponse.user:type_name -> core.api.core.User
+	57, // 8: core.api.core.ListUsersResponse.users:type_name -> core.api.core.User
+	57, // 9: core.api.core.GetUserResponse.user:type_name -> core.api.core.User
+	0,  // 10: core.api.core.UpdateUserRoleRequest.role:type_name -> core.api.core.UserRole
+	57, // 11: core.api.core.UpdateUserRoleResponse.user:type_name -> core.api.core.User
+	58, // 12: core.api.core.RegisterDocumentResponse.document:type_name -> core.api.core.Document
+	58, // 13: core.api.core.GetDocumentResponse.document:type_name -> core.api.core.Document
+	2,  // 14: core.api.core.ListDocumentsRequest.status:type_name -> core.api.core.DocumentStatus
+	58, // 15: core.api.core.ListDocumentsResponse.documents:type_name -> core.api.core.Document
+	2,  // 16: core.api.core.UpdateDocumentStatusRequest.status:type_name -> core.api.core.DocumentStatus
+	59, // 17: core.api.core.CreateNoteResponse.note:type_name -> core.api.core.Note
+	59, // 18: core.api.core.ListNotesResponse.notes:type_name -> core.api.core.Note
+	59, // 19: core.api.core.GetNoteResponse.note:type_name -> core.api.core.Note
+	60, // 20: core.api.core.CreateTemplateResponse.template:type_name -> core.api.core.ContractTemplate
+	60, // 21: core.api.core.GetTemplateResponse.template:type_name -> core.api.core.ContractTemplate
+	60, // 22: core.api.core.ListTemplatesResponse.templates:type_name -> core.api.core.ContractTemplate
+	60, // 23: core.api.core.UpdateTemplateResponse.template:type_name -> core.api.core.ContractTemplate
+	61, // 24: core.api.core.RegisterContractResponse.contract:type_name -> core.api.core.GeneratedContract
+	61, // 25: core.api.core.GetContractResponse.contract:type_name -> core.api.core.GeneratedContract
+	61, // 26: core.api.core.ListContractsResponse.contracts:type_name -> core.api.core.GeneratedContract
+	62, // 27: core.api.core.Organization.created_at:type_name -> google.protobuf.Timestamp
+	62, // 28: core.api.core.Organization.updated_at:type_name -> google.protobuf.Timestamp
+	62, // 29: core.api.core.Organization.deleted_at:type_name -> google.protobuf.Timestamp
+	0,  // 30: core.api.core.User.role:type_name -> core.api.core.UserRole
+	1,  // 31: core.api.core.User.status:type_name -> core.api.core.UserStatus
+	62, // 32: core.api.core.User.created_at:type_name -> google.protobuf.Timestamp
+	62, // 33: core.api.core.User.updated_at:type_name -> google.protobuf.Timestamp
+	2,  // 34: core.api.core.Document.status:type_name -> core.api.core.DocumentStatus
+	62, // 35: core.api.core.Document.created_at:type_name -> google.protobuf.Timestamp
+	62, // 36: core.api.core.Document.updated_at:type_name -> google.protobuf.Timestamp
+	62, // 37: core.api.core.Note.created_at:type_name -> google.protobuf.Timestamp
+	62, // 38: core.api.core.ContractTemplate.created_at:type_name -> google.protobuf.Timestamp
+	62, // 39: core.api.core.ContractTemplate.updated_at:type_name -> google.protobuf.Timestamp
+	62, // 40: core.api.core.GeneratedContract.created_at:type_name -> google.protobuf.Timestamp
+	3,  // 41: core.api.core.AuthService.AuthenticateWithTelegram:input_type -> core.api.core.AuthenticateWithTelegramRequest
+	5,  // 42: core.api.core.OrganizationService.CreateOrganization:input_type -> core.api.core.CreateOrganizationRequest
+	7,  // 43: core.api.core.OrganizationService.GetOrganization:input_type -> core.api.core.GetOrganizationRequest
+	9,  // 44: core.api.core.OrganizationService.ListMyOrganizations:input_type -> core.api.core.ListMyOrganizationsRequest
+	11, // 45: core.api.core.OrganizationService.UpdateOrganization:input_type -> core.api.core.UpdateOrganizationRequest
+	13, // 46: core.api.core.OrganizationService.DeleteOrganization:input_type -> core.api.core.DeleteOrganizationRequest
+	14, // 47: core.api.core.UserService.InviteUser:input_type -> core.api.core.InviteUserRequest
+	16, // 48: core.api.core.UserService.AcceptInvitation:input_type -> core.api.core.AcceptInvitationRequest
+	18, // 49: core.api.core.UserService.ListUsers:input_type -> core.api.core.ListUsersRequest
+	20, // 50: core.api.core.UserService.GetUser:input_type -> core.api.core.GetUserRequest
+	22, // 51: core.api.core.UserService.UpdateUserRole:input_type -> core.api.core.UpdateUserRoleRequest
+	24, // 52: core.api.core.UserService.DeactivateUser:input_type -> core.api.core.DeactivateUserRequest
+	25, // 53: core.api.core.DocumentService.RegisterDocument:input_type -> core.api.core.RegisterDocumentRequest
+	27, // 54: core.api.core.DocumentService.GetDocument:input_type -> core.api.core.GetDocumentRequest
+	29, // 55: core.api.core.DocumentService.ListDocuments:input_type -> core.api.core.ListDocumentsRequest
+	31, // 56: core.api.core.DocumentService.UpdateDocumentStatus:input_type -> core.api.core.UpdateDocumentStatusRequest
+	32, // 57: core.api.core.DocumentService.DeleteDocument:input_type -> core.api.core.DeleteDocumentRequest
+	33, // 58: core.api.core.NoteService.CreateNote:input_type -> core.api.core.CreateNoteRequest
+	35, // 59: core.api.core.NoteService.ListNotes:input_type -> core.api.core.ListNotesRequest
+	37, // 60: core.api.core.NoteService.GetNote:input_type -> core.api.core.GetNoteRequest
+	39, // 61: core.api.core.NoteService.DeleteNote:input_type -> core.api.core.DeleteNoteRequest
+	40, // 62: core.api.core.ContractTemplateService.CreateTemplate:input_type -> core.api.core.CreateTemplateRequest
+	42, // 63: core.api.core.ContractTemplateService.GetTemplate:input_type -> core.api.core.GetTemplateRequest
+	44, // 64: core.api.core.ContractTemplateService.ListTemplates:input_type -> core.api.core.ListTemplatesRequest
+	46, // 65: core.api.core.ContractTemplateService.UpdateTemplate:input_type -> core.api.core.UpdateTemplateRequest
+	48, // 66: core.api.core.ContractTemplateService.DeleteTemplate:input_type -> core.api.core.DeleteTemplateRequest
+	49, // 67: core.api.core.GeneratedContractService.RegisterContract:input_type -> core.api.core.RegisterContractRequest
+	51, // 68: core.api.core.GeneratedContractService.GetContract:input_type -> core.api.core.GetContractRequest
+	53, // 69: core.api.core.GeneratedContractService.ListContracts:input_type -> core.api.core.ListContractsRequest
+	55, // 70: core.api.core.GeneratedContractService.DeleteContract:input_type -> core.api.core.DeleteContractRequest
+	4,  // 71: core.api.core.AuthService.AuthenticateWithTelegram:output_type -> core.api.core.AuthenticateWithTelegramResponse
+	6,  // 72: core.api.core.OrganizationService.CreateOrganization:output_type -> core.api.core.CreateOrganizationResponse
+	8,  // 73: core.api.core.OrganizationService.GetOrganization:output_type -> core.api.core.GetOrganizationResponse
+	10, // 74: core.api.core.OrganizationService.ListMyOrganizations:output_type -> core.api.core.ListMyOrganizationsResponse
+	12, // 75: core.api.core.OrganizationService.UpdateOrganization:output_type -> core.api.core.UpdateOrganizationResponse
+	63, // 76: core.api.core.OrganizationService.DeleteOrganization:output_type -> google.protobuf.Empty
+	15, // 77: core.api.core.UserService.InviteUser:output_type -> core.api.core.InviteUserResponse
+	17, // 78: core.api.core.UserService.AcceptInvitation:output_type -> core.api.core.AcceptInvitationResponse
+	19, // 79: core.api.core.UserService.ListUsers:output_type -> core.api.core.ListUsersResponse
+	21, // 80: core.api.core.UserService.GetUser:output_type -> core.api.core.GetUserResponse
+	23, // 81: core.api.core.UserService.UpdateUserRole:output_type -> core.api.core.UpdateUserRoleResponse
+	63, // 82: core.api.core.UserService.DeactivateUser:output_type -> google.protobuf.Empty
+	26, // 83: core.api.core.DocumentService.RegisterDocument:output_type -> core.api.core.RegisterDocumentResponse
+	28, // 84: core.api.core.DocumentService.GetDocument:output_type -> core.api.core.GetDocumentResponse
+	30, // 85: core.api.core.DocumentService.ListDocuments:output_type -> core.api.core.ListDocumentsResponse
+	63, // 86: core.api.core.DocumentService.UpdateDocumentStatus:output_type -> google.protobuf.Empty
+	63, // 87: core.api.core.DocumentService.DeleteDocument:output_type -> google.protobuf.Empty
+	34, // 88: core.api.core.NoteService.CreateNote:output_type -> core.api.core.CreateNoteResponse
+	36, // 89: core.api.core.NoteService.ListNotes:output_type -> core.api.core.ListNotesResponse
+	38, // 90: core.api.core.NoteService.GetNote:output_type -> core.api.core.GetNoteResponse
+	63, // 91: core.api.core.NoteService.DeleteNote:output_type -> google.protobuf.Empty
+	41, // 92: core.api.core.ContractTemplateService.CreateTemplate:output_type -> core.api.core.CreateTemplateResponse
+	43, // 93: core.api.core.ContractTemplateService.GetTemplate:output_type -> core.api.core.GetTemplateResponse
+	45, // 94: core.api.core.ContractTemplateService.ListTemplates:output_type -> core.api.core.ListTemplatesResponse
+	47, // 95: core.api.core.ContractTemplateService.UpdateTemplate:output_type -> core.api.core.UpdateTemplateResponse
+	63, // 96: core.api.core.ContractTemplateService.DeleteTemplate:output_type -> google.protobuf.Empty
+	50, // 97: core.api.core.GeneratedContractService.RegisterContract:output_type -> core.api.core.RegisterContractResponse
+	52, // 98: core.api.core.GeneratedContractService.GetContract:output_type -> core.api.core.GetContractResponse
+	54, // 99: core.api.core.GeneratedContractService.ListContracts:output_type -> core.api.core.ListContractsResponse
+	63, // 100: core.api.core.GeneratedContractService.DeleteContract:output_type -> google.protobuf.Empty
+	71, // [71:101] is the sub-list for method output_type
+	41, // [41:71] is the sub-list for method input_type
+	41, // [41:41] is the sub-list for extension type_name
+	41, // [41:41] is the sub-list for extension extendee
+	0,  // [0:41] is the sub-list for field type_name
 }
 
 func init() { file_api_core_core_proto_init() }
@@ -4046,17 +4135,17 @@ func file_api_core_core_proto_init() {
 	if File_api_core_core_proto != nil {
 		return
 	}
-	file_api_core_core_proto_msgTypes[6].OneofWrappers = []any{}
-	file_api_core_core_proto_msgTypes[24].OneofWrappers = []any{}
+	file_api_core_core_proto_msgTypes[8].OneofWrappers = []any{}
 	file_api_core_core_proto_msgTypes[26].OneofWrappers = []any{}
-	file_api_core_core_proto_msgTypes[41].OneofWrappers = []any{}
+	file_api_core_core_proto_msgTypes[28].OneofWrappers = []any{}
+	file_api_core_core_proto_msgTypes[43].OneofWrappers = []any{}
 	type x struct{}
 	out := protoimpl.TypeBuilder{
 		File: protoimpl.DescBuilder{
 			GoPackagePath: reflect.TypeOf(x{}).PkgPath(),
 			RawDescriptor: unsafe.Slice(unsafe.StringData(file_api_core_core_proto_rawDesc), len(file_api_core_core_proto_rawDesc)),
 			NumEnums:      3,
-			NumMessages:   57,
+			NumMessages:   59,
 			NumExtensions: 0,
 			NumServices:   7,
 		},

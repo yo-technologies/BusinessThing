@@ -12,6 +12,7 @@ type repository interface {
 	CreateContract(ctx context.Context, contract domain.GeneratedContract) (domain.GeneratedContract, error)
 	GetContract(ctx context.Context, id domain.ID) (domain.GeneratedContract, error)
 	ListContracts(ctx context.Context, organizationID domain.ID, limit, offset int) ([]domain.GeneratedContract, int, error)
+	ListContractsByTemplate(ctx context.Context, templateID domain.ID) ([]domain.GeneratedContract, error)
 	DeleteContract(ctx context.Context, id domain.ID) error
 }
 
@@ -23,9 +24,9 @@ func New(repo repository) *Service {
 	return &Service{repo: repo}
 }
 
-// RegisterContract registers a generated contract (called by LLM Service)
-func (s *Service) RegisterContract(ctx context.Context, organizationID, templateID domain.ID, name, filledData, s3Key, fileType string) (domain.GeneratedContract, error) {
-	span, ctx := opentracing.StartSpanFromContext(ctx, "service.contract.RegisterContract")
+// RegisterGeneratedContract registers a generated contract (called by LLM Service)
+func (s *Service) RegisterGeneratedContract(ctx context.Context, organizationID, templateID domain.ID, name, filledData, s3Key, fileType string) (domain.GeneratedContract, error) {
+	span, ctx := opentracing.StartSpanFromContext(ctx, "service.contract.RegisterGeneratedContract")
 	defer span.Finish()
 
 	name = strings.TrimSpace(name)
@@ -46,9 +47,9 @@ func (s *Service) RegisterContract(ctx context.Context, organizationID, template
 	return created, nil
 }
 
-// GetContract retrieves a contract by ID
-func (s *Service) GetContract(ctx context.Context, id domain.ID) (domain.GeneratedContract, error) {
-	span, ctx := opentracing.StartSpanFromContext(ctx, "service.contract.GetContract")
+// GetGeneratedContract retrieves a contract by ID
+func (s *Service) GetGeneratedContract(ctx context.Context, id domain.ID) (domain.GeneratedContract, error) {
+	span, ctx := opentracing.StartSpanFromContext(ctx, "service.contract.GetGeneratedContract")
 	defer span.Finish()
 
 	return s.repo.GetContract(ctx, id)
@@ -71,10 +72,27 @@ func (s *Service) ListContracts(ctx context.Context, organizationID domain.ID, p
 	return s.repo.ListContracts(ctx, organizationID, pageSize, offset)
 }
 
-// DeleteContract deletes a contract
-func (s *Service) DeleteContract(ctx context.Context, id domain.ID) error {
-	span, ctx := opentracing.StartSpanFromContext(ctx, "service.contract.DeleteContract")
+// DeleteGeneratedContract deletes a contract
+func (s *Service) DeleteGeneratedContract(ctx context.Context, id domain.ID) error {
+	span, ctx := opentracing.StartSpanFromContext(ctx, "service.contract.DeleteGeneratedContract")
 	defer span.Finish()
 
 	return s.repo.DeleteContract(ctx, id)
+}
+
+// ListGeneratedContractsByOrganization retrieves all contracts for an organization (without pagination)
+func (s *Service) ListGeneratedContractsByOrganization(ctx context.Context, organizationID domain.ID) ([]domain.GeneratedContract, error) {
+	span, ctx := opentracing.StartSpanFromContext(ctx, "service.contract.ListGeneratedContractsByOrganization")
+	defer span.Finish()
+
+	contracts, _, err := s.repo.ListContracts(ctx, organizationID, 1000, 0)
+	return contracts, err
+}
+
+// ListGeneratedContractsByTemplate retrieves all contracts for a template
+func (s *Service) ListGeneratedContractsByTemplate(ctx context.Context, templateID domain.ID) ([]domain.GeneratedContract, error) {
+	span, ctx := opentracing.StartSpanFromContext(ctx, "service.contract.ListGeneratedContractsByTemplate")
+	defer span.Finish()
+
+	return s.repo.ListContractsByTemplate(ctx, templateID)
 }

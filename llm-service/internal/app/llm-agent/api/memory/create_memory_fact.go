@@ -2,7 +2,7 @@ package memory
 
 import (
 	"context"
-	"llm-service/internal/app/interceptors"
+	"llm-service/internal/domain"
 	desc "llm-service/pkg/agent"
 
 	"github.com/opentracing/opentracing-go"
@@ -13,12 +13,12 @@ func (s *Service) CreateMemoryFact(ctx context.Context, req *desc.CreateMemoryFa
 	span, ctx := opentracing.StartSpanFromContext(ctx, "api.chat.CreateMemoryFact")
 	defer span.Finish()
 
-	userID, err := interceptors.UserIDFromContext(ctx)
+	organizationID, err := domain.ParseID(req.GetOrgId())
 	if err != nil {
 		return nil, err
 	}
 
-	fact, err := s.memoryService.AddFact(ctx, userID, req.GetContent())
+	fact, err := s.orgMemoryService.AddFact(ctx, organizationID, req.GetContent())
 	if err != nil {
 		return nil, err
 	}

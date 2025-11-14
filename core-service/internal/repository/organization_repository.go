@@ -120,3 +120,27 @@ func (r *PGXRepository) DeleteOrganization(ctx context.Context, id domain.ID) er
 
 	return nil
 }
+
+// GetOrganizationsByUserID retrieves all organizations where the user is a member
+func (r *PGXRepository) GetOrganizationsByUserID(ctx context.Context, userID domain.ID) ([]domain.Organization, error) {
+	span, ctx := opentracing.StartSpanFromContext(ctx, "repository.GetOrganizationsByUserID")
+	defer span.Finish()
+
+	engine := r.engineFactory.Get(ctx)
+	query := `
+        SELECT DISTINCT o.id, o.name, o.industry, o.region, o.description, o.profile_data, o.created_at, o.updated_at, o.deleted_at
+        FROM organizations o
+        INNER JOIN users u ON o.id = u.organization_id
+        WHERE u.id = $1 AND o.deleted_at IS NULL
+        ORDER BY o.created_at DESC
+    `
+
+	var orgs []domain.Organization
+	err := pgxscan.Select(ctx, engine, &orgs, query, uuidToPgtype(userID))
+	if err != nil {
+		logger.Errorf(ctx, "failed to get organizations by user id: %v", err)
+		return nil, err
+	}
+
+	return orgs, nil
+}

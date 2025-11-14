@@ -266,3 +266,26 @@ func (r *PGXRepository) DeleteContract(ctx context.Context, id domain.ID) error 
 
 	return nil
 }
+
+// ListContractsByTemplate retrieves contracts for a specific template
+func (r *PGXRepository) ListContractsByTemplate(ctx context.Context, templateID domain.ID) ([]domain.GeneratedContract, error) {
+	span, ctx := opentracing.StartSpanFromContext(ctx, "repository.ListContractsByTemplate")
+	defer span.Finish()
+
+	engine := r.engineFactory.Get(ctx)
+	query := `
+        SELECT id, organization_id, template_id, name, filled_data, s3_key, file_type, created_at
+        FROM generated_contracts
+        WHERE template_id = $1
+        ORDER BY created_at DESC
+    `
+
+	var contracts []domain.GeneratedContract
+	err := pgxscan.Select(ctx, engine, &contracts, query, uuidToPgtype(templateID))
+	if err != nil {
+		logger.Errorf(ctx, "failed to list contracts by template: %v", err)
+		return nil, err
+	}
+
+	return contracts, nil
+}

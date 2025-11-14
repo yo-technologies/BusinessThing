@@ -34,19 +34,19 @@ func New(repo repository) *Service {
 }
 
 // InviteUser creates a new invitation for a user
-func (s *Service) InviteUser(ctx context.Context, organizationID domain.ID, email string, role domain.UserRole) (domain.Invitation, error) {
+func (s *Service) InviteUser(ctx context.Context, organizationID domain.ID, email string, role domain.UserRole, invitedBy domain.ID) (*domain.Invitation, error) {
 	span, ctx := opentracing.StartSpanFromContext(ctx, "service.user.InviteUser")
 	defer span.Finish()
 
 	email = strings.ToLower(strings.TrimSpace(email))
 	if email == "" {
-		return domain.Invitation{}, domain.NewInvalidArgumentError("email is required")
+		return nil, domain.NewInvalidArgumentError("email is required")
 	}
 
 	// Generate secure token
 	token, err := generateToken()
 	if err != nil {
-		return domain.Invitation{}, domain.NewInternalError("failed to generate invitation token", err)
+		return nil, domain.NewInternalError("failed to generate invitation token", err)
 	}
 
 	// Invitation expires in 7 days
@@ -56,50 +56,58 @@ func (s *Service) InviteUser(ctx context.Context, organizationID domain.ID, emai
 
 	created, err := s.repo.CreateInvitation(ctx, invitation)
 	if err != nil {
-		return domain.Invitation{}, err
+		return nil, err
 	}
 
-	return created, nil
+	return &created, nil
 }
 
-// AcceptInvitation activates a user from invitation
-func (s *Service) AcceptInvitation(ctx context.Context, token, telegramID, firstName, lastName string) (domain.User, error) {
+// AcceptInvitation связывает существующего пользователя с организацией через приглашение
+func (s *Service) AcceptInvitation(ctx context.Context, userID domain.ID, token string) (*domain.User, error) {
 	span, ctx := opentracing.StartSpanFromContext(ctx, "service.user.AcceptInvitation")
 	defer span.Finish()
 
 	// Get invitation
 	invitation, err := s.repo.GetInvitationByToken(ctx, token)
 	if err != nil {
-		return domain.User{}, domain.NewNotFoundError("invitation not found or invalid")
+		return nil, domain.NewNotFoundError("invitation not found or invalid")
 	}
 
 	// Validate invitation
 	if invitation.IsExpired() {
-		return domain.User{}, domain.NewInvalidArgumentError("invitation has expired")
+		return nil, domain.NewInvalidArgumentError("invitation has expired")
 	}
 	if invitation.IsUsed() {
-		return domain.User{}, domain.NewInvalidArgumentError("invitation has already been used")
+		return nil, domain.NewInvalidArgumentError("invitation has already been used")
 	}
 
-	// Create user
-	user := domain.NewUser(invitation.OrganizationID, invitation.Email, invitation.Role)
-	user.Activate(telegramID, firstName, lastName)
-
-	created, err := s.repo.CreateUser(ctx, user)
+	// Get user
+	user, err := s.repo.GetUser(ctx, userID)
 	if err != nil {
-		return domain.User{}, err
+		return nil, err
+	}
+
+	// Check if user already has organization
+	if user.Status == domain.UserStatusActive && user.OrganizationID != (domain.ID{}) {
+		return nil, domain.NewInvalidArgumentError("user already belongs to an organization")
+	}
+
+	// Join organization
+	user.JoinOrganization(invitation.OrganizationID, invitation.Email, invitation.Role)
+
+	updated, err := s.repo.UpdateUser(ctx, user)
+	if err != nil {
+		return nil, err
 	}
 
 	// Mark invitation as used
 	err = s.repo.MarkInvitationAsUsed(ctx, invitation.ID)
 	if err != nil {
-		return domain.User{}, err
+		return nil, err
 	}
 
-	return created, nil
-}
-
-// ListUsers retrieves users for an organization
+	return &updated, nil
+} // ListUsers retrieves users for an organization
 func (s *Service) ListUsers(ctx context.Context, organizationID domain.ID, page, pageSize int) ([]domain.User, int, error) {
 	span, ctx := opentracing.StartSpanFromContext(ctx, "service.user.ListUsers")
 	defer span.Finish()
@@ -116,28 +124,62 @@ func (s *Service) ListUsers(ctx context.Context, organizationID domain.ID, page,
 	return s.repo.ListUsers(ctx, organizationID, pageSize, offset)
 }
 
+// ListUsersByOrganization retrieves all users for an organization (without pagination)
+func (s *Service) ListUsersByOrganization(ctx context.Context, organizationID domain.ID) ([]*domain.User, error) {
+	span, ctx := opentracing.StartSpanFromContext(ctx, "service.user.ListUsersByOrganization")
+	defer span.Finish()
+
+	users, _, err := s.repo.ListUsers(ctx, organizationID, 1000, 0)
+	if err != nil {
+		return nil, err
+	}
+
+	result := make([]*domain.User, len(users))
+	for i := range users {
+		result[i] = &users[i]
+	}
+	return result, nil
+}
+
 // GetUser retrieves a user by ID
-func (s *Service) GetUser(ctx context.Context, id domain.ID) (domain.User, error) {
+func (s *Service) GetUser(ctx context.Context, id domain.ID) (*domain.User, error) {
 	span, ctx := opentracing.StartSpanFromContext(ctx, "service.user.GetUser")
 	defer span.Finish()
 
-	return s.repo.GetUser(ctx, id)
+	user, err := s.repo.GetUser(ctx, id)
+	if err != nil {
+		return nil, err
+	}
+	return &user, nil
 }
 
 // GetUserByTelegramID retrieves a user by Telegram ID
-func (s *Service) GetUserByTelegramID(ctx context.Context, telegramID string) (domain.User, error) {
+func (s *Service) GetUserByTelegramID(ctx context.Context, telegramID string) (*domain.User, error) {
 	span, ctx := opentracing.StartSpanFromContext(ctx, "service.user.GetUserByTelegramID")
 	defer span.Finish()
 
-	return s.repo.GetUserByTelegramID(ctx, telegramID)
+	user, err := s.repo.GetUserByTelegramID(ctx, telegramID)
+	if err != nil {
+		return nil, err
+	}
+	return &user, nil
 }
 
 // UpdateUserRole updates a user's role
-func (s *Service) UpdateUserRole(ctx context.Context, id domain.ID, role domain.UserRole) error {
+func (s *Service) UpdateUserRole(ctx context.Context, id domain.ID, role domain.UserRole) (*domain.User, error) {
 	span, ctx := opentracing.StartSpanFromContext(ctx, "service.user.UpdateUserRole")
 	defer span.Finish()
 
-	return s.repo.UpdateUserRole(ctx, id, role)
+	if err := s.repo.UpdateUserRole(ctx, id, role); err != nil {
+		return nil, err
+	}
+
+	user, err := s.repo.GetUser(ctx, id)
+	if err != nil {
+		return nil, err
+	}
+
+	return &user, nil
 }
 
 // DeactivateUser deactivates a user

@@ -7,7 +7,7 @@ import (
 	"strings"
 
 	"github.com/opentracing/opentracing-go"
-	"github.com/streadway/amqp"
+	amqp "github.com/rabbitmq/amqp091-go"
 )
 
 type repository interface {
@@ -81,7 +81,7 @@ func (s *Service) GetDocument(ctx context.Context, id domain.ID) (domain.Documen
 	return s.repo.GetDocument(ctx, id)
 }
 
-// ListDocuments retrieves documents with optional status filter
+// ListDocuments retrieves documents for an organization
 func (s *Service) ListDocuments(ctx context.Context, organizationID domain.ID, status *domain.DocumentStatus, page, pageSize int) ([]domain.Document, int, error) {
 	span, ctx := opentracing.StartSpanFromContext(ctx, "service.document.ListDocuments")
 	defer span.Finish()
@@ -96,6 +96,15 @@ func (s *Service) ListDocuments(ctx context.Context, organizationID domain.ID, s
 	offset := (page - 1) * pageSize
 
 	return s.repo.ListDocuments(ctx, organizationID, status, pageSize, offset)
+}
+
+// ListDocumentsByOrganization retrieves all documents for an organization (without pagination)
+func (s *Service) ListDocumentsByOrganization(ctx context.Context, organizationID domain.ID, status *domain.DocumentStatus) ([]domain.Document, error) {
+	span, ctx := opentracing.StartSpanFromContext(ctx, "service.document.ListDocumentsByOrganization")
+	defer span.Finish()
+
+	docs, _, err := s.repo.ListDocuments(ctx, organizationID, status, 1000, 0)
+	return docs, err
 }
 
 // UpdateDocumentStatus updates document processing status

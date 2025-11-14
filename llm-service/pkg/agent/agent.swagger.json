@@ -219,7 +219,7 @@
     },
     "/v1/memory/facts": {
       "get": {
-        "summary": "Список всех фактов о пользователе",
+        "summary": "Список всех фактов об организации",
         "operationId": "MemoryService_ListMemoryFacts",
         "responses": {
           "200": {
@@ -235,6 +235,14 @@
             }
           }
         },
+        "parameters": [
+          {
+            "name": "orgId",
+            "in": "query",
+            "required": false,
+            "type": "string"
+          }
+        ],
         "tags": [
           "MemoryService"
         ]
@@ -295,6 +303,12 @@
             "name": "id",
             "in": "path",
             "required": true,
+            "type": "string"
+          },
+          {
+            "name": "orgId",
+            "in": "query",
+            "required": false,
             "type": "string"
           }
         ],
@@ -387,6 +401,9 @@
     "agentCreateMemoryFactRequest": {
       "type": "object",
       "properties": {
+        "orgId": {
+          "type": "string"
+        },
         "content": {
           "type": "string"
         }

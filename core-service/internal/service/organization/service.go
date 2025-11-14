@@ -11,6 +11,7 @@ import (
 type repository interface {
 	CreateOrganization(ctx context.Context, org domain.Organization) (domain.Organization, error)
 	GetOrganization(ctx context.Context, id domain.ID) (domain.Organization, error)
+	GetOrganizationsByUserID(ctx context.Context, userID domain.ID) ([]domain.Organization, error)
 	UpdateOrganization(ctx context.Context, org domain.Organization) (domain.Organization, error)
 	DeleteOrganization(ctx context.Context, id domain.ID) error
 }
@@ -97,4 +98,12 @@ func (s *Service) DeleteOrganization(ctx context.Context, id domain.ID) error {
 	defer span.Finish()
 
 	return s.repo.DeleteOrganization(ctx, id)
+}
+
+// ListMyOrganizations retrieves all organizations where the user is a member
+func (s *Service) ListMyOrganizations(ctx context.Context, userID domain.ID) ([]domain.Organization, error) {
+	span, ctx := opentracing.StartSpanFromContext(ctx, "service.organization.ListMyOrganizations")
+	defer span.Finish()
+
+	return s.repo.GetOrganizationsByUserID(ctx, userID)
 }

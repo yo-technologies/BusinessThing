@@ -19,58 +19,90 @@ const (
 	UserStatusInactive UserStatus = "inactive" // Деактивирован
 )
 
-// User представляет пользователя системы
+// User представляет пользователя системы (независимо от организаций)
 type User struct {
+	ID         ID        `db:"id"`
+	TelegramID string    `db:"telegram_id"`
+	FirstName  string    `db:"first_name"`
+	LastName   string    `db:"last_name"`
+	IsActive   bool      `db:"is_active"`
+	CreatedAt  time.Time `db:"created_at"`
+	UpdatedAt  time.Time `db:"updated_at"`
+}
+
+// OrganizationMember представляет членство пользователя в организации
+type OrganizationMember struct {
 	ID             ID         `db:"id"`
 	OrganizationID ID         `db:"organization_id"`
+	UserID         ID         `db:"user_id"`
 	Email          string     `db:"email"`
-	TelegramID     string     `db:"telegram_id"`
-	FirstName      string     `db:"first_name"`
-	LastName       string     `db:"last_name"`
 	Role           UserRole   `db:"role"`
 	Status         UserStatus `db:"status"`
-	CreatedAt      time.Time  `db:"created_at"`
+	JoinedAt       time.Time  `db:"joined_at"`
 	UpdatedAt      time.Time  `db:"updated_at"`
 }
 
-// NewUser создает нового пользователя
-func NewUser(organizationID ID, email string, role UserRole) User {
+// UserWithMembership объединяет пользователя с его членством в организации (для API)
+type UserWithMembership struct {
+	User
+	OrganizationMember
+}
+
+// NewUser создает нового пользователя с Telegram ID (при первой авторизации)
+func NewUser(telegramID string) User {
 	now := time.Now()
 	return User{
+		ID:         NewID(),
+		TelegramID: telegramID,
+		IsActive:   true,
+		CreatedAt:  now,
+		UpdatedAt:  now,
+	}
+}
+
+// NewOrganizationMember создает новое членство в организации
+func NewOrganizationMember(organizationID, userID ID, email string, role UserRole) OrganizationMember {
+	now := time.Now()
+	return OrganizationMember{
 		ID:             NewID(),
 		OrganizationID: organizationID,
+		UserID:         userID,
 		Email:          email,
 		Role:           role,
-		Status:         UserStatusPending,
-		CreatedAt:      now,
+		Status:         UserStatusActive,
+		JoinedAt:       now,
 		UpdatedAt:      now,
 	}
 }
 
-// Activate активирует пользователя после принятия приглашения
-func (u *User) Activate(telegramID, firstName, lastName string) {
-	u.TelegramID = telegramID
+// CompleteProfile завершает регистрацию пользователя (добавление ФИО)
+func (u *User) CompleteProfile(firstName, lastName string) {
 	u.FirstName = firstName
 	u.LastName = lastName
-	u.Status = UserStatusActive
 	u.UpdatedAt = time.Now()
 }
 
 // Deactivate деактивирует пользователя
 func (u *User) Deactivate() {
-	u.Status = UserStatusInactive
+	u.IsActive = false
 	u.UpdatedAt = time.Now()
 }
 
-// UpdateRole обновляет роль пользователя
-func (u *User) UpdateRole(role UserRole) {
-	u.Role = role
-	u.UpdatedAt = time.Now()
+// UpdateRole обновляет роль пользователя в организации
+func (m *OrganizationMember) UpdateRole(role UserRole) {
+	m.Role = role
+	m.UpdatedAt = time.Now()
 }
 
-// IsActive проверяет, активен ли пользователь
-func (u *User) IsActive() bool {
-	return u.Status == UserStatusActive
+// Deactivate деактивирует членство в организации
+func (m *OrganizationMember) Deactivate() {
+	m.Status = UserStatusInactive
+	m.UpdatedAt = time.Now()
+}
+
+// IsActive проверяет, активно ли членство
+func (m *OrganizationMember) IsActive() bool {
+	return m.Status == UserStatusActive
 }
 
 // Invitation представляет приглашение пользователя

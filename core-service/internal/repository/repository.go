@@ -23,6 +23,7 @@ type Repository interface {
 type OrganizationRepository interface {
 	CreateOrganization(ctx context.Context, org domain.Organization) (domain.Organization, error)
 	GetOrganization(ctx context.Context, id domain.ID) (domain.Organization, error)
+	GetOrganizationsByUserID(ctx context.Context, userID domain.ID) ([]domain.Organization, error)
 	UpdateOrganization(ctx context.Context, org domain.Organization) (domain.Organization, error)
 	DeleteOrganization(ctx context.Context, id domain.ID) error
 }
@@ -76,6 +77,7 @@ type GeneratedContractRepository interface {
 	CreateContract(ctx context.Context, contract domain.GeneratedContract) (domain.GeneratedContract, error)
 	GetContract(ctx context.Context, id domain.ID) (domain.GeneratedContract, error)
 	ListContracts(ctx context.Context, organizationID domain.ID, limit, offset int) ([]domain.GeneratedContract, int, error)
+	ListContractsByTemplate(ctx context.Context, templateID domain.ID) ([]domain.GeneratedContract, error)
 	DeleteContract(ctx context.Context, id domain.ID) error
 }
 

@@ -95,11 +95,33 @@ func (c *CompletionProvider) toOpenAITools(tools []llm.ToolDefinition) []openai.
 
 // newOpenAIParams constructs OpenAI request from generic params and mapped components.
 func (c *CompletionProvider) newOpenAIParams(p llm.ChatParams) openai.ChatCompletionNewParams {
-	o := openai.ChatCompletionNewParams{
-		Model:           shared.ChatModel(c.cfg.GetLLMModel()),
-		Messages:        c.toOpenAIMessages(p.Messages),
-		ReasoningEffort: shared.ReasoningEffort(c.cfg.GetLLMReasoningEffort()),
+	// Use model from params if specified, otherwise from config
+	var model string
+	if p.Model != nil {
+		model = *p.Model
+	} else {
+		model = c.cfg.GetLLMModel()
 	}
+
+	// Use reasoning effort from params if specified, otherwise from config
+	var reasoningEffort string
+	if p.ReasoningEffort != nil {
+		reasoningEffort = *p.ReasoningEffort
+	} else {
+		reasoningEffort = c.cfg.GetLLMReasoningEffort()
+	}
+
+	o := openai.ChatCompletionNewParams{
+		Model:    shared.ChatModel(model),
+		Messages: c.toOpenAIMessages(p.Messages),
+	}
+
+	// Передаем reasoning effort только если он не пустая строка
+	// Некоторые модели не поддерживают этот параметр и выдадут ошибку
+	if reasoningEffort != "" {
+		o.ReasoningEffort = shared.ReasoningEffort(reasoningEffort)
+	}
+
 	if len(p.Tools) > 0 {
 		o.Tools = c.toOpenAITools(p.Tools)
 		o.ToolChoice = openai.ChatCompletionToolChoiceOptionUnionParam{OfAuto: openai.String("auto")}

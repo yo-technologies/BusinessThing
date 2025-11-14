@@ -17,7 +17,11 @@ migrate-down: ## Run database migrations down
 	go run ./cmd/migrate/main.go -direction down
 
 proto: ## Generate protobuf files
-	protoc --go_out=. --go_opt=paths=source_relative \
+	protoc --proto_path=. \
+		--proto_path=$(shell go env GOPATH)/pkg/mod/github.com/grpc-ecosystem/grpc-gateway@v1.16.0/third_party/googleapis \
+		--proto_path=$(shell go env GOPATH)/pkg/mod/github.com/grpc-ecosystem/grpc-gateway/v2@v2.27.3 \
+		--proto_path=$(shell go env GOPATH)/pkg/mod/github.com/envoyproxy/protoc-gen-validate@v1.1.0 \
+		--go_out=. --go_opt=paths=source_relative \
 		--go-grpc_out=. --go-grpc_opt=paths=source_relative \
 		--grpc-gateway_out=. --grpc-gateway_opt=paths=source_relative \
 		--grpc-gateway_opt=generate_unbound_methods=true \

@@ -2,8 +2,9 @@ package organization
 
 import (
 	"context"
+	pb "core-service/bin/core/api/core"
+	"core-service/internal/app/interceptors"
 	"core-service/internal/domain"
-	pb "core-service/pkg/core/api/core"
 
 	"github.com/opentracing/opentracing-go"
 	"google.golang.org/protobuf/types/known/emptypb"
@@ -18,6 +19,7 @@ type Service struct {
 type OrganizationService interface {
 	CreateOrganization(ctx context.Context, name, industry, region, description, profileData string) (domain.Organization, error)
 	GetOrganization(ctx context.Context, id domain.ID) (domain.Organization, error)
+	ListMyOrganizations(ctx context.Context, userID domain.ID) ([]domain.Organization, error)
 	UpdateOrganization(ctx context.Context, id domain.ID, name, industry, region, description, profileData *string) (domain.Organization, error)
 	DeleteOrganization(ctx context.Context, id domain.ID) error
 }
@@ -112,4 +114,28 @@ func (s *Service) DeleteOrganization(ctx context.Context, req *pb.DeleteOrganiza
 	}
 
 	return &emptypb.Empty{}, nil
+}
+
+func (s *Service) ListMyOrganizations(ctx context.Context, req *pb.ListMyOrganizationsRequest) (*pb.ListMyOrganizationsResponse, error) {
+	span, ctx := opentracing.StartSpanFromContext(ctx, "api.ListMyOrganizations")
+	defer span.Finish()
+
+	userID, err := interceptors.UserIDFromContext(ctx)
+	if err != nil {
+		return nil, err
+	}
+
+	orgs, err := s.orgService.ListMyOrganizations(ctx, userID)
+	if err != nil {
+		return nil, err
+	}
+
+	pbOrgs := make([]*pb.Organization, len(orgs))
+	for i, org := range orgs {
+		pbOrgs[i] = organizationToProto(org)
+	}
+
+	return &pb.ListMyOrganizationsResponse{
+		Organizations: pbOrgs,
+	}, nil
 }

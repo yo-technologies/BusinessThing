@@ -25,12 +25,20 @@ db:
 # api_key — ключ доступа к провайдеру
 # model — идентификатор модели в провайдере
 # reasoning_effort — уровень "reasoning" (minimal|low|medium|high), если поддерживается моделью
+#                    оставьте пустым для моделей без поддержки reasoning
+# 
+# Опциональные специфичные модели для различных задач:
+# title_generation_model — модель для генерации названий чатов (обычно более быстрая и дешевая)
+# title_generation_reasoning_effort — уровень reasoning для генерации названий (опционально, можно оставить пустым)
 
 llm:
   base_url: "https://api.openai.com/v1"
   api_key: "sk-REPLACE_ME"
   model: "gpt-5-mini"
   reasoning_effort: "high"
+  # Опционально: более дешевая модель для генерации названий чатов
+  # Оставьте title_generation_reasoning_effort пустым для моделей без поддержки reasoning
+  title_generation_model: "google/gemini-2.0-flash-001"
 
 # (Необязательно) HTTP(S) прокси для исходящих запросов к провайдеру LLM
 # Если прокси не используется — можно удалить весь блок или оставить пустые значения.

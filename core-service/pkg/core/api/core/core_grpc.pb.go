@@ -128,10 +128,11 @@ var AuthService_ServiceDesc = grpc.ServiceDesc{
 }
 
 const (
-	OrganizationService_CreateOrganization_FullMethodName = "/core.api.core.OrganizationService/CreateOrganization"
-	OrganizationService_GetOrganization_FullMethodName    = "/core.api.core.OrganizationService/GetOrganization"
-	OrganizationService_UpdateOrganization_FullMethodName = "/core.api.core.OrganizationService/UpdateOrganization"
-	OrganizationService_DeleteOrganization_FullMethodName = "/core.api.core.OrganizationService/DeleteOrganization"
+	OrganizationService_CreateOrganization_FullMethodName  = "/core.api.core.OrganizationService/CreateOrganization"
+	OrganizationService_GetOrganization_FullMethodName     = "/core.api.core.OrganizationService/GetOrganization"
+	OrganizationService_ListMyOrganizations_FullMethodName = "/core.api.core.OrganizationService/ListMyOrganizations"
+	OrganizationService_UpdateOrganization_FullMethodName  = "/core.api.core.OrganizationService/UpdateOrganization"
+	OrganizationService_DeleteOrganization_FullMethodName  = "/core.api.core.OrganizationService/DeleteOrganization"
 )
 
 // OrganizationServiceClient is the client API for OrganizationService service.
@@ -144,6 +145,8 @@ type OrganizationServiceClient interface {
 	CreateOrganization(ctx context.Context, in *CreateOrganizationRequest, opts ...grpc.CallOption) (*CreateOrganizationResponse, error)
 	// Получить организацию по ID
 	GetOrganization(ctx context.Context, in *GetOrganizationRequest, opts ...grpc.CallOption) (*GetOrganizationResponse, error)
+	// Получить список своих организаций
+	ListMyOrganizations(ctx context.Context, in *ListMyOrganizationsRequest, opts ...grpc.CallOption) (*ListMyOrganizationsResponse, error)
 	// Обновить организацию
 	UpdateOrganization(ctx context.Context, in *UpdateOrganizationRequest, opts ...grpc.CallOption) (*UpdateOrganizationResponse, error)
 	// Удалить организацию (soft delete)
@@ -172,6 +175,16 @@ func (c *organizationServiceClient) GetOrganization(ctx context.Context, in *Get
 	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
 	out := new(GetOrganizationResponse)
 	err := c.cc.Invoke(ctx, OrganizationService_GetOrganization_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *organizationServiceClient) ListMyOrganizations(ctx context.Context, in *ListMyOrganizationsRequest, opts ...grpc.CallOption) (*ListMyOrganizationsResponse, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(ListMyOrganizationsResponse)
+	err := c.cc.Invoke(ctx, OrganizationService_ListMyOrganizations_FullMethodName, in, out, cOpts...)
 	if err != nil {
 		return nil, err
 	}
@@ -208,6 +221,8 @@ type OrganizationServiceServer interface {
 	CreateOrganization(context.Context, *CreateOrganizationRequest) (*CreateOrganizationResponse, error)
 	// Получить организацию по ID
 	GetOrganization(context.Context, *GetOrganizationRequest) (*GetOrganizationResponse, error)
+	// Получить список своих организаций
+	ListMyOrganizations(context.Context, *ListMyOrganizationsRequest) (*ListMyOrganizationsResponse, error)
 	// Обновить организацию
 	UpdateOrganization(context.Context, *UpdateOrganizationRequest) (*UpdateOrganizationResponse, error)
 	// Удалить организацию (soft delete)
@@ -227,6 +242,9 @@ func (UnimplementedOrganizationServiceServer) CreateOrganization(context.Context
 }
 func (UnimplementedOrganizationServiceServer) GetOrganization(context.Context, *GetOrganizationRequest) (*GetOrganizationResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method GetOrganization not implemented")
+}
+func (UnimplementedOrganizationServiceServer) ListMyOrganizations(context.Context, *ListMyOrganizationsRequest) (*ListMyOrganizationsResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method ListMyOrganizations not implemented")
 }
 func (UnimplementedOrganizationServiceServer) UpdateOrganization(context.Context, *UpdateOrganizationRequest) (*UpdateOrganizationResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method UpdateOrganization not implemented")
@@ -291,6 +309,24 @@ func _OrganizationService_GetOrganization_Handler(srv interface{}, ctx context.C
 	return interceptor(ctx, in, info, handler)
 }
 
+func _OrganizationService_ListMyOrganizations_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(ListMyOrganizationsRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(OrganizationServiceServer).ListMyOrganizations(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: OrganizationService_ListMyOrganizations_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(OrganizationServiceServer).ListMyOrganizations(ctx, req.(*ListMyOrganizationsRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 func _OrganizationService_UpdateOrganization_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
 	in := new(UpdateOrganizationRequest)
 	if err := dec(in); err != nil {
@@ -341,6 +377,10 @@ var OrganizationService_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "GetOrganization",
 			Handler:    _OrganizationService_GetOrganization_Handler,
+		},
+		{
+			MethodName: "ListMyOrganizations",
+			Handler:    _OrganizationService_ListMyOrganizations_Handler,
 		},
 		{
 			MethodName: "UpdateOrganization",

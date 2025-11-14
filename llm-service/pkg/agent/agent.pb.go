@@ -1601,6 +1601,50 @@ func (x *MemoryFact) GetCreatedAt() *timestamppb.Timestamp {
 	return nil
 }
 
+type ListMemoryFactsRequest struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	OrgId         string                 `protobuf:"bytes,1,opt,name=org_id,json=orgId,proto3" json:"org_id,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *ListMemoryFactsRequest) Reset() {
+	*x = ListMemoryFactsRequest{}
+	mi := &file_agent_agent_proto_msgTypes[21]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *ListMemoryFactsRequest) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*ListMemoryFactsRequest) ProtoMessage() {}
+
+func (x *ListMemoryFactsRequest) ProtoReflect() protoreflect.Message {
+	mi := &file_agent_agent_proto_msgTypes[21]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use ListMemoryFactsRequest.ProtoReflect.Descriptor instead.
+func (*ListMemoryFactsRequest) Descriptor() ([]byte, []int) {
+	return file_agent_agent_proto_rawDescGZIP(), []int{21}
+}
+
+func (x *ListMemoryFactsRequest) GetOrgId() string {
+	if x != nil {
+		return x.OrgId
+	}
+	return ""
+}
+
 type ListMemoryFactsResponse struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
 	Facts         []*MemoryFact          `protobuf:"bytes,1,rep,name=facts,proto3" json:"facts,omitempty"`
@@ -1610,7 +1654,7 @@ type ListMemoryFactsResponse struct {
 
 func (x *ListMemoryFactsResponse) Reset() {
 	*x = ListMemoryFactsResponse{}
-	mi := &file_agent_agent_proto_msgTypes[21]
+	mi := &file_agent_agent_proto_msgTypes[22]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -1622,7 +1666,7 @@ func (x *ListMemoryFactsResponse) String() string {
 func (*ListMemoryFactsResponse) ProtoMessage() {}
 
 func (x *ListMemoryFactsResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_agent_agent_proto_msgTypes[21]
+	mi := &file_agent_agent_proto_msgTypes[22]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -1635,7 +1679,7 @@ func (x *ListMemoryFactsResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use ListMemoryFactsResponse.ProtoReflect.Descriptor instead.
 func (*ListMemoryFactsResponse) Descriptor() ([]byte, []int) {
-	return file_agent_agent_proto_rawDescGZIP(), []int{21}
+	return file_agent_agent_proto_rawDescGZIP(), []int{22}
 }
 
 func (x *ListMemoryFactsResponse) GetFacts() []*MemoryFact {
@@ -1647,14 +1691,15 @@ func (x *ListMemoryFactsResponse) GetFacts() []*MemoryFact {
 
 type CreateMemoryFactRequest struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
-	Content       string                 `protobuf:"bytes,1,opt,name=content,proto3" json:"content,omitempty"`
+	OrgId         string                 `protobuf:"bytes,1,opt,name=org_id,json=orgId,proto3" json:"org_id,omitempty"`
+	Content       string                 `protobuf:"bytes,2,opt,name=content,proto3" json:"content,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
 
 func (x *CreateMemoryFactRequest) Reset() {
 	*x = CreateMemoryFactRequest{}
-	mi := &file_agent_agent_proto_msgTypes[22]
+	mi := &file_agent_agent_proto_msgTypes[23]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -1666,7 +1711,7 @@ func (x *CreateMemoryFactRequest) String() string {
 func (*CreateMemoryFactRequest) ProtoMessage() {}
 
 func (x *CreateMemoryFactRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_agent_agent_proto_msgTypes[22]
+	mi := &file_agent_agent_proto_msgTypes[23]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -1679,7 +1724,14 @@ func (x *CreateMemoryFactRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use CreateMemoryFactRequest.ProtoReflect.Descriptor instead.
 func (*CreateMemoryFactRequest) Descriptor() ([]byte, []int) {
-	return file_agent_agent_proto_rawDescGZIP(), []int{22}
+	return file_agent_agent_proto_rawDescGZIP(), []int{23}
+}
+
+func (x *CreateMemoryFactRequest) GetOrgId() string {
+	if x != nil {
+		return x.OrgId
+	}
+	return ""
 }
 
 func (x *CreateMemoryFactRequest) GetContent() string {
@@ -1698,7 +1750,7 @@ type CreateMemoryFactResponse struct {
 
 func (x *CreateMemoryFactResponse) Reset() {
 	*x = CreateMemoryFactResponse{}
-	mi := &file_agent_agent_proto_msgTypes[23]
+	mi := &file_agent_agent_proto_msgTypes[24]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -1710,7 +1762,7 @@ func (x *CreateMemoryFactResponse) String() string {
 func (*CreateMemoryFactResponse) ProtoMessage() {}
 
 func (x *CreateMemoryFactResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_agent_agent_proto_msgTypes[23]
+	mi := &file_agent_agent_proto_msgTypes[24]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -1723,7 +1775,7 @@ func (x *CreateMemoryFactResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use CreateMemoryFactResponse.ProtoReflect.Descriptor instead.
 func (*CreateMemoryFactResponse) Descriptor() ([]byte, []int) {
-	return file_agent_agent_proto_rawDescGZIP(), []int{23}
+	return file_agent_agent_proto_rawDescGZIP(), []int{24}
 }
 
 func (x *CreateMemoryFactResponse) GetFact() *MemoryFact {
@@ -1736,13 +1788,14 @@ func (x *CreateMemoryFactResponse) GetFact() *MemoryFact {
 type DeleteMemoryFactRequest struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
 	Id            string                 `protobuf:"bytes,1,opt,name=id,proto3" json:"id,omitempty"`
+	OrgId         string                 `protobuf:"bytes,2,opt,name=org_id,json=orgId,proto3" json:"org_id,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
 
 func (x *DeleteMemoryFactRequest) Reset() {
 	*x = DeleteMemoryFactRequest{}
-	mi := &file_agent_agent_proto_msgTypes[24]
+	mi := &file_agent_agent_proto_msgTypes[25]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -1754,7 +1807,7 @@ func (x *DeleteMemoryFactRequest) String() string {
 func (*DeleteMemoryFactRequest) ProtoMessage() {}
 
 func (x *DeleteMemoryFactRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_agent_agent_proto_msgTypes[24]
+	mi := &file_agent_agent_proto_msgTypes[25]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -1767,12 +1820,19 @@ func (x *DeleteMemoryFactRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use DeleteMemoryFactRequest.ProtoReflect.Descriptor instead.
 func (*DeleteMemoryFactRequest) Descriptor() ([]byte, []int) {
-	return file_agent_agent_proto_rawDescGZIP(), []int{24}
+	return file_agent_agent_proto_rawDescGZIP(), []int{25}
 }
 
 func (x *DeleteMemoryFactRequest) GetId() string {
 	if x != nil {
 		return x.Id
+	}
+	return ""
+}
+
+func (x *DeleteMemoryFactRequest) GetOrgId() string {
+	if x != nil {
+		return x.OrgId
 	}
 	return ""
 }
@@ -1890,16 +1950,20 @@ const file_agent_agent_proto_rawDesc = "" +
 	"\x02id\x18\x01 \x01(\tR\x02id\x12\x18\n" +
 	"\acontent\x18\x02 \x01(\tR\acontent\x129\n" +
 	"\n" +
-	"created_at\x18\x03 \x01(\v2\x1a.google.protobuf.TimestampR\tcreatedAt\"P\n" +
+	"created_at\x18\x03 \x01(\v2\x1a.google.protobuf.TimestampR\tcreatedAt\"8\n" +
+	"\x16ListMemoryFactsRequest\x12\x1e\n" +
+	"\x06org_id\x18\x01 \x01(\tB\a\xfaB\x04r\x02\x10\x01R\x05orgId\"P\n" +
 	"\x17ListMemoryFactsResponse\x125\n" +
-	"\x05facts\x18\x01 \x03(\v2\x1f.llm_agent.api.agent.MemoryFactR\x05facts\"?\n" +
-	"\x17CreateMemoryFactRequest\x12$\n" +
-	"\acontent\x18\x01 \x01(\tB\n" +
-	"\xfaB\ar\x05\x10\x01\x18\xc8\x01R\acontent\"O\n" +
+	"\x05facts\x18\x01 \x03(\v2\x1f.llm_agent.api.agent.MemoryFactR\x05facts\"_\n" +
+	"\x17CreateMemoryFactRequest\x12\x1e\n" +
+	"\x06org_id\x18\x01 \x01(\tB\a\xfaB\x04r\x02\x10\x01R\x05orgId\x12$\n" +
+	"\acontent\x18\x02 \x01(\tB\n" +
+	"\xfaB\ar\x05\x10\x01\x18\xf4\x03R\acontent\"O\n" +
 	"\x18CreateMemoryFactResponse\x123\n" +
-	"\x04fact\x18\x01 \x01(\v2\x1f.llm_agent.api.agent.MemoryFactR\x04fact\"2\n" +
+	"\x04fact\x18\x01 \x01(\v2\x1f.llm_agent.api.agent.MemoryFactR\x04fact\"R\n" +
 	"\x17DeleteMemoryFactRequest\x12\x17\n" +
-	"\x02id\x18\x01 \x01(\tB\a\xfaB\x04r\x02\x10\x01R\x02id*\x8e\x01\n" +
+	"\x02id\x18\x01 \x01(\tB\a\xfaB\x04r\x02\x10\x01R\x02id\x12\x1e\n" +
+	"\x06org_id\x18\x02 \x01(\tB\a\xfaB\x04r\x02\x10\x01R\x05orgId*\x8e\x01\n" +
 	"\n" +
 	"ChatStatus\x12\x1b\n" +
 	"\x17CHAT_STATUS_UNSPECIFIED\x10\x00\x12\x16\n" +
@@ -1926,9 +1990,9 @@ const file_agent_agent_proto_rawDesc = "" +
 	"DeleteChat\x12&.llm_agent.api.agent.DeleteChatRequest\x1a\x16.google.protobuf.Empty\"\x1b\x82\xd3\xe4\x93\x02\x15*\x13/v1/chats/{chat_id}\x12\x86\x01\n" +
 	"\vGetMessages\x12'.llm_agent.api.agent.GetMessagesRequest\x1a(.llm_agent.api.agent.GetMessagesResponse\"$\x82\xd3\xe4\x93\x02\x1e\x12\x1c/v1/chats/{chat_id}/messages\x12i\n" +
 	"\fGetLLMLimits\x12\x16.google.protobuf.Empty\x1a).llm_agent.api.agent.GetLLMLimitsResponse\"\x16\x82\xd3\xe4\x93\x02\x10\x12\x0e/v1/llm/limits\x12l\n" +
-	"\rStreamMessage\x12).llm_agent.api.agent.StreamMessageRequest\x1a*.llm_agent.api.agent.StreamMessageResponse\"\x00(\x010\x012\x8a\x03\n" +
-	"\rMemoryService\x12q\n" +
-	"\x0fListMemoryFacts\x12\x16.google.protobuf.Empty\x1a,.llm_agent.api.agent.ListMemoryFactsResponse\"\x18\x82\xd3\xe4\x93\x02\x12\x12\x10/v1/memory/facts\x12\x8c\x01\n" +
+	"\rStreamMessage\x12).llm_agent.api.agent.StreamMessageRequest\x1a*.llm_agent.api.agent.StreamMessageResponse\"\x00(\x010\x012\xa0\x03\n" +
+	"\rMemoryService\x12\x86\x01\n" +
+	"\x0fListMemoryFacts\x12+.llm_agent.api.agent.ListMemoryFactsRequest\x1a,.llm_agent.api.agent.ListMemoryFactsResponse\"\x18\x82\xd3\xe4\x93\x02\x12\x12\x10/v1/memory/facts\x12\x8c\x01\n" +
 	"\x10CreateMemoryFact\x12,.llm_agent.api.agent.CreateMemoryFactRequest\x1a-.llm_agent.api.agent.CreateMemoryFactResponse\"\x1b\x82\xd3\xe4\x93\x02\x15:\x01*\"\x10/v1/memory/facts\x12w\n" +
 	"\x10DeleteMemoryFact\x12,.llm_agent.api.agent.DeleteMemoryFactRequest\x1a\x16.google.protobuf.Empty\"\x1d\x82\xd3\xe4\x93\x02\x17*\x15/v1/memory/facts/{id}B\xd4\x01\x92A\x9d\x01\x12>\n" +
 	"\x0fLLM Service API\x12$API for LLM Service of BusinessThing2\x051.0.0\"\x04/api*\x02\x01\x022\x10application/json:\x10application/jsonZ\x1f\n" +
@@ -1951,7 +2015,7 @@ func file_agent_agent_proto_rawDescGZIP() []byte {
 }
 
 var file_agent_agent_proto_enumTypes = make([]protoimpl.EnumInfo, 3)
-var file_agent_agent_proto_msgTypes = make([]protoimpl.MessageInfo, 25)
+var file_agent_agent_proto_msgTypes = make([]protoimpl.MessageInfo, 26)
 var file_agent_agent_proto_goTypes = []any{
 	(ChatStatus)(0),                  // 0: llm_agent.api.agent.ChatStatus
 	(MessageRole)(0),                 // 1: llm_agent.api.agent.MessageRole
@@ -1977,12 +2041,13 @@ var file_agent_agent_proto_goTypes = []any{
 	(*ChatEvent)(nil),                // 21: llm_agent.api.agent.ChatEvent
 	(*ChatUsage)(nil),                // 22: llm_agent.api.agent.ChatUsage
 	(*MemoryFact)(nil),               // 23: llm_agent.api.agent.MemoryFact
-	(*ListMemoryFactsResponse)(nil),  // 24: llm_agent.api.agent.ListMemoryFactsResponse
-	(*CreateMemoryFactRequest)(nil),  // 25: llm_agent.api.agent.CreateMemoryFactRequest
-	(*CreateMemoryFactResponse)(nil), // 26: llm_agent.api.agent.CreateMemoryFactResponse
-	(*DeleteMemoryFactRequest)(nil),  // 27: llm_agent.api.agent.DeleteMemoryFactRequest
-	(*timestamppb.Timestamp)(nil),    // 28: google.protobuf.Timestamp
-	(*emptypb.Empty)(nil),            // 29: google.protobuf.Empty
+	(*ListMemoryFactsRequest)(nil),   // 24: llm_agent.api.agent.ListMemoryFactsRequest
+	(*ListMemoryFactsResponse)(nil),  // 25: llm_agent.api.agent.ListMemoryFactsResponse
+	(*CreateMemoryFactRequest)(nil),  // 26: llm_agent.api.agent.CreateMemoryFactRequest
+	(*CreateMemoryFactResponse)(nil), // 27: llm_agent.api.agent.CreateMemoryFactResponse
+	(*DeleteMemoryFactRequest)(nil),  // 28: llm_agent.api.agent.DeleteMemoryFactRequest
+	(*timestamppb.Timestamp)(nil),    // 29: google.protobuf.Timestamp
+	(*emptypb.Empty)(nil),            // 30: google.protobuf.Empty
 }
 var file_agent_agent_proto_depIdxs = []int32{
 	14, // 0: llm_agent.api.agent.GetChatResponse.chat:type_name -> llm_agent.api.agent.Chat
@@ -1996,36 +2061,36 @@ var file_agent_agent_proto_depIdxs = []int32{
 	21, // 8: llm_agent.api.agent.StreamMessageResponse.chat:type_name -> llm_agent.api.agent.ChatEvent
 	15, // 9: llm_agent.api.agent.GetMessagesResponse.messages:type_name -> llm_agent.api.agent.Message
 	0,  // 10: llm_agent.api.agent.Chat.status:type_name -> llm_agent.api.agent.ChatStatus
-	28, // 11: llm_agent.api.agent.Chat.created_at:type_name -> google.protobuf.Timestamp
-	28, // 12: llm_agent.api.agent.Chat.updated_at:type_name -> google.protobuf.Timestamp
+	29, // 11: llm_agent.api.agent.Chat.created_at:type_name -> google.protobuf.Timestamp
+	29, // 12: llm_agent.api.agent.Chat.updated_at:type_name -> google.protobuf.Timestamp
 	1,  // 13: llm_agent.api.agent.Message.role:type_name -> llm_agent.api.agent.MessageRole
 	16, // 14: llm_agent.api.agent.Message.tool_calls:type_name -> llm_agent.api.agent.ToolCall
-	28, // 15: llm_agent.api.agent.Message.created_at:type_name -> google.protobuf.Timestamp
+	29, // 15: llm_agent.api.agent.Message.created_at:type_name -> google.protobuf.Timestamp
 	2,  // 16: llm_agent.api.agent.ToolCall.status:type_name -> llm_agent.api.agent.ToolCallStatus
-	28, // 17: llm_agent.api.agent.ToolCall.created_at:type_name -> google.protobuf.Timestamp
-	28, // 18: llm_agent.api.agent.ToolCall.completed_at:type_name -> google.protobuf.Timestamp
+	29, // 17: llm_agent.api.agent.ToolCall.created_at:type_name -> google.protobuf.Timestamp
+	29, // 18: llm_agent.api.agent.ToolCall.completed_at:type_name -> google.protobuf.Timestamp
 	22, // 19: llm_agent.api.agent.UsageEvent.usage:type_name -> llm_agent.api.agent.ChatUsage
-	28, // 20: llm_agent.api.agent.MemoryFact.created_at:type_name -> google.protobuf.Timestamp
+	29, // 20: llm_agent.api.agent.MemoryFact.created_at:type_name -> google.protobuf.Timestamp
 	23, // 21: llm_agent.api.agent.ListMemoryFactsResponse.facts:type_name -> llm_agent.api.agent.MemoryFact
 	23, // 22: llm_agent.api.agent.CreateMemoryFactResponse.fact:type_name -> llm_agent.api.agent.MemoryFact
 	3,  // 23: llm_agent.api.agent.AgentService.GetChat:input_type -> llm_agent.api.agent.GetChatRequest
 	5,  // 24: llm_agent.api.agent.AgentService.ListChats:input_type -> llm_agent.api.agent.ListChatsRequest
 	7,  // 25: llm_agent.api.agent.AgentService.DeleteChat:input_type -> llm_agent.api.agent.DeleteChatRequest
 	11, // 26: llm_agent.api.agent.AgentService.GetMessages:input_type -> llm_agent.api.agent.GetMessagesRequest
-	29, // 27: llm_agent.api.agent.AgentService.GetLLMLimits:input_type -> google.protobuf.Empty
+	30, // 27: llm_agent.api.agent.AgentService.GetLLMLimits:input_type -> google.protobuf.Empty
 	8,  // 28: llm_agent.api.agent.AgentService.StreamMessage:input_type -> llm_agent.api.agent.StreamMessageRequest
-	29, // 29: llm_agent.api.agent.MemoryService.ListMemoryFacts:input_type -> google.protobuf.Empty
-	25, // 30: llm_agent.api.agent.MemoryService.CreateMemoryFact:input_type -> llm_agent.api.agent.CreateMemoryFactRequest
-	27, // 31: llm_agent.api.agent.MemoryService.DeleteMemoryFact:input_type -> llm_agent.api.agent.DeleteMemoryFactRequest
+	24, // 29: llm_agent.api.agent.MemoryService.ListMemoryFacts:input_type -> llm_agent.api.agent.ListMemoryFactsRequest
+	26, // 30: llm_agent.api.agent.MemoryService.CreateMemoryFact:input_type -> llm_agent.api.agent.CreateMemoryFactRequest
+	28, // 31: llm_agent.api.agent.MemoryService.DeleteMemoryFact:input_type -> llm_agent.api.agent.DeleteMemoryFactRequest
 	4,  // 32: llm_agent.api.agent.AgentService.GetChat:output_type -> llm_agent.api.agent.GetChatResponse
 	6,  // 33: llm_agent.api.agent.AgentService.ListChats:output_type -> llm_agent.api.agent.ListChatsResponse
-	29, // 34: llm_agent.api.agent.AgentService.DeleteChat:output_type -> google.protobuf.Empty
+	30, // 34: llm_agent.api.agent.AgentService.DeleteChat:output_type -> google.protobuf.Empty
 	12, // 35: llm_agent.api.agent.AgentService.GetMessages:output_type -> llm_agent.api.agent.GetMessagesResponse
 	13, // 36: llm_agent.api.agent.AgentService.GetLLMLimits:output_type -> llm_agent.api.agent.GetLLMLimitsResponse
 	10, // 37: llm_agent.api.agent.AgentService.StreamMessage:output_type -> llm_agent.api.agent.StreamMessageResponse
-	24, // 38: llm_agent.api.agent.MemoryService.ListMemoryFacts:output_type -> llm_agent.api.agent.ListMemoryFactsResponse
-	26, // 39: llm_agent.api.agent.MemoryService.CreateMemoryFact:output_type -> llm_agent.api.agent.CreateMemoryFactResponse
-	29, // 40: llm_agent.api.agent.MemoryService.DeleteMemoryFact:output_type -> google.protobuf.Empty
+	25, // 38: llm_agent.api.agent.MemoryService.ListMemoryFacts:output_type -> llm_agent.api.agent.ListMemoryFactsResponse
+	27, // 39: llm_agent.api.agent.MemoryService.CreateMemoryFact:output_type -> llm_agent.api.agent.CreateMemoryFactResponse
+	30, // 40: llm_agent.api.agent.MemoryService.DeleteMemoryFact:output_type -> google.protobuf.Empty
 	32, // [32:41] is the sub-list for method output_type
 	23, // [23:32] is the sub-list for method input_type
 	23, // [23:23] is the sub-list for extension type_name
@@ -2056,7 +2121,7 @@ func file_agent_agent_proto_init() {
 			GoPackagePath: reflect.TypeOf(x{}).PkgPath(),
 			RawDescriptor: unsafe.Slice(unsafe.StringData(file_agent_agent_proto_rawDesc), len(file_agent_agent_proto_rawDesc)),
 			NumEnums:      3,
-			NumMessages:   25,
+			NumMessages:   26,
 			NumExtensions: 0,
 			NumServices:   2,
 		},

@@ -368,6 +368,29 @@
         ]
       }
     },
+    "/v1/organizations/me": {
+      "get": {
+        "summary": "Получить список своих организаций",
+        "operationId": "OrganizationService_ListMyOrganizations",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/coreListMyOrganizationsResponse"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/rpcStatus"
+            }
+          }
+        },
+        "tags": [
+          "OrganizationService"
+        ]
+      }
+    },
     "/v1/organizations/{id}": {
       "get": {
         "summary": "Получить организацию по ID",
@@ -1540,6 +1563,18 @@
         "pageSize": {
           "type": "integer",
           "format": "int32"
+        }
+      }
+    },
+    "coreListMyOrganizationsResponse": {
+      "type": "object",
+      "properties": {
+        "organizations": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "$ref": "#/definitions/coreOrganization"
+          }
         }
       }
     },

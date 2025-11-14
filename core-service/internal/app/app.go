@@ -2,6 +2,8 @@ package app
 
 import (
 	"context"
+	pb "core-service/bin/core/api/core"
+	"core-service/internal/app/core-service/api/auth"
 	"core-service/internal/app/core-service/api/contract"
 	"core-service/internal/app/core-service/api/document"
 	"core-service/internal/app/core-service/api/note"
@@ -12,7 +14,6 @@ import (
 	"core-service/internal/config"
 	"core-service/internal/jwt"
 	"core-service/internal/logger"
-	pb "core-service/pkg/core/api/core"
 	"fmt"
 	"net"
 	"net/http"
@@ -34,6 +35,7 @@ type App struct {
 	noteService     *note.Service
 	templateService *template.Service
 	contractService *contract.Service
+	authService     *auth.Service
 	grpcServer      *grpc.Server
 	httpServer      *http.Server
 }
@@ -47,7 +49,7 @@ type Services struct {
 	ContractService     contract.ContractService
 }
 
-func New(cfg *config.Config, jwtProvider *jwt.Provider, services Services) *App {
+func New(cfg *config.Config, jwtProvider *jwt.Provider, services Services, authSvc *auth.Service) *App {
 	app := &App{
 		cfg:             cfg,
 		jwtProvider:     jwtProvider,
@@ -57,6 +59,7 @@ func New(cfg *config.Config, jwtProvider *jwt.Provider, services Services) *App 
 		noteService:     note.NewService(services.NoteService),
 		templateService: template.NewService(services.TemplateService),
 		contractService: contract.NewService(services.ContractService),
+		authService:     authSvc,
 	}
 
 	app.setupGRPC()
@@ -66,7 +69,8 @@ func New(cfg *config.Config, jwtProvider *jwt.Provider, services Services) *App 
 func (a *App) setupGRPC() {
 	// Unprotected methods (public endpoints)
 	unprotected := []string{
-		"/core.UserService/AcceptInvitation",
+		"/core.api.core.AuthService/AuthenticateWithTelegram",
+		"/core.api.core.UserService/AcceptInvitation",
 	}
 
 	// Setup interceptors
@@ -91,6 +95,7 @@ func (a *App) setupGRPC() {
 	)
 
 	// Register services
+	pb.RegisterAuthServiceServer(a.grpcServer, a.authService)
 	pb.RegisterOrganizationServiceServer(a.grpcServer, a.orgService)
 	pb.RegisterUserServiceServer(a.grpcServer, a.userService)
 	pb.RegisterDocumentServiceServer(a.grpcServer, a.docService)
@@ -156,6 +161,9 @@ func (a *App) startHTTPGateway(ctx context.Context) error {
 	opts := []grpc.DialOption{grpc.WithTransportCredentials(insecure.NewCredentials())}
 
 	// Register all services with HTTP gateway
+	if err := pb.RegisterAuthServiceHandlerFromEndpoint(ctx, mux, grpcAddr, opts); err != nil {
+		return fmt.Errorf("failed to register auth handler: %w", err)
+	}
 	if err := pb.RegisterOrganizationServiceHandlerFromEndpoint(ctx, mux, grpcAddr, opts); err != nil {
 		return fmt.Errorf("failed to register organization handler: %w", err)
 	}

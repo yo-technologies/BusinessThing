@@ -56,14 +56,11 @@ type AgentManager interface {
 
 // ContextBuilder - сервис для построения контекста для LLM
 type ContextBuilder interface {
-	// BuildContext строит контекст для агента на основе истории чата и дополнительных данных
-	BuildContext(ctx context.Context, chat *domain.Chat, messages []*domain.Message) ([]interface{}, error)
-
 	// EnrichWithRAG обогащает контекст данными из RAG (векторный поиск)
-	EnrichWithRAG(ctx context.Context, organizationID domain.ID, query string, limit int) ([]string, error)
+	EnrichWithRAG(ctx context.Context, organizationID domain.ID, query string, limit int) (string, error)
 
-	// EnrichWithMemoryFacts добавляет факты из памяти пользователя
-	EnrichWithMemoryFacts(ctx context.Context, userID domain.ID) ([]string, error)
+	// EnrichWithOrganizationFacts добавляет факты об организации в контекст
+	EnrichWithOrganizationFacts(ctx context.Context, organizationID domain.ID) (string, error)
 }
 
 // AgentExecutor - основной сервис для выполнения агентов
@@ -121,4 +118,16 @@ type SubagentManager interface {
 type WebSearchClient interface {
 	// Search выполняет поиск и возвращает результаты
 	Search(ctx context.Context, query string, maxResults int) (interface{}, error)
+}
+
+// OrganizationMemoryService - сервис для управления фактами об организации
+type OrganizationMemoryService interface {
+	// AddFact добавляет факт об организации
+	AddFact(ctx context.Context, organizationID domain.ID, content string) (domain.OrganizationMemoryFact, error)
+
+	// ListFacts возвращает все факты организации
+	ListFacts(ctx context.Context, organizationID domain.ID) ([]domain.OrganizationMemoryFact, error)
+
+	// DeleteFact удаляет факт организации
+	DeleteFact(ctx context.Context, organizationID domain.ID, factID domain.ID) error
 }

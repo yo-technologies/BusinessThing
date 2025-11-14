@@ -2,9 +2,9 @@ package user
 
 import (
 	"context"
+	pb "core-service/bin/core/api/core"
 	"core-service/internal/app/interceptors"
 	"core-service/internal/domain"
-	pb "core-service/pkg/core/api/core"
 
 	"github.com/opentracing/opentracing-go"
 	"google.golang.org/protobuf/types/known/emptypb"
@@ -18,7 +18,7 @@ type Service struct {
 
 type UserService interface {
 	InviteUser(ctx context.Context, organizationID domain.ID, email string, role domain.UserRole, invitedBy domain.ID) (*domain.Invitation, error)
-	AcceptInvitation(ctx context.Context, token, telegramID, firstName, lastName string) (*domain.User, error)
+	AcceptInvitation(ctx context.Context, userID domain.ID, token string) (*domain.User, error)
 	ListUsersByOrganization(ctx context.Context, organizationID domain.ID) ([]*domain.User, error)
 	GetUser(ctx context.Context, id domain.ID) (*domain.User, error)
 	UpdateUserRole(ctx context.Context, id domain.ID, role domain.UserRole) (*domain.User, error)
@@ -112,7 +112,13 @@ func (s *Service) AcceptInvitation(ctx context.Context, req *pb.AcceptInvitation
 	span, ctx := opentracing.StartSpanFromContext(ctx, "api.AcceptInvitation")
 	defer span.Finish()
 
-	user, err := s.userService.AcceptInvitation(ctx, req.Token, req.TelegramId, req.FirstName, req.LastName)
+	// Получаем ID пользователя из контекста (JWT)
+	userID, err := interceptors.UserIDFromContext(ctx)
+	if err != nil {
+		return nil, err
+	}
+
+	user, err := s.userService.AcceptInvitation(ctx, userID, req.Token)
 	if err != nil {
 		return nil, err
 	}

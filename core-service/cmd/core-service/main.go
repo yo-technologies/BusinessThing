@@ -3,6 +3,7 @@ package main
 import (
 	"context"
 	"core-service/internal/app"
+	authapi "core-service/internal/app/core-service/api/auth"
 	"core-service/internal/config"
 	"core-service/internal/db"
 	"core-service/internal/jwt"
@@ -24,6 +25,7 @@ import (
 	"syscall"
 
 	"github.com/jackc/pgx/v5/pgxpool"
+	amqp "github.com/rabbitmq/amqp091-go"
 )
 
 func main() {
@@ -67,10 +69,28 @@ func main() {
 	// Initialize repositories
 	repo := repository.NewPGXRepository(contextManager)
 
+	// Initialize RabbitMQ
+	var amqpChannel *amqp.Channel
+	if rabbitURL := cfg.GetRabbitMQURL(); rabbitURL != "" {
+		conn, err := amqp.Dial(rabbitURL)
+		if err != nil {
+			logger.Warnf(ctx, "Failed to connect to RabbitMQ: %v", err)
+		} else {
+			defer conn.Close()
+			amqpChannel, err = conn.Channel()
+			if err != nil {
+				logger.Warnf(ctx, "Failed to open RabbitMQ channel: %v", err)
+			} else {
+				defer amqpChannel.Close()
+				logger.Info(ctx, "RabbitMQ connection established")
+			}
+		}
+	}
+
 	// Initialize services
 	orgService := organization.New(repo)
 	userService := user.New(repo)
-	docService := document.New(repo)
+	docService := document.New(repo, amqpChannel, "document_processing")
 	noteService := note.New(repo)
 	templateService := template.New(repo)
 	contractService := contract.New(repo)
@@ -95,6 +115,9 @@ func main() {
 	// Initialize auth service
 	authService := auth.New(repo, jwtProvider, telegramValidator)
 
+	// Wrap auth service with gRPC API handler
+	authAPIService := authapi.NewService(authService)
+
 	// Create app with all services
 	application := app.New(cfg, jwtProvider, app.Services{
 		OrganizationService: orgService,
@@ -103,8 +126,7 @@ func main() {
 		NoteService:         noteService,
 		TemplateService:     templateService,
 		ContractService:     contractService,
-		AuthService:         authService,
-	})
+	}, authAPIService)
 
 	// Setup graceful shutdown
 	ctx, cancel := context.WithCancel(ctx)

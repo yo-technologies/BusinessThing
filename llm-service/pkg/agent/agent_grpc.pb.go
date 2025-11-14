@@ -336,8 +336,8 @@ const (
 //
 // ===== Memory Service =====
 type MemoryServiceClient interface {
-	// Список всех фактов о пользователе
-	ListMemoryFacts(ctx context.Context, in *emptypb.Empty, opts ...grpc.CallOption) (*ListMemoryFactsResponse, error)
+	// Список всех фактов об организации
+	ListMemoryFacts(ctx context.Context, in *ListMemoryFactsRequest, opts ...grpc.CallOption) (*ListMemoryFactsResponse, error)
 	// Создать новый факт
 	CreateMemoryFact(ctx context.Context, in *CreateMemoryFactRequest, opts ...grpc.CallOption) (*CreateMemoryFactResponse, error)
 	// Удалить факт по id
@@ -352,7 +352,7 @@ func NewMemoryServiceClient(cc grpc.ClientConnInterface) MemoryServiceClient {
 	return &memoryServiceClient{cc}
 }
 
-func (c *memoryServiceClient) ListMemoryFacts(ctx context.Context, in *emptypb.Empty, opts ...grpc.CallOption) (*ListMemoryFactsResponse, error) {
+func (c *memoryServiceClient) ListMemoryFacts(ctx context.Context, in *ListMemoryFactsRequest, opts ...grpc.CallOption) (*ListMemoryFactsResponse, error) {
 	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
 	out := new(ListMemoryFactsResponse)
 	err := c.cc.Invoke(ctx, MemoryService_ListMemoryFacts_FullMethodName, in, out, cOpts...)
@@ -388,8 +388,8 @@ func (c *memoryServiceClient) DeleteMemoryFact(ctx context.Context, in *DeleteMe
 //
 // ===== Memory Service =====
 type MemoryServiceServer interface {
-	// Список всех фактов о пользователе
-	ListMemoryFacts(context.Context, *emptypb.Empty) (*ListMemoryFactsResponse, error)
+	// Список всех фактов об организации
+	ListMemoryFacts(context.Context, *ListMemoryFactsRequest) (*ListMemoryFactsResponse, error)
 	// Создать новый факт
 	CreateMemoryFact(context.Context, *CreateMemoryFactRequest) (*CreateMemoryFactResponse, error)
 	// Удалить факт по id
@@ -404,7 +404,7 @@ type MemoryServiceServer interface {
 // pointer dereference when methods are called.
 type UnimplementedMemoryServiceServer struct{}
 
-func (UnimplementedMemoryServiceServer) ListMemoryFacts(context.Context, *emptypb.Empty) (*ListMemoryFactsResponse, error) {
+func (UnimplementedMemoryServiceServer) ListMemoryFacts(context.Context, *ListMemoryFactsRequest) (*ListMemoryFactsResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method ListMemoryFacts not implemented")
 }
 func (UnimplementedMemoryServiceServer) CreateMemoryFact(context.Context, *CreateMemoryFactRequest) (*CreateMemoryFactResponse, error) {
@@ -435,7 +435,7 @@ func RegisterMemoryServiceServer(s grpc.ServiceRegistrar, srv MemoryServiceServe
 }
 
 func _MemoryService_ListMemoryFacts_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(emptypb.Empty)
+	in := new(ListMemoryFactsRequest)
 	if err := dec(in); err != nil {
 		return nil, err
 	}
@@ -447,7 +447,7 @@ func _MemoryService_ListMemoryFacts_Handler(srv interface{}, ctx context.Context
 		FullMethod: MemoryService_ListMemoryFacts_FullMethodName,
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(MemoryServiceServer).ListMemoryFacts(ctx, req.(*emptypb.Empty))
+		return srv.(MemoryServiceServer).ListMemoryFacts(ctx, req.(*ListMemoryFactsRequest))
 	}
 	return interceptor(ctx, in, info, handler)
 }

@@ -2,8 +2,8 @@ package note
 
 import (
 	"context"
+	pb "core-service/bin/core/api/core"
 	"core-service/internal/domain"
-	pb "core-service/pkg/core/api/core"
 
 	"github.com/opentracing/opentracing-go"
 	"google.golang.org/protobuf/types/known/emptypb"

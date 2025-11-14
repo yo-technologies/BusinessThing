@@ -58,11 +58,19 @@ func (s *Service) ListNotes(ctx context.Context, organizationID domain.ID, limit
 	span, ctx := opentracing.StartSpanFromContext(ctx, "service.note.ListNotes")
 	defer span.Finish()
 
-	if limit < 1 || limit > MaxNotesLimit {
-		limit = 50
+	if limit < 1 || limit > 100 {
+		limit = 10
 	}
 
 	return s.repo.ListNotes(ctx, organizationID, limit)
+}
+
+// ListNotesByOrganization retrieves all notes for an organization
+func (s *Service) ListNotesByOrganization(ctx context.Context, organizationID domain.ID) ([]domain.Note, error) {
+	span, ctx := opentracing.StartSpanFromContext(ctx, "service.note.ListNotesByOrganization")
+	defer span.Finish()
+
+	return s.repo.ListNotes(ctx, organizationID, 100)
 }
 
 // DeleteNote deletes a note
