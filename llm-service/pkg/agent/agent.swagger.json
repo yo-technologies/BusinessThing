@@ -428,6 +428,26 @@
         }
       }
     },
+    "agentFinalEvent": {
+      "type": "object",
+      "properties": {
+        "chat": {
+          "$ref": "#/definitions/agentChat"
+        },
+        "messages": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "$ref": "#/definitions/agentMessage"
+          }
+        },
+        "totalMessages": {
+          "type": "integer",
+          "format": "int32"
+        }
+      },
+      "title": "Отправляется в конце стрима с полным состоянием чата"
+    },
     "agentGetChatResponse": {
       "type": "object",
       "properties": {
@@ -609,6 +629,9 @@
         },
         "chat": {
           "$ref": "#/definitions/agentChatEvent"
+        },
+        "final": {
+          "$ref": "#/definitions/agentFinalEvent"
         }
       }
     },

@@ -88,6 +88,7 @@ type MessageStream interface {
 	SendUsage(usage *dto.ChatUsageDTO) error
 	SendError(err error) error
 	SendChat(chat *domain.Chat) error
+	SendFinal(chat *domain.Chat, messages []*domain.Message) error
 }
 
 // ToolExecutor - сервис для выполнения инструментов

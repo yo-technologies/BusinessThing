@@ -157,6 +157,7 @@ message StreamMessageResponse {
         UsageEvent usage = 4;
         ErrorEvent error = 5;
         ChatEvent chat = 6;
+        FinalEvent final = 7;
     }
 }
 
@@ -263,6 +264,13 @@ message ErrorEvent {
 message ChatEvent {
     string chat_id = 1;
     string chat_name = 2;
+}
+
+// Отправляется в конце стрима с полным состоянием чата
+message FinalEvent {
+    Chat chat = 1;
+    repeated Message messages = 2;
+    int32 total_messages = 3;
 }
 
 message ChatUsage {

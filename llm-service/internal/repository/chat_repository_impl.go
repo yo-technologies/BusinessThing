@@ -3,11 +3,10 @@ package repository
 import (
 	"context"
 	"errors"
-	"fmt"
 	"llm-service/internal/domain"
-	"strings"
 	"time"
 
+	sq "github.com/Masterminds/squirrel"
 	"github.com/georgysavva/scany/v2/pgxscan"
 	"github.com/jackc/pgx/v5"
 	"github.com/opentracing/opentracing-go"
@@ -141,42 +140,34 @@ func (r *PGXRepository) ListChats(ctx context.Context, filter ChatFilter, page, 
 
 	engine := r.engineFactory.Get(ctx)
 
-	// Построение WHERE clause
-	var conditions []string
-	var args []interface{}
-	argIndex := 1
+	// Построение WHERE условий с помощью squirrel
+	qb := sq.Select("COUNT(*)").From("chats").PlaceholderFormat(sq.Dollar)
 
 	if filter.OrganizationID != nil {
-		conditions = append(conditions, fmt.Sprintf("organization_id = $%d", argIndex))
-		args = append(args, filter.OrganizationID.String())
-		argIndex++
+		qb = qb.Where(sq.Eq{"organization_id": filter.OrganizationID.String()})
 	}
 
 	if filter.UserID != nil {
-		conditions = append(conditions, fmt.Sprintf("user_id = $%d", argIndex))
-		args = append(args, filter.UserID.String())
-		argIndex++
+		qb = qb.Where(sq.Eq{"user_id": filter.UserID.String()})
 	}
 
 	if filter.Status != nil {
-		conditions = append(conditions, fmt.Sprintf("status = $%d", argIndex))
-		args = append(args, string(*filter.Status))
-		argIndex++
+		qb = qb.Where(sq.Eq{"status": string(*filter.Status)})
 	}
 
 	if filter.ParentChatID != nil {
-		conditions = append(conditions, fmt.Sprintf("parent_chat_id = $%d", argIndex))
-		args = append(args, filter.ParentChatID.String())
-		argIndex++
-	}
-
-	whereClause := ""
-	if len(conditions) > 0 {
-		whereClause = "WHERE " + strings.Join(conditions, " AND ")
+		qb = qb.Where(sq.Eq{"parent_chat_id": filter.ParentChatID.String()})
+	} else {
+		// По умолчанию исключаем субчаты (где parent_chat_id IS NOT NULL)
+		qb = qb.Where(sq.Eq{"parent_chat_id": nil})
 	}
 
 	// Подсчет общего количества
-	countQuery := fmt.Sprintf("SELECT COUNT(*) FROM chats %s", whereClause)
+	countQuery, args, err := qb.ToSql()
+	if err != nil {
+		return nil, 0, domain.NewInternalError("failed to build count query", err)
+	}
+
 	var countResult []struct {
 		Count int `db:"count"`
 	}
@@ -191,16 +182,35 @@ func (r *PGXRepository) ListChats(ctx context.Context, filter ChatFilter, page, 
 
 	// Получение списка с пагинацией
 	offset := (page - 1) * pageSize
-	query := fmt.Sprintf(`
-		SELECT id, organization_id, user_id, agent_key, title, status,
-		       parent_chat_id, parent_tool_call_id, created_at, updated_at
-		FROM chats
-		%s
-		ORDER BY created_at DESC
-		LIMIT $%d OFFSET $%d
-	`, whereClause, argIndex, argIndex+1)
+	qb = sq.Select(
+		"id", "organization_id", "user_id", "agent_key", "title", "status",
+		"parent_chat_id", "parent_tool_call_id", "created_at", "updated_at",
+	).From("chats").PlaceholderFormat(sq.Dollar)
 
-	args = append(args, pageSize, offset)
+	if filter.OrganizationID != nil {
+		qb = qb.Where(sq.Eq{"organization_id": filter.OrganizationID.String()})
+	}
+
+	if filter.UserID != nil {
+		qb = qb.Where(sq.Eq{"user_id": filter.UserID.String()})
+	}
+
+	if filter.Status != nil {
+		qb = qb.Where(sq.Eq{"status": string(*filter.Status)})
+	}
+
+	if filter.ParentChatID != nil {
+		qb = qb.Where(sq.Eq{"parent_chat_id": filter.ParentChatID.String()})
+	} else {
+		qb = qb.Where(sq.Eq{"parent_chat_id": nil})
+	}
+
+	qb = qb.OrderBy("created_at DESC").Limit(uint64(pageSize)).Offset(uint64(offset))
+
+	query, args, err := qb.ToSql()
+	if err != nil {
+		return nil, 0, domain.NewInternalError("failed to build list query", err)
+	}
 
 	var chatRows []chatRow
 	if err := pgxscan.Select(ctx, engine, &chatRows, query, args...); err != nil {

@@ -42,14 +42,14 @@ type MessageRepository interface {
 	// CreateMessage создает новое сообщение
 	CreateMessage(ctx context.Context, message *domain.Message) error
 
-	// GetMessageByID получает сообщение по ID
-	GetMessageByID(ctx context.Context, id domain.ID) (*domain.Message, error)
-
 	// ListMessagesByChatID получает список сообщений чата
 	ListMessagesByChatID(ctx context.Context, chatID domain.ID, limit, offset int) ([]*domain.Message, int, error)
 
 	// ListMessagesByChatIDWithToolCalls получает сообщения вместе с tool calls
 	ListMessagesByChatIDWithToolCalls(ctx context.Context, chatID domain.ID, limit, offset int) ([]*domain.Message, int, error)
+
+	// ListMessagesWithSubchatsWithToolCalls получает сообщения родительского чата и всех его субчатов с tool calls
+	ListMessagesWithSubchatsWithToolCalls(ctx context.Context, parentChatID domain.ID, limit, offset int) ([]*domain.Message, int, error)
 
 	// DeleteMessage удаляет сообщение
 	DeleteMessage(ctx context.Context, id domain.ID) error

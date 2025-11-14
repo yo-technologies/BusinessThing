@@ -6,6 +6,7 @@ import (
 	"llm-service/internal/domain"
 	"time"
 
+	sq "github.com/Masterminds/squirrel"
 	"github.com/georgysavva/scany/v2/pgxscan"
 	"github.com/jackc/pgx/v5"
 	"github.com/opentracing/opentracing-go"
@@ -165,6 +166,83 @@ func (r *PGXRepository) ListMessagesByChatIDWithToolCalls(ctx context.Context, c
 	messages, total, err := r.ListMessagesByChatID(ctx, chatID, limit, offset)
 	if err != nil {
 		return nil, 0, err
+	}
+
+	// Загружаем tool calls для каждого сообщения
+	for _, msg := range messages {
+		toolCalls, err := r.ListToolCallsByMessageID(ctx, msg.ID)
+		if err != nil {
+			return nil, 0, err
+		}
+		msg.ToolCalls = toolCalls
+	}
+
+	return messages, total, nil
+}
+
+// ListMessagesWithSubchatsWithToolCalls получает сообщения родительского чата и всех его субчатов с tool calls
+func (r *PGXRepository) ListMessagesWithSubchatsWithToolCalls(ctx context.Context, parentChatID domain.ID, limit, offset int) ([]*domain.Message, int, error) {
+	span, ctx := opentracing.StartSpanFromContext(ctx, "repository.ListMessagesWithSubchatsWithToolCalls")
+	defer span.Finish()
+
+	engine := r.engineFactory.Get(ctx)
+
+	// Создаем подзапрос для получения ID субчатов
+	subchatsSubquery := sq.Select("id").From("chats").Where(sq.Eq{"parent_chat_id": parentChatID.String()}).PlaceholderFormat(sq.Dollar)
+
+	// Подсчет общего количества сообщений из родительского чата и всех субчатов
+	countQb := sq.Select("COUNT(*)").From("messages").PlaceholderFormat(sq.Dollar)
+	countQb = countQb.Where(sq.Or{
+		sq.Eq{"chat_id": parentChatID.String()},
+		sq.Expr("chat_id IN (?)", subchatsSubquery),
+	})
+
+	countQuery, countArgs, err := countQb.ToSql()
+	if err != nil {
+		return nil, 0, domain.NewInternalError("failed to build count query", err)
+	}
+
+	var countResult []struct {
+		Count int `db:"count"`
+	}
+	if err := pgxscan.Select(ctx, engine, &countResult, countQuery, countArgs...); err != nil {
+		return nil, 0, domain.NewInternalError("failed to count messages with subchats", err)
+	}
+
+	total := 0
+	if len(countResult) > 0 {
+		total = countResult[0].Count
+	}
+
+	// Получение сообщений из родительского чата и всех субчатов
+	qb := sq.Select(
+		"id", "chat_id", "role", "content", "sender", "tool_call_id", "created_at",
+	).From("messages").PlaceholderFormat(sq.Dollar)
+
+	qb = qb.Where(sq.Or{
+		sq.Eq{"chat_id": parentChatID.String()},
+		sq.Expr("chat_id IN (?)", subchatsSubquery),
+	})
+
+	qb = qb.OrderBy("created_at ASC").Limit(uint64(limit)).Offset(uint64(offset))
+
+	query, args, err := qb.ToSql()
+	if err != nil {
+		return nil, 0, domain.NewInternalError("failed to build list query", err)
+	}
+
+	var rows []messageRow
+	if err := pgxscan.Select(ctx, engine, &rows, query, args...); err != nil {
+		return nil, 0, domain.NewInternalError("failed to list messages with subchats", err)
+	}
+
+	messages := make([]*domain.Message, 0, len(rows))
+	for _, row := range rows {
+		msg, err := row.toDomain()
+		if err != nil {
+			return nil, 0, domain.NewInternalError("failed to convert message", err)
+		}
+		messages = append(messages, msg)
 	}
 
 	// Загружаем tool calls для каждого сообщения

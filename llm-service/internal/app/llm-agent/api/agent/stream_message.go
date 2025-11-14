@@ -177,3 +177,20 @@ func (a *streamAdapter) SendChat(chat *domain.Chat) error {
 		},
 	})
 }
+
+func (a *streamAdapter) SendFinal(chat *domain.Chat, messages []*domain.Message) error {
+	pbMessages := make([]*desc.Message, 0, len(messages))
+	for _, msg := range messages {
+		pbMessages = append(pbMessages, mappers.DomainMessageToProto(msg))
+	}
+
+	return a.stream.Send(&desc.StreamMessageResponse{
+		Event: &desc.StreamMessageResponse_Final{
+			Final: &desc.FinalEvent{
+				Chat:          mappers.DomainChatToProto(chat),
+				Messages:      pbMessages,
+				TotalMessages: int32(len(messages)),
+			},
+		},
+	})
+}

@@ -230,6 +230,21 @@ func (e *Executor) SendMessageStream(ctx context.Context, req dto.SendMessageDTO
 		return err
 	}
 
+	// Отправляем финальное состояние чата
+	finalChat, err := e.chatManager.GetChat(ctx, chat.ID)
+	if err != nil {
+		return stream.SendError(err)
+	}
+
+	finalMessages, _, err := e.chatManager.GetMessages(ctx, chat.ID, req.UserID, req.OrgID, 1000, 0)
+	if err != nil {
+		return stream.SendError(err)
+	}
+
+	if err := stream.SendFinal(finalChat, finalMessages); err != nil {
+		return err
+	}
+
 	return nil
 }
 
