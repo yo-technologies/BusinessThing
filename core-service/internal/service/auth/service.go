@@ -36,7 +36,8 @@ func New(users userRepository, jwtProvider *jwt.Provider, validator *telegram.Va
 }
 
 // AuthenticateWithTelegram validates Telegram init data and returns JWT token.
-// If user is new, creates a user with pending status and returns is_new_user=true flag.
+// If user is new or hasn't completed registration, returns is_new_user=true flag without token.
+// If user has completed registration, returns token with all active organizations (may be empty list).
 func (s *Service) AuthenticateWithTelegram(ctx context.Context, initData string) (string, *domain.User, bool, error) {
 	data, err := s.validator.Validate(initData)
 	if err != nil {
@@ -57,49 +58,47 @@ func (s *Service) AuthenticateWithTelegram(ctx context.Context, initData string)
 				return "", nil, false, err
 			}
 
-			// Для нового пользователя не генерируем токен - он должен принять приглашение
-			logger.Infof(ctx, "new user created, waiting for invitation acceptance: %s", created.ID)
+			// Для нового пользователя не генерируем токен - он должен завершить регистрацию
+			logger.Infof(ctx, "new user created, registration incomplete: %s", created.ID)
 			return "", &created, true, nil
 		}
 		logger.Errorf(ctx, "failed to get user by telegram ID: %v", err)
 		return "", nil, false, err
 	}
 
-	// Существующий пользователь - берем первую организацию из его memberships
+	// Проверяем, завершена ли регистрация
+	if !user.RegistrationCompleted {
+		logger.Infof(ctx, "user %s found but registration not completed", user.ID)
+		return "", &user, true, nil
+	}
+
+	// Существующий пользователь с завершенной регистрацией - берем все его организации
 	memberships, err := s.users.ListOrganizationMembersByUser(ctx, user.ID)
 	if err != nil {
 		logger.Errorf(ctx, "failed to get user memberships: %v", err)
 		return "", nil, false, err
 	}
 
-	if len(memberships) == 0 {
-		// Пользователь существует но не состоит ни в одной организации
-		logger.Warnf(ctx, "user %s has no organization memberships", user.ID)
-		return "", &user, false, nil
-	}
-
-	// Генерируем токен для первой активной membership
-	var activeMembership *domain.OrganizationMember
+	// Фильтруем только активные membership
+	activeMemberships := make([]*domain.OrganizationMember, 0)
 	for _, m := range memberships {
 		if m.Status == domain.UserStatusActive {
-			activeMembership = m
-			break
+			activeMemberships = append(activeMemberships, m)
 		}
 	}
 
-	if activeMembership == nil {
-		// Нет активных membership
-		logger.Warnf(ctx, "user %s has no active memberships", user.ID)
-		return "", &user, false, nil
-	}
-
-	token, err := s.jwt.GenerateAccessToken(ctx, user.ID, activeMembership.OrganizationID, activeMembership.Role)
+	// Генерируем токен со всеми организациями (может быть пустой список)
+	token, err := s.jwt.GenerateAccessToken(ctx, user.ID, activeMemberships)
 	if err != nil {
 		logger.Errorf(ctx, "failed to generate token: %v", err)
 		return "", nil, false, err
 	}
 
-	logger.Infof(ctx, "user %s authenticated successfully for organization %s", user.ID, activeMembership.OrganizationID)
+	if len(activeMemberships) == 0 {
+		logger.Infof(ctx, "user %s authenticated without organizations", user.ID)
+	} else {
+		logger.Infof(ctx, "user %s authenticated with %d organizations", user.ID, len(activeMemberships))
+	}
 	return token, &user, false, nil
 }
 

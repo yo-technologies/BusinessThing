@@ -21,13 +21,14 @@ const (
 
 // User представляет пользователя системы (независимо от организаций)
 type User struct {
-	ID         ID        `db:"id"`
-	TelegramID string    `db:"telegram_id"`
-	FirstName  string    `db:"first_name"`
-	LastName   string    `db:"last_name"`
-	IsActive   bool      `db:"is_active"`
-	CreatedAt  time.Time `db:"created_at"`
-	UpdatedAt  time.Time `db:"updated_at"`
+	ID                    ID        `db:"id"`
+	TelegramID            string    `db:"telegram_id"`
+	FirstName             string    `db:"first_name"`
+	LastName              string    `db:"last_name"`
+	IsActive              bool      `db:"is_active"`
+	RegistrationCompleted bool      `db:"registration_completed"`
+	CreatedAt             time.Time `db:"created_at"`
+	UpdatedAt             time.Time `db:"updated_at"`
 }
 
 // OrganizationMember представляет членство пользователя в организации
@@ -52,11 +53,12 @@ type UserWithMembership struct {
 func NewUser(telegramID string) User {
 	now := time.Now()
 	return User{
-		ID:         NewID(),
-		TelegramID: telegramID,
-		IsActive:   true,
-		CreatedAt:  now,
-		UpdatedAt:  now,
+		ID:                    NewID(),
+		TelegramID:            telegramID,
+		IsActive:              true,
+		RegistrationCompleted: false,
+		CreatedAt:             now,
+		UpdatedAt:             now,
 	}
 }
 
@@ -79,6 +81,7 @@ func NewOrganizationMember(organizationID, userID ID, email string, role UserRol
 func (u *User) CompleteProfile(firstName, lastName string) {
 	u.FirstName = firstName
 	u.LastName = lastName
+	u.RegistrationCompleted = true
 	u.UpdatedAt = time.Now()
 }
 

@@ -95,22 +95,22 @@ func (a *App) setupGRPC() {
 	// Unprotected methods (public endpoints)
 	unprotected := []string{
 		"/core.api.core.AuthService/AuthenticateWithTelegram",
-		"/core.api.core.UserService/AcceptInvitation",
+		"/core.api.core.AuthService/CompleteRegistration",
 	}
 
 	// Setup interceptors
 	unaryInterceptors := []grpc.UnaryServerInterceptor{
 		interceptors.RecoveryInterceptor,
 		interceptors.TracingInterceptor,
-		interceptors.NewUnaryAuthInterceptor(a.jwtProvider, unprotected...),
 		interceptors.ErrCodesInterceptor,
+		interceptors.NewUnaryAuthInterceptor(a.jwtProvider, unprotected...),
 	}
 
 	streamInterceptors := []grpc.StreamServerInterceptor{
 		interceptors.RecoveryStreamInterceptor,
 		interceptors.TracingStreamInterceptor,
-		interceptors.NewStreamAuthInterceptor(a.jwtProvider, unprotected...),
 		interceptors.ErrCodesStreamInterceptor,
+		interceptors.NewStreamAuthInterceptor(a.jwtProvider, unprotected...),
 	}
 
 	// Create gRPC server

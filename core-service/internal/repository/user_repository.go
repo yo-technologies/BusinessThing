@@ -18,9 +18,9 @@ func (r *PGXRepository) CreateUser(ctx context.Context, user domain.User) (domai
 
 	engine := r.engineFactory.Get(ctx)
 	query := `
-        INSERT INTO users (id, telegram_id, first_name, last_name, is_active, created_at, updated_at)
-        VALUES ($1, $2, $3, $4, $5, $6, $7)
-        RETURNING id, telegram_id, first_name, last_name, is_active, created_at, updated_at
+        INSERT INTO users (id, telegram_id, first_name, last_name, is_active, registration_completed, created_at, updated_at)
+        VALUES ($1, $2, $3, $4, $5, $6, $7, $8)
+        RETURNING id, telegram_id, first_name, last_name, is_active, registration_completed, created_at, updated_at
     `
 
 	var created domain.User
@@ -30,6 +30,7 @@ func (r *PGXRepository) CreateUser(ctx context.Context, user domain.User) (domai
 		user.FirstName,
 		user.LastName,
 		user.IsActive,
+		user.RegistrationCompleted,
 		user.CreatedAt,
 		user.UpdatedAt,
 	)
@@ -48,7 +49,7 @@ func (r *PGXRepository) GetUser(ctx context.Context, id domain.ID) (domain.User,
 
 	engine := r.engineFactory.Get(ctx)
 	query := `
-        SELECT id, telegram_id, first_name, last_name, is_active, created_at, updated_at
+        SELECT id, telegram_id, first_name, last_name, is_active, registration_completed, created_at, updated_at
         FROM users
         WHERE id = $1
     `
@@ -73,7 +74,7 @@ func (r *PGXRepository) GetUserByTelegramID(ctx context.Context, telegramID stri
 
 	engine := r.engineFactory.Get(ctx)
 	query := `
-        SELECT id, telegram_id, first_name, last_name, is_active, created_at, updated_at
+        SELECT id, telegram_id, first_name, last_name, is_active, registration_completed, created_at, updated_at
         FROM users
         WHERE telegram_id = $1
     `
@@ -114,7 +115,7 @@ func (r *PGXRepository) ListUsers(ctx context.Context, organizationID domain.ID,
 
 	// Get users
 	query := `
-        SELECT u.id, u.telegram_id, u.first_name, u.last_name, u.is_active, u.created_at, u.updated_at
+        SELECT u.id, u.telegram_id, u.first_name, u.last_name, u.is_active, u.registration_completed, u.created_at, u.updated_at
         FROM users u
         INNER JOIN organization_members om ON u.id = om.user_id
         WHERE om.organization_id = $1
@@ -140,9 +141,9 @@ func (r *PGXRepository) UpdateUser(ctx context.Context, user domain.User) (domai
 	engine := r.engineFactory.Get(ctx)
 	query := `
         UPDATE users
-        SET telegram_id = $2, first_name = $3, last_name = $4, is_active = $5, updated_at = $6
+        SET telegram_id = $2, first_name = $3, last_name = $4, is_active = $5, registration_completed = $6, updated_at = $7
         WHERE id = $1
-        RETURNING id, telegram_id, first_name, last_name, is_active, created_at, updated_at
+        RETURNING id, telegram_id, first_name, last_name, is_active, registration_completed, created_at, updated_at
     `
 
 	var updated domain.User
@@ -152,6 +153,7 @@ func (r *PGXRepository) UpdateUser(ctx context.Context, user domain.User) (domai
 		user.FirstName,
 		user.LastName,
 		user.IsActive,
+		user.RegistrationCompleted,
 		user.UpdatedAt,
 	)
 	if err != nil {
