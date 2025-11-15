@@ -79,7 +79,7 @@ func GetToolsRegistry() map[domain.ToolName]*domain.ToolDefinition {
 		},
 		domain.ToolNameGenerateContract: {
 			Name:        string(domain.ToolNameGenerateContract),
-			Description: "Сгенерировать договор из выбранного шаблона, заполнив его данными. Перед вызовом обязательно используй search_contract_templates для получения информации о полях шаблона. Затем запроси у пользователя значения для всех обязательных полей.",
+			Description: "Сгенерировать договор из выбранного шаблона, заполнив его данными. Перед вызовом обязательно используй search_contract_templates для получения информации о полях шаблона. Затем запроси у пользователя значения для всех обязательных полей. ВАЖНО: Шаблоны используют плейсхолдеры вида {field_name} (одинарные фигурные скобки).",
 			Parameters: map[string]interface{}{
 				"template_id": map[string]interface{}{
 					"type":        "string",
@@ -91,7 +91,7 @@ func GetToolsRegistry() map[domain.ToolName]*domain.ToolDefinition {
 				},
 				"filled_data": map[string]interface{}{
 					"type":        "object",
-					"description": "Объект с заполненными данными для всех полей шаблона (ключи - имена полей из fields_schema, значения - введенные пользователем данные)",
+					"description": "Объект с заполненными данными для всех полей шаблона (ключи - имена полей из fields_schema БЕЗ фигурных скобок, значения - введенные пользователем данные)",
 				},
 			},
 			Required: []string{"template_id", "contract_name", "filled_data"},

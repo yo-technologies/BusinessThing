@@ -1,14 +1,13 @@
 package docx
 
 import (
-	"archive/zip"
 	"bytes"
 	"context"
 	"fmt"
-	"io"
-	"regexp"
-	"strings"
 
+	"llm-service/internal/logger"
+
+	"github.com/lukasjarosch/go-docx"
 	"github.com/opentracing/opentracing-go"
 )
 
@@ -19,114 +18,98 @@ func New() *Processor {
 }
 
 // FillTemplate заполняет DOCX шаблон значениями из values
-// Поддерживает плейсхолдеры вида {{field_name}}
+// Использует библиотеку go-docx для корректной обработки фрагментированных плейсхолдеров
+// Поддерживает плейсхолдеры вида {field_name}
 func (p *Processor) FillTemplate(ctx context.Context, templateData []byte, values map[string]interface{}) ([]byte, error) {
-	span, _ := opentracing.StartSpanFromContext(ctx, "docx.Processor.FillTemplate")
+	span, ctx := opentracing.StartSpanFromContext(ctx, "docx.Processor.FillTemplate")
 	defer span.Finish()
 
-	// Открываем DOCX как ZIP архив
-	zipReader, err := zip.NewReader(bytes.NewReader(templateData), int64(len(templateData)))
+	logger.Info(ctx, "Starting DOCX template filling",
+		"template_size_bytes", len(templateData),
+		"values_count", len(values),
+	)
+
+	// Открываем DOCX из байтов
+	doc, err := docx.OpenBytes(templateData)
 	if err != nil {
-		return nil, fmt.Errorf("failed to open DOCX as ZIP: %w", err)
+		logger.Error(ctx, "Failed to open DOCX template", "error", err)
+		return nil, fmt.Errorf("failed to open DOCX template: %w", err)
 	}
 
-	// Создаем новый буфер для результата
-	buf := new(bytes.Buffer)
-	zipWriter := zip.NewWriter(buf)
-	defer zipWriter.Close()
+	logger.Debug(ctx, "DOCX template opened successfully")
 
-	// Регулярное выражение для поиска плейсхолдеров
-	placeholderRegex := regexp.MustCompile(`\{\{([a-zA-Z0-9_]+)\}\}`)
-
-	// Обрабатываем каждый файл в архиве
-	for _, file := range zipReader.File {
-		// Открываем файл из архива
-		rc, err := file.Open()
-		if err != nil {
-			return nil, fmt.Errorf("failed to open file %s: %w", file.Name, err)
-		}
-
-		content, err := io.ReadAll(rc)
-		rc.Close()
-		if err != nil {
-			return nil, fmt.Errorf("failed to read file %s: %w", file.Name, err)
-		}
-
-		// Если это XML файл с содержимым, заменяем плейсхолдеры
-		if strings.HasSuffix(file.Name, ".xml") {
-			contentStr := string(content)
-			contentStr = placeholderRegex.ReplaceAllStringFunc(contentStr, func(match string) string {
-				// Извлекаем имя поля из {{field_name}}
-				fieldName := placeholderRegex.FindStringSubmatch(match)[1]
-				if value, ok := values[fieldName]; ok {
-					return fmt.Sprintf("%v", value)
-				}
-				// Если значение не найдено, оставляем плейсхолдер
-				return match
-			})
-			content = []byte(contentStr)
-		}
-
-		// Создаем файл в новом архиве
-		w, err := zipWriter.CreateHeader(&file.FileHeader)
-		if err != nil {
-			return nil, fmt.Errorf("failed to create file %s in result: %w", file.Name, err)
-		}
-
-		if _, err := w.Write(content); err != nil {
-			return nil, fmt.Errorf("failed to write file %s to result: %w", file.Name, err)
-		}
+	// Конвертируем values в PlaceholderMap
+	// Библиотека использует плейсхолдеры без фигурных скобок
+	replaceMap := make(docx.PlaceholderMap)
+	for key, value := range values {
+		replaceMap[key] = fmt.Sprintf("%v", value)
+		logger.Debug(ctx, "Added placeholder mapping",
+			"placeholder", key,
+			"value", fmt.Sprintf("%v", value),
+		)
 	}
 
-	if err := zipWriter.Close(); err != nil {
-		return nil, fmt.Errorf("failed to close ZIP writer: %w", err)
+	logger.Info(ctx, "Prepared placeholder replacement map", "placeholders_count", len(replaceMap))
+
+	// Заменяем все плейсхолдеры
+	err = doc.ReplaceAll(replaceMap)
+	if err != nil {
+		logger.Error(ctx, "Failed to replace placeholders", "error", err)
+		return nil, fmt.Errorf("failed to replace placeholders: %w", err)
 	}
+
+	logger.Info(ctx, "Placeholders replaced successfully")
+
+	// Записываем результат в буфер
+	var buf bytes.Buffer
+	err = doc.Write(&buf)
+	if err != nil {
+		logger.Error(ctx, "Failed to write filled DOCX", "error", err)
+		return nil, fmt.Errorf("failed to write filled DOCX: %w", err)
+	}
+
+	resultSize := buf.Len()
+	logger.Info(ctx, "DOCX template filled successfully",
+		"result_size_bytes", resultSize,
+		"size_change", resultSize-len(templateData),
+	)
 
 	return buf.Bytes(), nil
 }
 
 // ExtractPlaceholders извлекает все плейсхолдеры из DOCX шаблона
 func (p *Processor) ExtractPlaceholders(ctx context.Context, templateData []byte) ([]string, error) {
-	span, _ := opentracing.StartSpanFromContext(ctx, "docx.Processor.ExtractPlaceholders")
+	span, ctx := opentracing.StartSpanFromContext(ctx, "docx.Processor.ExtractPlaceholders")
 	defer span.Finish()
 
-	zipReader, err := zip.NewReader(bytes.NewReader(templateData), int64(len(templateData)))
+	logger.Info(ctx, "Extracting placeholders from DOCX template",
+		"template_size_bytes", len(templateData),
+	)
+
+	// Открываем DOCX из байтов
+	doc, err := docx.OpenBytes(templateData)
 	if err != nil {
-		return nil, fmt.Errorf("failed to open DOCX as ZIP: %w", err)
+		logger.Error(ctx, "Failed to open DOCX template for placeholder extraction", "error", err)
+		return nil, fmt.Errorf("failed to open DOCX template: %w", err)
 	}
 
-	placeholderRegex := regexp.MustCompile(`\{\{([a-zA-Z0-9_]+)\}\}`)
-	placeholdersMap := make(map[string]struct{})
+	logger.Debug(ctx, "DOCX template opened successfully for placeholder extraction")
 
-	// Ищем плейсхолдеры во всех XML файлах
-	for _, file := range zipReader.File {
-		if !strings.HasSuffix(file.Name, ".xml") {
-			continue
-		}
-
-		rc, err := file.Open()
-		if err != nil {
-			continue
-		}
-
-		content, err := io.ReadAll(rc)
-		rc.Close()
-		if err != nil {
-			continue
-		}
-
-		matches := placeholderRegex.FindAllStringSubmatch(string(content), -1)
-		for _, match := range matches {
-			if len(match) > 1 {
-				placeholdersMap[match[1]] = struct{}{}
-			}
-		}
+	// Получаем все плейсхолдеры из документа
+	// Библиотека парсит документ и находит все {placeholder} включая фрагментированные
+	placeholders, err := doc.GetPlaceHoldersList()
+	if err != nil {
+		logger.Error(ctx, "Failed to extract placeholders", "error", err)
+		return nil, fmt.Errorf("failed to extract placeholders: %w", err)
 	}
 
-	// Преобразуем map в slice
-	placeholders := make([]string, 0, len(placeholdersMap))
-	for placeholder := range placeholdersMap {
-		placeholders = append(placeholders, placeholder)
+	logger.Info(ctx, "Placeholders extracted successfully", "count", len(placeholders))
+	
+	for i, placeholder := range placeholders {
+		logger.Debug(ctx, "Found placeholder",
+			"index", i,
+			"name", placeholder,
+		)
 	}
 
 	return placeholders, nil
