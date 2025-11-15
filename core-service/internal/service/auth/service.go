@@ -9,6 +9,8 @@ import (
 	"core-service/internal/jwt"
 	"core-service/internal/logger"
 	"core-service/internal/telegram"
+
+	"github.com/opentracing/opentracing-go"
 )
 
 type userRepository interface {
@@ -118,4 +120,46 @@ func (s *Service) CompleteRegistration(ctx context.Context, userID domain.ID, fi
 	}
 
 	return &updated, nil
+}
+
+// RefreshToken генерирует новый токен с актуальным списком организаций пользователя.
+func (s *Service) RefreshToken(ctx context.Context, userID domain.ID) (string, error) {
+	span, ctx := opentracing.StartSpanFromContext(ctx, "service.auth.RefreshToken")
+	defer span.Finish()
+
+	// Получаем пользователя
+	user, err := s.users.GetUser(ctx, userID)
+	if err != nil {
+		return "", domain.NewNotFoundError("user not found")
+	}
+
+	// Проверяем, завершена ли регистрация
+	if !user.RegistrationCompleted {
+		return "", domain.NewInvalidArgumentError("user must complete registration first")
+	}
+
+	// Получаем все membership пользователя
+	memberships, err := s.users.ListOrganizationMembersByUser(ctx, userID)
+	if err != nil {
+		logger.Errorf(ctx, "failed to get user memberships: %v", err)
+		return "", err
+	}
+
+	// Фильтруем только активные membership
+	activeMemberships := make([]*domain.OrganizationMember, 0)
+	for _, m := range memberships {
+		if m.Status == domain.UserStatusActive {
+			activeMemberships = append(activeMemberships, m)
+		}
+	}
+
+	// Генерируем новый токен со всеми организациями
+	token, err := s.jwt.GenerateAccessToken(ctx, userID, activeMemberships)
+	if err != nil {
+		logger.Errorf(ctx, "failed to generate token: %v", err)
+		return "", err
+	}
+
+	logger.Infof(ctx, "token refreshed for user %s with %d organizations", userID, len(activeMemberships))
+	return token, nil
 }
