@@ -1,0 +1,679 @@
+syntax = "proto3";
+
+package core.api.core;
+
+option go_package = "core-service/bin/core;core";
+
+import "google/protobuf/empty.proto";
+import "google/protobuf/timestamp.proto";
+import "google/api/annotations.proto";
+import "validate/validate.proto";
+import "protoc-gen-openapiv2/options/annotations.proto";
+
+option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_swagger) = {
+  info: {
+    title: "Core Service API"
+    version: "1.0.0"
+    description: "API for Core Service of BusinessThing - manages organizations, users, documents, notes, and contracts"
+  };
+  consumes: "application/json"
+  produces: "application/json"
+  base_path: "/api"
+  schemes: HTTP
+  schemes: HTTPS
+  security_definitions: {
+    security: {
+      key: "Bearer"
+      value: {
+        type: TYPE_API_KEY
+        in: IN_HEADER
+        name: "Authorization"
+      }
+    }
+  }
+  security: {
+    security_requirement: {
+      key: "Bearer"
+      value: {}
+    }
+  }
+};
+
+// ===== Auth Service =====
+service AuthService {
+    // Авторизация через Telegram WebApp initData
+    rpc AuthenticateWithTelegram(AuthenticateWithTelegramRequest) returns (AuthenticateWithTelegramResponse) {
+        option (google.api.http) = {
+            post: "/v1/auth/telegram"
+            body: "*"
+        };
+    }
+
+    // Завершение регистрации нового пользователя (заполнение ФИО)
+    rpc CompleteRegistration(CompleteRegistrationRequest) returns (CompleteRegistrationResponse) {
+        option (google.api.http) = {
+            post: "/v1/auth/complete-registration"
+            body: "*"
+        };
+    }
+}
+
+// ===== Organization Service =====
+service OrganizationService {
+    // Создать организацию
+    rpc CreateOrganization(CreateOrganizationRequest) returns (CreateOrganizationResponse) {
+        option (google.api.http) = {
+            post: "/v1/organizations"
+            body: "*"
+        };
+    }
+
+    // Получить организацию по ID
+    rpc GetOrganization(GetOrganizationRequest) returns (GetOrganizationResponse) {
+        option (google.api.http) = {
+            get: "/v1/organizations/{id}"
+        };
+    }
+
+    // Получить список своих организаций
+    rpc ListMyOrganizations(ListMyOrganizationsRequest) returns (ListMyOrganizationsResponse) {
+        option (google.api.http) = {
+            get: "/v1/organizations/me"
+        };
+    }
+
+    // Обновить организацию
+    rpc UpdateOrganization(UpdateOrganizationRequest) returns (UpdateOrganizationResponse) {
+        option (google.api.http) = {
+            put: "/v1/organizations/{id}"
+            body: "*"
+        };
+    }
+
+    // Удалить организацию (soft delete)
+    rpc DeleteOrganization(DeleteOrganizationRequest) returns (google.protobuf.Empty) {
+        option (google.api.http) = {
+            delete: "/v1/organizations/{id}"
+        };
+    }
+}
+
+// ===== User Service =====
+service UserService {
+    // Пригласить пользователя (создать одноразовую ссылку)
+    rpc InviteUser(InviteUserRequest) returns (InviteUserResponse) {
+        option (google.api.http) = {
+            post: "/v1/organizations/{organization_id}/users/invite"
+            body: "*"
+        };
+    }
+
+    // Принять приглашение (активация пользователя)
+    rpc AcceptInvitation(AcceptInvitationRequest) returns (AcceptInvitationResponse) {
+        option (google.api.http) = {
+            post: "/v1/invitations/{token}/accept"
+            body: "*"
+        };
+    }
+
+    // Список пользователей организации
+    rpc ListUsers(ListUsersRequest) returns (ListUsersResponse) {
+        option (google.api.http) = {
+            get: "/v1/organizations/{organization_id}/users"
+        };
+    }
+
+    // Получить пользователя
+    rpc GetUser(GetUserRequest) returns (GetUserResponse) {
+        option (google.api.http) = {
+            get: "/v1/users/{id}"
+        };
+    }
+
+    // Обновить роль пользователя
+    rpc UpdateUserRole(UpdateUserRoleRequest) returns (UpdateUserRoleResponse) {
+        option (google.api.http) = {
+            patch: "/v1/users/{id}/role"
+            body: "*"
+        };
+    }
+
+    // Деактивировать пользователя
+    rpc DeactivateUser(DeactivateUserRequest) returns (google.protobuf.Empty) {
+        option (google.api.http) = {
+            post: "/v1/users/{id}/deactivate"
+            body: "*"
+        };
+    }
+}
+
+// ===== Document Service =====
+service DocumentService {
+    // Зарегистрировать документ после загрузки в S3
+    rpc RegisterDocument(RegisterDocumentRequest) returns (RegisterDocumentResponse) {
+        option (google.api.http) = {
+            post: "/v1/organizations/{organization_id}/documents"
+            body: "*"
+        };
+    }
+
+    // Получить документ
+    rpc GetDocument(GetDocumentRequest) returns (GetDocumentResponse) {
+        option (google.api.http) = {
+            get: "/v1/documents/{id}"
+        };
+    }
+
+    // Список документов организации
+    rpc ListDocuments(ListDocumentsRequest) returns (ListDocumentsResponse) {
+        option (google.api.http) = {
+            get: "/v1/organizations/{organization_id}/documents"
+        };
+    }
+
+    // Обновить статус документа (вызов от Document Processing)
+    rpc UpdateDocumentStatus(UpdateDocumentStatusRequest) returns (google.protobuf.Empty) {
+        option (google.api.http) = {
+            patch: "/v1/documents/{id}/status"
+            body: "*"
+        };
+    }
+
+    // Удалить документ
+    rpc DeleteDocument(DeleteDocumentRequest) returns (google.protobuf.Empty) {
+        option (google.api.http) = {
+            delete: "/v1/documents/{id}"
+        };
+    }
+}
+
+// ===== Note Service =====
+service NoteService {
+    // Создать заметку об организации
+    rpc CreateNote(CreateNoteRequest) returns (CreateNoteResponse) {
+        option (google.api.http) = {
+            post: "/v1/organizations/{organization_id}/notes"
+            body: "*"
+        };
+    }
+
+    // Список заметок организации
+    rpc ListNotes(ListNotesRequest) returns (ListNotesResponse) {
+        option (google.api.http) = {
+            get: "/v1/organizations/{organization_id}/notes"
+        };
+    }
+
+    // Получить заметку
+    rpc GetNote(GetNoteRequest) returns (GetNoteResponse) {
+        option (google.api.http) = {
+            get: "/v1/notes/{id}"
+        };
+    }
+
+    // Удалить заметку
+    rpc DeleteNote(DeleteNoteRequest) returns (google.protobuf.Empty) {
+        option (google.api.http) = {
+            delete: "/v1/notes/{id}"
+        };
+    }
+}
+
+// ===== Contract Template Service =====
+service ContractTemplateService {
+    // Создать шаблон договора
+    rpc CreateTemplate(CreateTemplateRequest) returns (CreateTemplateResponse) {
+        option (google.api.http) = {
+            post: "/v1/organizations/{organization_id}/templates"
+            body: "*"
+        };
+    }
+
+    // Получить шаблон
+    rpc GetTemplate(GetTemplateRequest) returns (GetTemplateResponse) {
+        option (google.api.http) = {
+            get: "/v1/templates/{id}"
+        };
+    }
+
+    // Список шаблонов организации
+    rpc ListTemplates(ListTemplatesRequest) returns (ListTemplatesResponse) {
+        option (google.api.http) = {
+            get: "/v1/organizations/{organization_id}/templates"
+        };
+    }
+
+    // Обновить шаблон
+    rpc UpdateTemplate(UpdateTemplateRequest) returns (UpdateTemplateResponse) {
+        option (google.api.http) = {
+            put: "/v1/templates/{id}"
+            body: "*"
+        };
+    }
+
+    // Удалить шаблон
+    rpc DeleteTemplate(DeleteTemplateRequest) returns (google.protobuf.Empty) {
+        option (google.api.http) = {
+            delete: "/v1/templates/{id}"
+        };
+    }
+}
+
+// ===== Generated Contract Service =====
+service GeneratedContractService {
+    // Зарегистрировать сгенерированный договор (вызов от LLM Service)
+    rpc RegisterContract(RegisterContractRequest) returns (RegisterContractResponse) {
+        option (google.api.http) = {
+            post: "/v1/organizations/{organization_id}/contracts"
+            body: "*"
+        };
+    }
+
+    // Получить договор
+    rpc GetContract(GetContractRequest) returns (GetContractResponse) {
+        option (google.api.http) = {
+            get: "/v1/contracts/{id}"
+        };
+    }
+
+    // Список договоров организации
+    rpc ListContracts(ListContractsRequest) returns (ListContractsResponse) {
+        option (google.api.http) = {
+            get: "/v1/organizations/{organization_id}/contracts"
+        };
+    }
+
+    // Удалить договор
+    rpc DeleteContract(DeleteContractRequest) returns (google.protobuf.Empty) {
+        option (google.api.http) = {
+            delete: "/v1/contracts/{id}"
+        };
+    }
+}
+
+// ===== Auth Messages =====
+
+message AuthenticateWithTelegramRequest {
+    string init_data = 1 [(validate.rules).string.min_len = 1];
+}
+
+message AuthenticateWithTelegramResponse {
+    string access_token = 1;
+    User user = 2;
+    bool is_new_user = 3; // Флаг нового пользователя, требуется заполнение профиля
+}
+
+message CompleteRegistrationRequest {
+    string first_name = 1 [(validate.rules).string = {min_len: 1, max_len: 100}];
+    string last_name = 2 [(validate.rules).string = {min_len: 1, max_len: 100}];
+}
+
+message CompleteRegistrationResponse {
+    User user = 1;
+}
+
+// ===== Organization Messages =====
+
+message CreateOrganizationRequest {
+    string name = 1 [(validate.rules).string = {min_len: 1, max_len: 200}];
+    string industry = 2;
+    string region = 3;
+    string description = 4;
+    // Расширяемая анкета в JSON
+    string profile_data = 5;
+}
+
+message CreateOrganizationResponse {
+    Organization organization = 1;
+}
+
+message GetOrganizationRequest {
+    string id = 1 [(validate.rules).string.min_len = 1];
+}
+
+message GetOrganizationResponse {
+    Organization organization = 1;
+}
+
+message ListMyOrganizationsRequest {
+}
+
+message ListMyOrganizationsResponse {
+    repeated Organization organizations = 1;
+}
+
+message UpdateOrganizationRequest {
+    string id = 1 [(validate.rules).string.min_len = 1];
+    optional string name = 2;
+    optional string industry = 3;
+    optional string region = 4;
+    optional string description = 5;
+    optional string profile_data = 6;
+}
+
+message UpdateOrganizationResponse {
+    Organization organization = 1;
+}
+
+message DeleteOrganizationRequest {
+    string id = 1 [(validate.rules).string.min_len = 1];
+}
+
+// ===== User Messages =====
+
+message InviteUserRequest {
+    string organization_id = 1 [(validate.rules).string.min_len = 1];
+    string email = 2 [(validate.rules).string.email = true];
+    UserRole role = 3 [(validate.rules).enum.defined_only = true];
+}
+
+message InviteUserResponse {
+    string invitation_token = 1;
+    string invitation_url = 2;
+    google.protobuf.Timestamp expires_at = 3;
+}
+
+message AcceptInvitationRequest {
+    string token = 1 [(validate.rules).string.min_len = 1];
+}
+
+message AcceptInvitationResponse {
+    User user = 1;
+}
+
+message ListUsersRequest {
+    string organization_id = 1 [(validate.rules).string.min_len = 1];
+    int32 page = 2;
+    int32 page_size = 3 [(validate.rules).int32 = {gte: 1, lte: 100}];
+}
+
+message ListUsersResponse {
+    repeated User users = 1;
+    int32 total = 2;
+    int32 page = 3;
+    int32 page_size = 4;
+}
+
+message GetUserRequest {
+    string id = 1 [(validate.rules).string.min_len = 1];
+}
+
+message GetUserResponse {
+    User user = 1;
+}
+
+message UpdateUserRoleRequest {
+    string id = 1 [(validate.rules).string.min_len = 1];
+    UserRole role = 2 [(validate.rules).enum.defined_only = true];
+}
+
+message UpdateUserRoleResponse {
+    User user = 1;
+}
+
+message DeactivateUserRequest {
+    string id = 1 [(validate.rules).string.min_len = 1];
+}
+
+// ===== Document Messages =====
+
+message RegisterDocumentRequest {
+    string organization_id = 1 [(validate.rules).string.min_len = 1];
+    string name = 2 [(validate.rules).string = {min_len: 1, max_len: 255}];
+    string s3_key = 3 [(validate.rules).string.min_len = 1];
+    string file_type = 4;
+    int64 file_size = 5;
+}
+
+message RegisterDocumentResponse {
+    Document document = 1;
+}
+
+message GetDocumentRequest {
+    string id = 1 [(validate.rules).string.min_len = 1];
+}
+
+message GetDocumentResponse {
+    Document document = 1;
+}
+
+message ListDocumentsRequest {
+    string organization_id = 1 [(validate.rules).string.min_len = 1];
+    int32 page = 2;
+    int32 page_size = 3 [(validate.rules).int32 = {gte: 1, lte: 100}];
+    optional DocumentStatus status = 4;
+}
+
+message ListDocumentsResponse {
+    repeated Document documents = 1;
+    int32 total = 2;
+    int32 page = 3;
+    int32 page_size = 4;
+}
+
+message UpdateDocumentStatusRequest {
+    string id = 1 [(validate.rules).string.min_len = 1];
+    DocumentStatus status = 2 [(validate.rules).enum.defined_only = true];
+    optional string error_message = 3;
+}
+
+message DeleteDocumentRequest {
+    string id = 1 [(validate.rules).string.min_len = 1];
+}
+
+// ===== Note Messages =====
+
+message CreateNoteRequest {
+    string organization_id = 1 [(validate.rules).string.min_len = 1];
+    string content = 2 [(validate.rules).string = {min_len: 1, max_len: 1000}];
+}
+
+message CreateNoteResponse {
+    Note note = 1;
+}
+
+message ListNotesRequest {
+    string organization_id = 1 [(validate.rules).string.min_len = 1];
+    int32 limit = 2 [(validate.rules).int32 = {gte: 1, lte: 100}];
+}
+
+message ListNotesResponse {
+    repeated Note notes = 1;
+}
+
+message GetNoteRequest {
+    string id = 1 [(validate.rules).string.min_len = 1];
+}
+
+message GetNoteResponse {
+    Note note = 1;
+}
+
+message DeleteNoteRequest {
+    string id = 1 [(validate.rules).string.min_len = 1];
+}
+
+// ===== Contract Template Messages =====
+
+message CreateTemplateRequest {
+    string organization_id = 1 [(validate.rules).string.min_len = 1];
+    string name = 2 [(validate.rules).string = {min_len: 1, max_len: 200}];
+    string description = 3;
+    string template_type = 4;
+    // JSON с полями шаблона
+    string fields_schema = 5;
+    string content_template = 6;
+}
+
+message CreateTemplateResponse {
+    ContractTemplate template = 1;
+}
+
+message GetTemplateRequest {
+    string id = 1 [(validate.rules).string.min_len = 1];
+}
+
+message GetTemplateResponse {
+    ContractTemplate template = 1;
+}
+
+message ListTemplatesRequest {
+    string organization_id = 1 [(validate.rules).string.min_len = 1];
+    int32 page = 2;
+    int32 page_size = 3 [(validate.rules).int32 = {gte: 1, lte: 100}];
+}
+
+message ListTemplatesResponse {
+    repeated ContractTemplate templates = 1;
+    int32 total = 2;
+    int32 page = 3;
+    int32 page_size = 4;
+}
+
+message UpdateTemplateRequest {
+    string id = 1 [(validate.rules).string.min_len = 1];
+    optional string name = 2;
+    optional string description = 3;
+    optional string fields_schema = 4;
+    optional string content_template = 5;
+}
+
+message UpdateTemplateResponse {
+    ContractTemplate template = 1;
+}
+
+message DeleteTemplateRequest {
+    string id = 1 [(validate.rules).string.min_len = 1];
+}
+
+// ===== Generated Contract Messages =====
+
+message RegisterContractRequest {
+    string organization_id = 1 [(validate.rules).string.min_len = 1];
+    string template_id = 2 [(validate.rules).string.min_len = 1];
+    string name = 3 [(validate.rules).string = {min_len: 1, max_len: 255}];
+    // JSON с заполненными значениями полей
+    string filled_data = 4;
+    string s3_key = 5 [(validate.rules).string.min_len = 1];
+    string file_type = 6;
+}
+
+message RegisterContractResponse {
+    GeneratedContract contract = 1;
+}
+
+message GetContractRequest {
+    string id = 1 [(validate.rules).string.min_len = 1];
+}
+
+message GetContractResponse {
+    GeneratedContract contract = 1;
+}
+
+message ListContractsRequest {
+    string organization_id = 1 [(validate.rules).string.min_len = 1];
+    int32 page = 2;
+    int32 page_size = 3 [(validate.rules).int32 = {gte: 1, lte: 100}];
+}
+
+message ListContractsResponse {
+    repeated GeneratedContract contracts = 1;
+    int32 total = 2;
+    int32 page = 3;
+    int32 page_size = 4;
+}
+
+message DeleteContractRequest {
+    string id = 1 [(validate.rules).string.min_len = 1];
+}
+
+// ===== Domain Models =====
+
+message Organization {
+    string id = 1;
+    string name = 2;
+    string industry = 3;
+    string region = 4;
+    string description = 5;
+    string profile_data = 6;
+    google.protobuf.Timestamp created_at = 7;
+    google.protobuf.Timestamp updated_at = 8;
+    google.protobuf.Timestamp deleted_at = 9;
+}
+
+message User {
+    string id = 1;
+    string organization_id = 2;
+    string email = 3;
+    string telegram_id = 4;
+    string first_name = 5;
+    string last_name = 6;
+    UserRole role = 7;
+    UserStatus status = 8;
+    google.protobuf.Timestamp created_at = 9;
+    google.protobuf.Timestamp updated_at = 10;
+}
+
+enum UserRole {
+    USER_ROLE_UNSPECIFIED = 0;
+    USER_ROLE_ADMIN = 1;
+    USER_ROLE_EMPLOYEE = 2;
+}
+
+enum UserStatus {
+    USER_STATUS_UNSPECIFIED = 0;
+    USER_STATUS_PENDING = 1;
+    USER_STATUS_ACTIVE = 2;
+    USER_STATUS_INACTIVE = 3;
+}
+
+message Document {
+    string id = 1;
+    string organization_id = 2;
+    string name = 3;
+    string s3_key = 4;
+    string file_type = 5;
+    int64 file_size = 6;
+    DocumentStatus status = 7;
+    string error_message = 8;
+    google.protobuf.Timestamp created_at = 9;
+    google.protobuf.Timestamp updated_at = 10;
+}
+
+enum DocumentStatus {
+    DOCUMENT_STATUS_UNSPECIFIED = 0;
+    DOCUMENT_STATUS_PENDING = 1;
+    DOCUMENT_STATUS_PROCESSING = 2;
+    DOCUMENT_STATUS_INDEXED = 3;
+    DOCUMENT_STATUS_FAILED = 4;
+}
+
+message Note {
+    string id = 1;
+    string organization_id = 2;
+    string content = 3;
+    google.protobuf.Timestamp created_at = 4;
+}
+
+message ContractTemplate {
+    string id = 1;
+    string organization_id = 2;
+    string name = 3;
+    string description = 4;
+    string template_type = 5;
+    string fields_schema = 6;
+    string content_template = 7;
+    google.protobuf.Timestamp created_at = 8;
+    google.protobuf.Timestamp updated_at = 9;
+}
+
+message GeneratedContract {
+    string id = 1;
+    string organization_id = 2;
+    string template_id = 3;
+    string name = 4;
+    string filled_data = 5;
+    string s3_key = 6;
+    string file_type = 7;
+    google.protobuf.Timestamp created_at = 8;
+}

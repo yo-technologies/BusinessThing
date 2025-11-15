@@ -1,10 +1,12 @@
 include:
     - llm-service/compose.yaml
     - llm-service-db/compose.yaml
+    - core-service/compose.yaml
+    - core-service-db/compose.yaml
+    - docs-processor/compose.yaml
     - jaeger/compose.yaml
     - rabbitmq/compose.yaml
     - opensearch/compose.yaml
-    - docs-processor/compose.yaml
     - traefik/compose.yaml
 
 services:
