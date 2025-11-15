@@ -44,11 +44,9 @@ export default function RootLayout({
       >
         <Providers themeProps={{ attribute: "class", defaultTheme: "dark" }}>
           <TelegramInit />
-          <div className="flex min-h-screen flex-col bg-gradient-to-b from-background via-background to-default-100">
-            <div className="fixed left-0 right-0 top-0 z-40 flex items-center justify-between border-b border-default-200 bg-background/80 px-4 py-2 backdrop-blur-md">
-              <OrganizationSwitcher />
-            </div>
-            <main className="flex-1 px-3 pb-20 pt-16 md:px-6 md:pb-24">
+          <div className="flex h-full flex-col bg-gradient-to-b from-background via-background to-default-100">
+            <OrganizationSwitcher />
+            <main className="flex-1 px-3 pb-20 md:px-6">
               <div className="mx-auto flex h-full max-w-4xl flex-col">{children}</div>
             </main>
             <BottomNavbar />
