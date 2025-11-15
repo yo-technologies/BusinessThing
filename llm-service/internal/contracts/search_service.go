@@ -27,7 +27,7 @@ func NewSearchService(
 }
 
 // SearchTemplates ищет подходящие шаблоны договоров
-func (s *SearchService) SearchTemplates(ctx context.Context, organizationID, query string, limit int) (interface{}, error) {
+func (s *SearchService) SearchTemplates(ctx context.Context, organizationID, query string, limit int) ([]*TemplateSearchResult, error) {
 	span, ctx := opentracing.StartSpanFromContext(ctx, "contracts.SearchService.SearchTemplates")
 	defer span.Finish()
 
@@ -41,13 +41,13 @@ func (s *SearchService) SearchTemplates(ctx context.Context, organizationID, que
 		return nil, fmt.Errorf("failed to search templates: %w", err)
 	}
 
-	results := make([]TemplateSearchResult, 0, len(resp.Templates))
+	results := make([]*TemplateSearchResult, 0, len(resp.Templates))
 	for _, t := range resp.Templates {
 		// Получаем полную информацию о шаблоне из core-service
 		template, err := s.coreServiceClient.GetTemplate(ctx, t.TemplateId)
 		if err != nil {
 			// Логируем ошибку, но продолжаем с частичными данными
-			results = append(results, TemplateSearchResult{
+			results = append(results, &TemplateSearchResult{
 				TemplateID:   t.TemplateId,
 				Name:         t.Name,
 				Description:  t.Description,
@@ -64,7 +64,7 @@ func (s *SearchService) SearchTemplates(ctx context.Context, organizationID, que
 			Fields []TemplateField `json:"fields"`
 		}
 		if err := json.Unmarshal([]byte(template.FieldsSchema), &fieldsSchema); err == nil {
-			results = append(results, TemplateSearchResult{
+			results = append(results, &TemplateSearchResult{
 				TemplateID:   t.TemplateId,
 				Name:         t.Name,
 				Description:  t.Description,
@@ -74,7 +74,7 @@ func (s *SearchService) SearchTemplates(ctx context.Context, organizationID, que
 				Score:        t.Score,
 			})
 		} else {
-			results = append(results, TemplateSearchResult{
+			results = append(results, &TemplateSearchResult{
 				TemplateID:   t.TemplateId,
 				Name:         t.Name,
 				Description:  t.Description,

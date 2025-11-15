@@ -352,10 +352,16 @@ func (e *Executor) executeListGeneratedContracts(
 	}
 
 	// Получаем список контрактов
-	result, err := e.contractGeneratorService.ListContracts(ctx, execCtx.OrganizationID.String(), limit, offset)
+	contracts, total, err := e.contractGeneratorService.ListContracts(ctx, execCtx.OrganizationID.String(), limit, offset)
 	if err != nil {
 		return nil, err
 	}
 
-	return result, nil
+	// Возвращаем в виде map для удобства использования в tools
+	return map[string]interface{}{
+		"contracts": contracts,
+		"total":     total,
+		"limit":     limit,
+		"offset":    offset,
+	}, nil
 }

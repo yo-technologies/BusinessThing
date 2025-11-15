@@ -11,6 +11,9 @@
     },
     {
       "name": "MemoryService"
+    },
+    {
+      "name": "ContractsService"
     }
   ],
   "basePath": "/api",
@@ -191,6 +194,39 @@
         ],
         "tags": [
           "AgentService"
+        ]
+      }
+    },
+    "/v1/contracts/test-generate": {
+      "post": {
+        "summary": "Тестовая генерация контракта из шаблона",
+        "operationId": "ContractsService_TestGenerateContract",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/agentTestGenerateContractResponse"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/rpcStatus"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/agentTestGenerateContractRequest"
+            }
+          }
+        ],
+        "tags": [
+          "ContractsService"
         ]
       }
     },
@@ -632,6 +668,51 @@
         },
         "final": {
           "$ref": "#/definitions/agentFinalEvent"
+        }
+      }
+    },
+    "agentTestGenerateContractRequest": {
+      "type": "object",
+      "properties": {
+        "orgId": {
+          "type": "string"
+        },
+        "templateId": {
+          "type": "string"
+        },
+        "contractName": {
+          "type": "string"
+        },
+        "filledData": {
+          "type": "object",
+          "additionalProperties": {
+            "type": "string"
+          },
+          "title": "JSON объект с заполненными данными (ключ - имя поля БЕЗ скобок, значение - данные)"
+        }
+      }
+    },
+    "agentTestGenerateContractResponse": {
+      "type": "object",
+      "properties": {
+        "contractId": {
+          "type": "string"
+        },
+        "contractName": {
+          "type": "string"
+        },
+        "downloadUrl": {
+          "type": "string"
+        },
+        "s3Key": {
+          "type": "string"
+        },
+        "templateName": {
+          "type": "string"
+        },
+        "createdAt": {
+          "type": "string",
+          "format": "date-time"
         }
       }
     },

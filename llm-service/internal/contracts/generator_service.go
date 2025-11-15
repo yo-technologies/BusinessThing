@@ -38,7 +38,7 @@ func (s *GeneratorService) GenerateContract(
 	ctx context.Context,
 	organizationID, templateID, contractName string,
 	filledData map[string]interface{},
-) (interface{}, error) {
+) (*GeneratedContract, error) {
 	span, ctx := opentracing.StartSpanFromContext(ctx, "contracts.GeneratorService.GenerateContract")
 	defer span.Finish()
 
@@ -122,16 +122,16 @@ func (s *GeneratorService) validateFilledData(fieldsSchemaJSON string, filledDat
 }
 
 // ListContracts возвращает список сгенерированных договоров
-func (s *GeneratorService) ListContracts(ctx context.Context, organizationID string, limit, offset int) (interface{}, error) {
+func (s *GeneratorService) ListContracts(ctx context.Context, organizationID string, limit, offset int) ([]*ContractListItem, int, error) {
 	span, ctx := opentracing.StartSpanFromContext(ctx, "contracts.GeneratorService.ListContracts")
 	defer span.Finish()
 
 	contracts, total, err := s.coreServiceClient.ListContracts(ctx, organizationID, limit, offset)
 	if err != nil {
-		return nil, fmt.Errorf("failed to list contracts: %w", err)
+		return nil, 0, fmt.Errorf("failed to list contracts: %w", err)
 	}
 
-	results := make([]ContractListItem, 0, len(contracts))
+	results := make([]*ContractListItem, 0, len(contracts))
 	for _, c := range contracts {
 		// Получаем название шаблона
 		template, err := s.coreServiceClient.GetTemplate(ctx, c.TemplateID)
@@ -140,7 +140,7 @@ func (s *GeneratorService) ListContracts(ctx context.Context, organizationID str
 			templateName = template.Name
 		}
 
-		results = append(results, ContractListItem{
+		results = append(results, &ContractListItem{
 			ID:           c.ID,
 			Name:         c.Name,
 			TemplateName: templateName,
@@ -150,10 +150,5 @@ func (s *GeneratorService) ListContracts(ctx context.Context, organizationID str
 		})
 	}
 
-	return map[string]interface{}{
-		"contracts": results,
-		"total":     total,
-		"limit":     limit,
-		"offset":    offset,
-	}, nil
+	return results, total, nil
 }

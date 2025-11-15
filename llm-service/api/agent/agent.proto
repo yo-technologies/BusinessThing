@@ -107,6 +107,18 @@ service MemoryService {
     }
 }
 
+// ===== Contracts Service =====
+// Тестовый сервис для генерации контрактов
+service ContractsService {
+    // Тестовая генерация контракта из шаблона
+    rpc TestGenerateContract(TestGenerateContractRequest) returns (TestGenerateContractResponse) {
+        option (google.api.http) = {
+            post: "/v1/contracts/test-generate"
+            body: "*"
+        };
+    }
+}
+
 // ===== Chat Management Messages =====
 
 message GetChatRequest {
@@ -307,4 +319,23 @@ message CreateMemoryFactResponse {
 message DeleteMemoryFactRequest {
     string id = 1 [(validate.rules).string.min_len = 1];
     string org_id = 2 [(validate.rules).string.min_len = 1];
+}
+
+// ===== Contracts Messages =====
+
+message TestGenerateContractRequest {
+    string org_id = 1 [(validate.rules).string.min_len = 1];
+    string template_id = 2 [(validate.rules).string.min_len = 1];
+    string contract_name = 3 [(validate.rules).string.min_len = 1];
+    // JSON объект с заполненными данными (ключ - имя поля БЕЗ скобок, значение - данные)
+    map<string, string> filled_data = 4;
+}
+
+message TestGenerateContractResponse {
+    string contract_id = 1;
+    string contract_name = 2;
+    string download_url = 3;
+    string s3_key = 4;
+    string template_name = 5;
+    google.protobuf.Timestamp created_at = 6;
 }

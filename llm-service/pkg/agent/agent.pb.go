@@ -1914,6 +1914,159 @@ func (x *DeleteMemoryFactRequest) GetOrgId() string {
 	return ""
 }
 
+type TestGenerateContractRequest struct {
+	state        protoimpl.MessageState `protogen:"open.v1"`
+	OrgId        string                 `protobuf:"bytes,1,opt,name=org_id,json=orgId,proto3" json:"org_id,omitempty"`
+	TemplateId   string                 `protobuf:"bytes,2,opt,name=template_id,json=templateId,proto3" json:"template_id,omitempty"`
+	ContractName string                 `protobuf:"bytes,3,opt,name=contract_name,json=contractName,proto3" json:"contract_name,omitempty"`
+	// JSON объект с заполненными данными (ключ - имя поля БЕЗ скобок, значение - данные)
+	FilledData    map[string]string `protobuf:"bytes,4,rep,name=filled_data,json=filledData,proto3" json:"filled_data,omitempty" protobuf_key:"bytes,1,opt,name=key" protobuf_val:"bytes,2,opt,name=value"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *TestGenerateContractRequest) Reset() {
+	*x = TestGenerateContractRequest{}
+	mi := &file_agent_agent_proto_msgTypes[27]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *TestGenerateContractRequest) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*TestGenerateContractRequest) ProtoMessage() {}
+
+func (x *TestGenerateContractRequest) ProtoReflect() protoreflect.Message {
+	mi := &file_agent_agent_proto_msgTypes[27]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use TestGenerateContractRequest.ProtoReflect.Descriptor instead.
+func (*TestGenerateContractRequest) Descriptor() ([]byte, []int) {
+	return file_agent_agent_proto_rawDescGZIP(), []int{27}
+}
+
+func (x *TestGenerateContractRequest) GetOrgId() string {
+	if x != nil {
+		return x.OrgId
+	}
+	return ""
+}
+
+func (x *TestGenerateContractRequest) GetTemplateId() string {
+	if x != nil {
+		return x.TemplateId
+	}
+	return ""
+}
+
+func (x *TestGenerateContractRequest) GetContractName() string {
+	if x != nil {
+		return x.ContractName
+	}
+	return ""
+}
+
+func (x *TestGenerateContractRequest) GetFilledData() map[string]string {
+	if x != nil {
+		return x.FilledData
+	}
+	return nil
+}
+
+type TestGenerateContractResponse struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	ContractId    string                 `protobuf:"bytes,1,opt,name=contract_id,json=contractId,proto3" json:"contract_id,omitempty"`
+	ContractName  string                 `protobuf:"bytes,2,opt,name=contract_name,json=contractName,proto3" json:"contract_name,omitempty"`
+	DownloadUrl   string                 `protobuf:"bytes,3,opt,name=download_url,json=downloadUrl,proto3" json:"download_url,omitempty"`
+	S3Key         string                 `protobuf:"bytes,4,opt,name=s3_key,json=s3Key,proto3" json:"s3_key,omitempty"`
+	TemplateName  string                 `protobuf:"bytes,5,opt,name=template_name,json=templateName,proto3" json:"template_name,omitempty"`
+	CreatedAt     *timestamppb.Timestamp `protobuf:"bytes,6,opt,name=created_at,json=createdAt,proto3" json:"created_at,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *TestGenerateContractResponse) Reset() {
+	*x = TestGenerateContractResponse{}
+	mi := &file_agent_agent_proto_msgTypes[28]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *TestGenerateContractResponse) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*TestGenerateContractResponse) ProtoMessage() {}
+
+func (x *TestGenerateContractResponse) ProtoReflect() protoreflect.Message {
+	mi := &file_agent_agent_proto_msgTypes[28]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use TestGenerateContractResponse.ProtoReflect.Descriptor instead.
+func (*TestGenerateContractResponse) Descriptor() ([]byte, []int) {
+	return file_agent_agent_proto_rawDescGZIP(), []int{28}
+}
+
+func (x *TestGenerateContractResponse) GetContractId() string {
+	if x != nil {
+		return x.ContractId
+	}
+	return ""
+}
+
+func (x *TestGenerateContractResponse) GetContractName() string {
+	if x != nil {
+		return x.ContractName
+	}
+	return ""
+}
+
+func (x *TestGenerateContractResponse) GetDownloadUrl() string {
+	if x != nil {
+		return x.DownloadUrl
+	}
+	return ""
+}
+
+func (x *TestGenerateContractResponse) GetS3Key() string {
+	if x != nil {
+		return x.S3Key
+	}
+	return ""
+}
+
+func (x *TestGenerateContractResponse) GetTemplateName() string {
+	if x != nil {
+		return x.TemplateName
+	}
+	return ""
+}
+
+func (x *TestGenerateContractResponse) GetCreatedAt() *timestamppb.Timestamp {
+	if x != nil {
+		return x.CreatedAt
+	}
+	return nil
+}
+
 var File_agent_agent_proto protoreflect.FileDescriptor
 
 const file_agent_agent_proto_rawDesc = "" +
@@ -2046,7 +2199,26 @@ const file_agent_agent_proto_rawDesc = "" +
 	"\x04fact\x18\x01 \x01(\v2\x1f.llm_agent.api.agent.MemoryFactR\x04fact\"R\n" +
 	"\x17DeleteMemoryFactRequest\x12\x17\n" +
 	"\x02id\x18\x01 \x01(\tB\a\xfaB\x04r\x02\x10\x01R\x02id\x12\x1e\n" +
-	"\x06org_id\x18\x02 \x01(\tB\a\xfaB\x04r\x02\x10\x01R\x05orgId*\x8e\x01\n" +
+	"\x06org_id\x18\x02 \x01(\tB\a\xfaB\x04r\x02\x10\x01R\x05orgId\"\xb7\x02\n" +
+	"\x1bTestGenerateContractRequest\x12\x1e\n" +
+	"\x06org_id\x18\x01 \x01(\tB\a\xfaB\x04r\x02\x10\x01R\x05orgId\x12(\n" +
+	"\vtemplate_id\x18\x02 \x01(\tB\a\xfaB\x04r\x02\x10\x01R\n" +
+	"templateId\x12,\n" +
+	"\rcontract_name\x18\x03 \x01(\tB\a\xfaB\x04r\x02\x10\x01R\fcontractName\x12a\n" +
+	"\vfilled_data\x18\x04 \x03(\v2@.llm_agent.api.agent.TestGenerateContractRequest.FilledDataEntryR\n" +
+	"filledData\x1a=\n" +
+	"\x0fFilledDataEntry\x12\x10\n" +
+	"\x03key\x18\x01 \x01(\tR\x03key\x12\x14\n" +
+	"\x05value\x18\x02 \x01(\tR\x05value:\x028\x01\"\xfe\x01\n" +
+	"\x1cTestGenerateContractResponse\x12\x1f\n" +
+	"\vcontract_id\x18\x01 \x01(\tR\n" +
+	"contractId\x12#\n" +
+	"\rcontract_name\x18\x02 \x01(\tR\fcontractName\x12!\n" +
+	"\fdownload_url\x18\x03 \x01(\tR\vdownloadUrl\x12\x15\n" +
+	"\x06s3_key\x18\x04 \x01(\tR\x05s3Key\x12#\n" +
+	"\rtemplate_name\x18\x05 \x01(\tR\ftemplateName\x129\n" +
+	"\n" +
+	"created_at\x18\x06 \x01(\v2\x1a.google.protobuf.TimestampR\tcreatedAt*\x8e\x01\n" +
 	"\n" +
 	"ChatStatus\x12\x1b\n" +
 	"\x17CHAT_STATUS_UNSPECIFIED\x10\x00\x12\x16\n" +
@@ -2077,7 +2249,9 @@ const file_agent_agent_proto_rawDesc = "" +
 	"\rMemoryService\x12\x86\x01\n" +
 	"\x0fListMemoryFacts\x12+.llm_agent.api.agent.ListMemoryFactsRequest\x1a,.llm_agent.api.agent.ListMemoryFactsResponse\"\x18\x82\xd3\xe4\x93\x02\x12\x12\x10/v1/memory/facts\x12\x8c\x01\n" +
 	"\x10CreateMemoryFact\x12,.llm_agent.api.agent.CreateMemoryFactRequest\x1a-.llm_agent.api.agent.CreateMemoryFactResponse\"\x1b\x82\xd3\xe4\x93\x02\x15:\x01*\"\x10/v1/memory/facts\x12w\n" +
-	"\x10DeleteMemoryFact\x12,.llm_agent.api.agent.DeleteMemoryFactRequest\x1a\x16.google.protobuf.Empty\"\x1d\x82\xd3\xe4\x93\x02\x17*\x15/v1/memory/facts/{id}B\xd4\x01\x92A\x9d\x01\x12>\n" +
+	"\x10DeleteMemoryFact\x12,.llm_agent.api.agent.DeleteMemoryFactRequest\x1a\x16.google.protobuf.Empty\"\x1d\x82\xd3\xe4\x93\x02\x17*\x15/v1/memory/facts/{id}2\xb8\x01\n" +
+	"\x10ContractsService\x12\xa3\x01\n" +
+	"\x14TestGenerateContract\x120.llm_agent.api.agent.TestGenerateContractRequest\x1a1.llm_agent.api.agent.TestGenerateContractResponse\"&\x82\xd3\xe4\x93\x02 :\x01*\"\x1b/v1/contracts/test-generateB\xd4\x01\x92A\x9d\x01\x12>\n" +
 	"\x0fLLM Service API\x12$API for LLM Service of BusinessThing2\x051.0.0\"\x04/api*\x02\x01\x022\x10application/json:\x10application/jsonZ\x1f\n" +
 	"\x1d\n" +
 	"\x06Bearer\x12\x13\b\x02\x1a\rAuthorization \x02b\f\n" +
@@ -2098,40 +2272,43 @@ func file_agent_agent_proto_rawDescGZIP() []byte {
 }
 
 var file_agent_agent_proto_enumTypes = make([]protoimpl.EnumInfo, 3)
-var file_agent_agent_proto_msgTypes = make([]protoimpl.MessageInfo, 27)
+var file_agent_agent_proto_msgTypes = make([]protoimpl.MessageInfo, 30)
 var file_agent_agent_proto_goTypes = []any{
-	(ChatStatus)(0),                  // 0: llm_agent.api.agent.ChatStatus
-	(MessageRole)(0),                 // 1: llm_agent.api.agent.MessageRole
-	(ToolCallStatus)(0),              // 2: llm_agent.api.agent.ToolCallStatus
-	(*GetChatRequest)(nil),           // 3: llm_agent.api.agent.GetChatRequest
-	(*GetChatResponse)(nil),          // 4: llm_agent.api.agent.GetChatResponse
-	(*ListChatsRequest)(nil),         // 5: llm_agent.api.agent.ListChatsRequest
-	(*ListChatsResponse)(nil),        // 6: llm_agent.api.agent.ListChatsResponse
-	(*DeleteChatRequest)(nil),        // 7: llm_agent.api.agent.DeleteChatRequest
-	(*StreamMessageRequest)(nil),     // 8: llm_agent.api.agent.StreamMessageRequest
-	(*NewMessagePayload)(nil),        // 9: llm_agent.api.agent.NewMessagePayload
-	(*StreamMessageResponse)(nil),    // 10: llm_agent.api.agent.StreamMessageResponse
-	(*GetMessagesRequest)(nil),       // 11: llm_agent.api.agent.GetMessagesRequest
-	(*GetMessagesResponse)(nil),      // 12: llm_agent.api.agent.GetMessagesResponse
-	(*GetLLMLimitsResponse)(nil),     // 13: llm_agent.api.agent.GetLLMLimitsResponse
-	(*Chat)(nil),                     // 14: llm_agent.api.agent.Chat
-	(*Message)(nil),                  // 15: llm_agent.api.agent.Message
-	(*ToolCall)(nil),                 // 16: llm_agent.api.agent.ToolCall
-	(*MessageChunk)(nil),             // 17: llm_agent.api.agent.MessageChunk
-	(*ToolCallEvent)(nil),            // 18: llm_agent.api.agent.ToolCallEvent
-	(*UsageEvent)(nil),               // 19: llm_agent.api.agent.UsageEvent
-	(*ErrorEvent)(nil),               // 20: llm_agent.api.agent.ErrorEvent
-	(*ChatEvent)(nil),                // 21: llm_agent.api.agent.ChatEvent
-	(*FinalEvent)(nil),               // 22: llm_agent.api.agent.FinalEvent
-	(*ChatUsage)(nil),                // 23: llm_agent.api.agent.ChatUsage
-	(*MemoryFact)(nil),               // 24: llm_agent.api.agent.MemoryFact
-	(*ListMemoryFactsRequest)(nil),   // 25: llm_agent.api.agent.ListMemoryFactsRequest
-	(*ListMemoryFactsResponse)(nil),  // 26: llm_agent.api.agent.ListMemoryFactsResponse
-	(*CreateMemoryFactRequest)(nil),  // 27: llm_agent.api.agent.CreateMemoryFactRequest
-	(*CreateMemoryFactResponse)(nil), // 28: llm_agent.api.agent.CreateMemoryFactResponse
-	(*DeleteMemoryFactRequest)(nil),  // 29: llm_agent.api.agent.DeleteMemoryFactRequest
-	(*timestamppb.Timestamp)(nil),    // 30: google.protobuf.Timestamp
-	(*emptypb.Empty)(nil),            // 31: google.protobuf.Empty
+	(ChatStatus)(0),                      // 0: llm_agent.api.agent.ChatStatus
+	(MessageRole)(0),                     // 1: llm_agent.api.agent.MessageRole
+	(ToolCallStatus)(0),                  // 2: llm_agent.api.agent.ToolCallStatus
+	(*GetChatRequest)(nil),               // 3: llm_agent.api.agent.GetChatRequest
+	(*GetChatResponse)(nil),              // 4: llm_agent.api.agent.GetChatResponse
+	(*ListChatsRequest)(nil),             // 5: llm_agent.api.agent.ListChatsRequest
+	(*ListChatsResponse)(nil),            // 6: llm_agent.api.agent.ListChatsResponse
+	(*DeleteChatRequest)(nil),            // 7: llm_agent.api.agent.DeleteChatRequest
+	(*StreamMessageRequest)(nil),         // 8: llm_agent.api.agent.StreamMessageRequest
+	(*NewMessagePayload)(nil),            // 9: llm_agent.api.agent.NewMessagePayload
+	(*StreamMessageResponse)(nil),        // 10: llm_agent.api.agent.StreamMessageResponse
+	(*GetMessagesRequest)(nil),           // 11: llm_agent.api.agent.GetMessagesRequest
+	(*GetMessagesResponse)(nil),          // 12: llm_agent.api.agent.GetMessagesResponse
+	(*GetLLMLimitsResponse)(nil),         // 13: llm_agent.api.agent.GetLLMLimitsResponse
+	(*Chat)(nil),                         // 14: llm_agent.api.agent.Chat
+	(*Message)(nil),                      // 15: llm_agent.api.agent.Message
+	(*ToolCall)(nil),                     // 16: llm_agent.api.agent.ToolCall
+	(*MessageChunk)(nil),                 // 17: llm_agent.api.agent.MessageChunk
+	(*ToolCallEvent)(nil),                // 18: llm_agent.api.agent.ToolCallEvent
+	(*UsageEvent)(nil),                   // 19: llm_agent.api.agent.UsageEvent
+	(*ErrorEvent)(nil),                   // 20: llm_agent.api.agent.ErrorEvent
+	(*ChatEvent)(nil),                    // 21: llm_agent.api.agent.ChatEvent
+	(*FinalEvent)(nil),                   // 22: llm_agent.api.agent.FinalEvent
+	(*ChatUsage)(nil),                    // 23: llm_agent.api.agent.ChatUsage
+	(*MemoryFact)(nil),                   // 24: llm_agent.api.agent.MemoryFact
+	(*ListMemoryFactsRequest)(nil),       // 25: llm_agent.api.agent.ListMemoryFactsRequest
+	(*ListMemoryFactsResponse)(nil),      // 26: llm_agent.api.agent.ListMemoryFactsResponse
+	(*CreateMemoryFactRequest)(nil),      // 27: llm_agent.api.agent.CreateMemoryFactRequest
+	(*CreateMemoryFactResponse)(nil),     // 28: llm_agent.api.agent.CreateMemoryFactResponse
+	(*DeleteMemoryFactRequest)(nil),      // 29: llm_agent.api.agent.DeleteMemoryFactRequest
+	(*TestGenerateContractRequest)(nil),  // 30: llm_agent.api.agent.TestGenerateContractRequest
+	(*TestGenerateContractResponse)(nil), // 31: llm_agent.api.agent.TestGenerateContractResponse
+	nil,                                  // 32: llm_agent.api.agent.TestGenerateContractRequest.FilledDataEntry
+	(*timestamppb.Timestamp)(nil),        // 33: google.protobuf.Timestamp
+	(*emptypb.Empty)(nil),                // 34: google.protobuf.Empty
 }
 var file_agent_agent_proto_depIdxs = []int32{
 	14, // 0: llm_agent.api.agent.GetChatResponse.chat:type_name -> llm_agent.api.agent.Chat
@@ -2146,43 +2323,47 @@ var file_agent_agent_proto_depIdxs = []int32{
 	22, // 9: llm_agent.api.agent.StreamMessageResponse.final:type_name -> llm_agent.api.agent.FinalEvent
 	15, // 10: llm_agent.api.agent.GetMessagesResponse.messages:type_name -> llm_agent.api.agent.Message
 	0,  // 11: llm_agent.api.agent.Chat.status:type_name -> llm_agent.api.agent.ChatStatus
-	30, // 12: llm_agent.api.agent.Chat.created_at:type_name -> google.protobuf.Timestamp
-	30, // 13: llm_agent.api.agent.Chat.updated_at:type_name -> google.protobuf.Timestamp
+	33, // 12: llm_agent.api.agent.Chat.created_at:type_name -> google.protobuf.Timestamp
+	33, // 13: llm_agent.api.agent.Chat.updated_at:type_name -> google.protobuf.Timestamp
 	1,  // 14: llm_agent.api.agent.Message.role:type_name -> llm_agent.api.agent.MessageRole
 	16, // 15: llm_agent.api.agent.Message.tool_calls:type_name -> llm_agent.api.agent.ToolCall
-	30, // 16: llm_agent.api.agent.Message.created_at:type_name -> google.protobuf.Timestamp
+	33, // 16: llm_agent.api.agent.Message.created_at:type_name -> google.protobuf.Timestamp
 	2,  // 17: llm_agent.api.agent.ToolCall.status:type_name -> llm_agent.api.agent.ToolCallStatus
-	30, // 18: llm_agent.api.agent.ToolCall.created_at:type_name -> google.protobuf.Timestamp
-	30, // 19: llm_agent.api.agent.ToolCall.completed_at:type_name -> google.protobuf.Timestamp
+	33, // 18: llm_agent.api.agent.ToolCall.created_at:type_name -> google.protobuf.Timestamp
+	33, // 19: llm_agent.api.agent.ToolCall.completed_at:type_name -> google.protobuf.Timestamp
 	23, // 20: llm_agent.api.agent.UsageEvent.usage:type_name -> llm_agent.api.agent.ChatUsage
 	14, // 21: llm_agent.api.agent.FinalEvent.chat:type_name -> llm_agent.api.agent.Chat
 	15, // 22: llm_agent.api.agent.FinalEvent.messages:type_name -> llm_agent.api.agent.Message
-	30, // 23: llm_agent.api.agent.MemoryFact.created_at:type_name -> google.protobuf.Timestamp
+	33, // 23: llm_agent.api.agent.MemoryFact.created_at:type_name -> google.protobuf.Timestamp
 	24, // 24: llm_agent.api.agent.ListMemoryFactsResponse.facts:type_name -> llm_agent.api.agent.MemoryFact
 	24, // 25: llm_agent.api.agent.CreateMemoryFactResponse.fact:type_name -> llm_agent.api.agent.MemoryFact
-	3,  // 26: llm_agent.api.agent.AgentService.GetChat:input_type -> llm_agent.api.agent.GetChatRequest
-	5,  // 27: llm_agent.api.agent.AgentService.ListChats:input_type -> llm_agent.api.agent.ListChatsRequest
-	7,  // 28: llm_agent.api.agent.AgentService.DeleteChat:input_type -> llm_agent.api.agent.DeleteChatRequest
-	11, // 29: llm_agent.api.agent.AgentService.GetMessages:input_type -> llm_agent.api.agent.GetMessagesRequest
-	31, // 30: llm_agent.api.agent.AgentService.GetLLMLimits:input_type -> google.protobuf.Empty
-	8,  // 31: llm_agent.api.agent.AgentService.StreamMessage:input_type -> llm_agent.api.agent.StreamMessageRequest
-	25, // 32: llm_agent.api.agent.MemoryService.ListMemoryFacts:input_type -> llm_agent.api.agent.ListMemoryFactsRequest
-	27, // 33: llm_agent.api.agent.MemoryService.CreateMemoryFact:input_type -> llm_agent.api.agent.CreateMemoryFactRequest
-	29, // 34: llm_agent.api.agent.MemoryService.DeleteMemoryFact:input_type -> llm_agent.api.agent.DeleteMemoryFactRequest
-	4,  // 35: llm_agent.api.agent.AgentService.GetChat:output_type -> llm_agent.api.agent.GetChatResponse
-	6,  // 36: llm_agent.api.agent.AgentService.ListChats:output_type -> llm_agent.api.agent.ListChatsResponse
-	31, // 37: llm_agent.api.agent.AgentService.DeleteChat:output_type -> google.protobuf.Empty
-	12, // 38: llm_agent.api.agent.AgentService.GetMessages:output_type -> llm_agent.api.agent.GetMessagesResponse
-	13, // 39: llm_agent.api.agent.AgentService.GetLLMLimits:output_type -> llm_agent.api.agent.GetLLMLimitsResponse
-	10, // 40: llm_agent.api.agent.AgentService.StreamMessage:output_type -> llm_agent.api.agent.StreamMessageResponse
-	26, // 41: llm_agent.api.agent.MemoryService.ListMemoryFacts:output_type -> llm_agent.api.agent.ListMemoryFactsResponse
-	28, // 42: llm_agent.api.agent.MemoryService.CreateMemoryFact:output_type -> llm_agent.api.agent.CreateMemoryFactResponse
-	31, // 43: llm_agent.api.agent.MemoryService.DeleteMemoryFact:output_type -> google.protobuf.Empty
-	35, // [35:44] is the sub-list for method output_type
-	26, // [26:35] is the sub-list for method input_type
-	26, // [26:26] is the sub-list for extension type_name
-	26, // [26:26] is the sub-list for extension extendee
-	0,  // [0:26] is the sub-list for field type_name
+	32, // 26: llm_agent.api.agent.TestGenerateContractRequest.filled_data:type_name -> llm_agent.api.agent.TestGenerateContractRequest.FilledDataEntry
+	33, // 27: llm_agent.api.agent.TestGenerateContractResponse.created_at:type_name -> google.protobuf.Timestamp
+	3,  // 28: llm_agent.api.agent.AgentService.GetChat:input_type -> llm_agent.api.agent.GetChatRequest
+	5,  // 29: llm_agent.api.agent.AgentService.ListChats:input_type -> llm_agent.api.agent.ListChatsRequest
+	7,  // 30: llm_agent.api.agent.AgentService.DeleteChat:input_type -> llm_agent.api.agent.DeleteChatRequest
+	11, // 31: llm_agent.api.agent.AgentService.GetMessages:input_type -> llm_agent.api.agent.GetMessagesRequest
+	34, // 32: llm_agent.api.agent.AgentService.GetLLMLimits:input_type -> google.protobuf.Empty
+	8,  // 33: llm_agent.api.agent.AgentService.StreamMessage:input_type -> llm_agent.api.agent.StreamMessageRequest
+	25, // 34: llm_agent.api.agent.MemoryService.ListMemoryFacts:input_type -> llm_agent.api.agent.ListMemoryFactsRequest
+	27, // 35: llm_agent.api.agent.MemoryService.CreateMemoryFact:input_type -> llm_agent.api.agent.CreateMemoryFactRequest
+	29, // 36: llm_agent.api.agent.MemoryService.DeleteMemoryFact:input_type -> llm_agent.api.agent.DeleteMemoryFactRequest
+	30, // 37: llm_agent.api.agent.ContractsService.TestGenerateContract:input_type -> llm_agent.api.agent.TestGenerateContractRequest
+	4,  // 38: llm_agent.api.agent.AgentService.GetChat:output_type -> llm_agent.api.agent.GetChatResponse
+	6,  // 39: llm_agent.api.agent.AgentService.ListChats:output_type -> llm_agent.api.agent.ListChatsResponse
+	34, // 40: llm_agent.api.agent.AgentService.DeleteChat:output_type -> google.protobuf.Empty
+	12, // 41: llm_agent.api.agent.AgentService.GetMessages:output_type -> llm_agent.api.agent.GetMessagesResponse
+	13, // 42: llm_agent.api.agent.AgentService.GetLLMLimits:output_type -> llm_agent.api.agent.GetLLMLimitsResponse
+	10, // 43: llm_agent.api.agent.AgentService.StreamMessage:output_type -> llm_agent.api.agent.StreamMessageResponse
+	26, // 44: llm_agent.api.agent.MemoryService.ListMemoryFacts:output_type -> llm_agent.api.agent.ListMemoryFactsResponse
+	28, // 45: llm_agent.api.agent.MemoryService.CreateMemoryFact:output_type -> llm_agent.api.agent.CreateMemoryFactResponse
+	34, // 46: llm_agent.api.agent.MemoryService.DeleteMemoryFact:output_type -> google.protobuf.Empty
+	31, // 47: llm_agent.api.agent.ContractsService.TestGenerateContract:output_type -> llm_agent.api.agent.TestGenerateContractResponse
+	38, // [38:48] is the sub-list for method output_type
+	28, // [28:38] is the sub-list for method input_type
+	28, // [28:28] is the sub-list for extension type_name
+	28, // [28:28] is the sub-list for extension extendee
+	0,  // [0:28] is the sub-list for field type_name
 }
 
 func init() { file_agent_agent_proto_init() }
@@ -2209,9 +2390,9 @@ func file_agent_agent_proto_init() {
 			GoPackagePath: reflect.TypeOf(x{}).PkgPath(),
 			RawDescriptor: unsafe.Slice(unsafe.StringData(file_agent_agent_proto_rawDesc), len(file_agent_agent_proto_rawDesc)),
 			NumEnums:      3,
-			NumMessages:   27,
+			NumMessages:   30,
 			NumExtensions: 0,
-			NumServices:   2,
+			NumServices:   3,
 		},
 		GoTypes:           file_agent_agent_proto_goTypes,
 		DependencyIndexes: file_agent_agent_proto_depIdxs,

@@ -104,7 +104,7 @@ func (p *Processor) ExtractPlaceholders(ctx context.Context, templateData []byte
 	}
 
 	logger.Info(ctx, "Placeholders extracted successfully", "count", len(placeholders))
-	
+
 	for i, placeholder := range placeholders {
 		logger.Debug(ctx, "Found placeholder",
 			"index", i,

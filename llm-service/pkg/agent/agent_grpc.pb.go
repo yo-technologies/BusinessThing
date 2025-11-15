@@ -511,3 +511,113 @@ var MemoryService_ServiceDesc = grpc.ServiceDesc{
 	Streams:  []grpc.StreamDesc{},
 	Metadata: "agent/agent.proto",
 }
+
+const (
+	ContractsService_TestGenerateContract_FullMethodName = "/llm_agent.api.agent.ContractsService/TestGenerateContract"
+)
+
+// ContractsServiceClient is the client API for ContractsService service.
+//
+// For semantics around ctx use and closing/ending streaming RPCs, please refer to https://pkg.go.dev/google.golang.org/grpc/?tab=doc#ClientConn.NewStream.
+//
+// ===== Contracts Service =====
+// Тестовый сервис для генерации контрактов
+type ContractsServiceClient interface {
+	// Тестовая генерация контракта из шаблона
+	TestGenerateContract(ctx context.Context, in *TestGenerateContractRequest, opts ...grpc.CallOption) (*TestGenerateContractResponse, error)
+}
+
+type contractsServiceClient struct {
+	cc grpc.ClientConnInterface
+}
+
+func NewContractsServiceClient(cc grpc.ClientConnInterface) ContractsServiceClient {
+	return &contractsServiceClient{cc}
+}
+
+func (c *contractsServiceClient) TestGenerateContract(ctx context.Context, in *TestGenerateContractRequest, opts ...grpc.CallOption) (*TestGenerateContractResponse, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(TestGenerateContractResponse)
+	err := c.cc.Invoke(ctx, ContractsService_TestGenerateContract_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+// ContractsServiceServer is the server API for ContractsService service.
+// All implementations must embed UnimplementedContractsServiceServer
+// for forward compatibility.
+//
+// ===== Contracts Service =====
+// Тестовый сервис для генерации контрактов
+type ContractsServiceServer interface {
+	// Тестовая генерация контракта из шаблона
+	TestGenerateContract(context.Context, *TestGenerateContractRequest) (*TestGenerateContractResponse, error)
+	mustEmbedUnimplementedContractsServiceServer()
+}
+
+// UnimplementedContractsServiceServer must be embedded to have
+// forward compatible implementations.
+//
+// NOTE: this should be embedded by value instead of pointer to avoid a nil
+// pointer dereference when methods are called.
+type UnimplementedContractsServiceServer struct{}
+
+func (UnimplementedContractsServiceServer) TestGenerateContract(context.Context, *TestGenerateContractRequest) (*TestGenerateContractResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method TestGenerateContract not implemented")
+}
+func (UnimplementedContractsServiceServer) mustEmbedUnimplementedContractsServiceServer() {}
+func (UnimplementedContractsServiceServer) testEmbeddedByValue()                          {}
+
+// UnsafeContractsServiceServer may be embedded to opt out of forward compatibility for this service.
+// Use of this interface is not recommended, as added methods to ContractsServiceServer will
+// result in compilation errors.
+type UnsafeContractsServiceServer interface {
+	mustEmbedUnimplementedContractsServiceServer()
+}
+
+func RegisterContractsServiceServer(s grpc.ServiceRegistrar, srv ContractsServiceServer) {
+	// If the following call pancis, it indicates UnimplementedContractsServiceServer was
+	// embedded by pointer and is nil.  This will cause panics if an
+	// unimplemented method is ever invoked, so we test this at initialization
+	// time to prevent it from happening at runtime later due to I/O.
+	if t, ok := srv.(interface{ testEmbeddedByValue() }); ok {
+		t.testEmbeddedByValue()
+	}
+	s.RegisterService(&ContractsService_ServiceDesc, srv)
+}
+
+func _ContractsService_TestGenerateContract_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(TestGenerateContractRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(ContractsServiceServer).TestGenerateContract(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: ContractsService_TestGenerateContract_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(ContractsServiceServer).TestGenerateContract(ctx, req.(*TestGenerateContractRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+// ContractsService_ServiceDesc is the grpc.ServiceDesc for ContractsService service.
+// It's only intended for direct use with grpc.RegisterService,
+// and not to be introspected or modified (even as a copy)
+var ContractsService_ServiceDesc = grpc.ServiceDesc{
+	ServiceName: "llm_agent.api.agent.ContractsService",
+	HandlerType: (*ContractsServiceServer)(nil),
+	Methods: []grpc.MethodDesc{
+		{
+			MethodName: "TestGenerateContract",
+			Handler:    _ContractsService_TestGenerateContract_Handler,
+		},
+	},
+	Streams:  []grpc.StreamDesc{},
+	Metadata: "agent/agent.proto",
+}

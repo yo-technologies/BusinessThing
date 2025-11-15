@@ -366,6 +366,33 @@ func local_request_MemoryService_DeleteMemoryFact_0(ctx context.Context, marshal
 	return msg, metadata, err
 }
 
+func request_ContractsService_TestGenerateContract_0(ctx context.Context, marshaler runtime.Marshaler, client ContractsServiceClient, req *http.Request, pathParams map[string]string) (proto.Message, runtime.ServerMetadata, error) {
+	var (
+		protoReq TestGenerateContractRequest
+		metadata runtime.ServerMetadata
+	)
+	if err := marshaler.NewDecoder(req.Body).Decode(&protoReq); err != nil && !errors.Is(err, io.EOF) {
+		return nil, metadata, status.Errorf(codes.InvalidArgument, "%v", err)
+	}
+	if req.Body != nil {
+		_, _ = io.Copy(io.Discard, req.Body)
+	}
+	msg, err := client.TestGenerateContract(ctx, &protoReq, grpc.Header(&metadata.HeaderMD), grpc.Trailer(&metadata.TrailerMD))
+	return msg, metadata, err
+}
+
+func local_request_ContractsService_TestGenerateContract_0(ctx context.Context, marshaler runtime.Marshaler, server ContractsServiceServer, req *http.Request, pathParams map[string]string) (proto.Message, runtime.ServerMetadata, error) {
+	var (
+		protoReq TestGenerateContractRequest
+		metadata runtime.ServerMetadata
+	)
+	if err := marshaler.NewDecoder(req.Body).Decode(&protoReq); err != nil && !errors.Is(err, io.EOF) {
+		return nil, metadata, status.Errorf(codes.InvalidArgument, "%v", err)
+	}
+	msg, err := server.TestGenerateContract(ctx, &protoReq)
+	return msg, metadata, err
+}
+
 // RegisterAgentServiceHandlerServer registers the http handlers for service AgentService to "mux".
 // UnaryRPC     :call AgentServiceServer directly.
 // StreamingRPC :currently unsupported pending https://github.com/grpc/grpc-go/issues/906.
@@ -541,6 +568,36 @@ func RegisterMemoryServiceHandlerServer(ctx context.Context, mux *runtime.ServeM
 			return
 		}
 		forward_MemoryService_DeleteMemoryFact_0(annotatedContext, mux, outboundMarshaler, w, req, resp, mux.GetForwardResponseOptions()...)
+	})
+
+	return nil
+}
+
+// RegisterContractsServiceHandlerServer registers the http handlers for service ContractsService to "mux".
+// UnaryRPC     :call ContractsServiceServer directly.
+// StreamingRPC :currently unsupported pending https://github.com/grpc/grpc-go/issues/906.
+// Note that using this registration option will cause many gRPC library features to stop working. Consider using RegisterContractsServiceHandlerFromEndpoint instead.
+// GRPC interceptors will not work for this type of registration. To use interceptors, you must use the "runtime.WithMiddlewares" option in the "runtime.NewServeMux" call.
+func RegisterContractsServiceHandlerServer(ctx context.Context, mux *runtime.ServeMux, server ContractsServiceServer) error {
+	mux.Handle(http.MethodPost, pattern_ContractsService_TestGenerateContract_0, func(w http.ResponseWriter, req *http.Request, pathParams map[string]string) {
+		ctx, cancel := context.WithCancel(req.Context())
+		defer cancel()
+		var stream runtime.ServerTransportStream
+		ctx = grpc.NewContextWithServerTransportStream(ctx, &stream)
+		inboundMarshaler, outboundMarshaler := runtime.MarshalerForRequest(mux, req)
+		annotatedContext, err := runtime.AnnotateIncomingContext(ctx, mux, req, "/llm_agent.api.agent.ContractsService/TestGenerateContract", runtime.WithHTTPPathPattern("/v1/contracts/test-generate"))
+		if err != nil {
+			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
+			return
+		}
+		resp, md, err := local_request_ContractsService_TestGenerateContract_0(annotatedContext, inboundMarshaler, server, req, pathParams)
+		md.HeaderMD, md.TrailerMD = metadata.Join(md.HeaderMD, stream.Header()), metadata.Join(md.TrailerMD, stream.Trailer())
+		annotatedContext = runtime.NewServerMetadataContext(annotatedContext, md)
+		if err != nil {
+			runtime.HTTPError(annotatedContext, mux, outboundMarshaler, w, req, err)
+			return
+		}
+		forward_ContractsService_TestGenerateContract_0(annotatedContext, mux, outboundMarshaler, w, req, resp, mux.GetForwardResponseOptions()...)
 	})
 
 	return nil
@@ -786,4 +843,68 @@ var (
 	forward_MemoryService_ListMemoryFacts_0  = runtime.ForwardResponseMessage
 	forward_MemoryService_CreateMemoryFact_0 = runtime.ForwardResponseMessage
 	forward_MemoryService_DeleteMemoryFact_0 = runtime.ForwardResponseMessage
+)
+
+// RegisterContractsServiceHandlerFromEndpoint is same as RegisterContractsServiceHandler but
+// automatically dials to "endpoint" and closes the connection when "ctx" gets done.
+func RegisterContractsServiceHandlerFromEndpoint(ctx context.Context, mux *runtime.ServeMux, endpoint string, opts []grpc.DialOption) (err error) {
+	conn, err := grpc.NewClient(endpoint, opts...)
+	if err != nil {
+		return err
+	}
+	defer func() {
+		if err != nil {
+			if cerr := conn.Close(); cerr != nil {
+				grpclog.Errorf("Failed to close conn to %s: %v", endpoint, cerr)
+			}
+			return
+		}
+		go func() {
+			<-ctx.Done()
+			if cerr := conn.Close(); cerr != nil {
+				grpclog.Errorf("Failed to close conn to %s: %v", endpoint, cerr)
+			}
+		}()
+	}()
+	return RegisterContractsServiceHandler(ctx, mux, conn)
+}
+
+// RegisterContractsServiceHandler registers the http handlers for service ContractsService to "mux".
+// The handlers forward requests to the grpc endpoint over "conn".
+func RegisterContractsServiceHandler(ctx context.Context, mux *runtime.ServeMux, conn *grpc.ClientConn) error {
+	return RegisterContractsServiceHandlerClient(ctx, mux, NewContractsServiceClient(conn))
+}
+
+// RegisterContractsServiceHandlerClient registers the http handlers for service ContractsService
+// to "mux". The handlers forward requests to the grpc endpoint over the given implementation of "ContractsServiceClient".
+// Note: the gRPC framework executes interceptors within the gRPC handler. If the passed in "ContractsServiceClient"
+// doesn't go through the normal gRPC flow (creating a gRPC client etc.) then it will be up to the passed in
+// "ContractsServiceClient" to call the correct interceptors. This client ignores the HTTP middlewares.
+func RegisterContractsServiceHandlerClient(ctx context.Context, mux *runtime.ServeMux, client ContractsServiceClient) error {
+	mux.Handle(http.MethodPost, pattern_ContractsService_TestGenerateContract_0, func(w http.ResponseWriter, req *http.Request, pathParams map[string]string) {
+		ctx, cancel := context.WithCancel(req.Context())
+		defer cancel()
+		inboundMarshaler, outboundMarshaler := runtime.MarshalerForRequest(mux, req)
+		annotatedContext, err := runtime.AnnotateContext(ctx, mux, req, "/llm_agent.api.agent.ContractsService/TestGenerateContract", runtime.WithHTTPPathPattern("/v1/contracts/test-generate"))
+		if err != nil {
+			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
+			return
+		}
+		resp, md, err := request_ContractsService_TestGenerateContract_0(annotatedContext, inboundMarshaler, client, req, pathParams)
+		annotatedContext = runtime.NewServerMetadataContext(annotatedContext, md)
+		if err != nil {
+			runtime.HTTPError(annotatedContext, mux, outboundMarshaler, w, req, err)
+			return
+		}
+		forward_ContractsService_TestGenerateContract_0(annotatedContext, mux, outboundMarshaler, w, req, resp, mux.GetForwardResponseOptions()...)
+	})
+	return nil
+}
+
+var (
+	pattern_ContractsService_TestGenerateContract_0 = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 2, 2}, []string{"v1", "contracts", "test-generate"}, ""))
+)
+
+var (
+	forward_ContractsService_TestGenerateContract_0 = runtime.ForwardResponseMessage
 )

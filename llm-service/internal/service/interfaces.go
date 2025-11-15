@@ -2,6 +2,7 @@ package service
 
 import (
 	"context"
+	"llm-service/internal/contracts"
 	"llm-service/internal/domain"
 	"llm-service/internal/domain/dto"
 )
@@ -160,14 +161,14 @@ type OrganizationMemoryService interface {
 // ContractSearchService - сервис для поиска шаблонов контрактов
 type ContractSearchService interface {
 	// SearchTemplates ищет подходящие шаблоны договоров
-	SearchTemplates(ctx context.Context, organizationID, query string, limit int) (interface{}, error)
+	SearchTemplates(ctx context.Context, organizationID, query string, limit int) ([]*contracts.TemplateSearchResult, error)
 }
 
 // ContractGeneratorService - сервис для генерации контрактов
 type ContractGeneratorService interface {
 	// GenerateContract генерирует договор из шаблона с заполненными данными
-	GenerateContract(ctx context.Context, organizationID, templateID, contractName string, filledData map[string]interface{}) (interface{}, error)
+	GenerateContract(ctx context.Context, organizationID, templateID, contractName string, filledData map[string]interface{}) (*contracts.GeneratedContract, error)
 
 	// ListContracts получает список сгенерированных контрактов
-	ListContracts(ctx context.Context, organizationID string, limit, offset int) (interface{}, error)
+	ListContracts(ctx context.Context, organizationID string, limit, offset int) ([]*contracts.ContractListItem, int, error)
 }

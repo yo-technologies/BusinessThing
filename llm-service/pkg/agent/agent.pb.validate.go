@@ -3821,3 +3821,283 @@ var _ interface {
 	Cause() error
 	ErrorName() string
 } = DeleteMemoryFactRequestValidationError{}
+
+// Validate checks the field values on TestGenerateContractRequest with the
+// rules defined in the proto definition for this message. If any rules are
+// violated, the first error encountered is returned, or nil if there are no violations.
+func (m *TestGenerateContractRequest) Validate() error {
+	return m.validate(false)
+}
+
+// ValidateAll checks the field values on TestGenerateContractRequest with the
+// rules defined in the proto definition for this message. If any rules are
+// violated, the result is a list of violation errors wrapped in
+// TestGenerateContractRequestMultiError, or nil if none found.
+func (m *TestGenerateContractRequest) ValidateAll() error {
+	return m.validate(true)
+}
+
+func (m *TestGenerateContractRequest) validate(all bool) error {
+	if m == nil {
+		return nil
+	}
+
+	var errors []error
+
+	if utf8.RuneCountInString(m.GetOrgId()) < 1 {
+		err := TestGenerateContractRequestValidationError{
+			field:  "OrgId",
+			reason: "value length must be at least 1 runes",
+		}
+		if !all {
+			return err
+		}
+		errors = append(errors, err)
+	}
+
+	if utf8.RuneCountInString(m.GetTemplateId()) < 1 {
+		err := TestGenerateContractRequestValidationError{
+			field:  "TemplateId",
+			reason: "value length must be at least 1 runes",
+		}
+		if !all {
+			return err
+		}
+		errors = append(errors, err)
+	}
+
+	if utf8.RuneCountInString(m.GetContractName()) < 1 {
+		err := TestGenerateContractRequestValidationError{
+			field:  "ContractName",
+			reason: "value length must be at least 1 runes",
+		}
+		if !all {
+			return err
+		}
+		errors = append(errors, err)
+	}
+
+	// no validation rules for FilledData
+
+	if len(errors) > 0 {
+		return TestGenerateContractRequestMultiError(errors)
+	}
+
+	return nil
+}
+
+// TestGenerateContractRequestMultiError is an error wrapping multiple
+// validation errors returned by TestGenerateContractRequest.ValidateAll() if
+// the designated constraints aren't met.
+type TestGenerateContractRequestMultiError []error
+
+// Error returns a concatenation of all the error messages it wraps.
+func (m TestGenerateContractRequestMultiError) Error() string {
+	msgs := make([]string, 0, len(m))
+	for _, err := range m {
+		msgs = append(msgs, err.Error())
+	}
+	return strings.Join(msgs, "; ")
+}
+
+// AllErrors returns a list of validation violation errors.
+func (m TestGenerateContractRequestMultiError) AllErrors() []error { return m }
+
+// TestGenerateContractRequestValidationError is the validation error returned
+// by TestGenerateContractRequest.Validate if the designated constraints
+// aren't met.
+type TestGenerateContractRequestValidationError struct {
+	field  string
+	reason string
+	cause  error
+	key    bool
+}
+
+// Field function returns field value.
+func (e TestGenerateContractRequestValidationError) Field() string { return e.field }
+
+// Reason function returns reason value.
+func (e TestGenerateContractRequestValidationError) Reason() string { return e.reason }
+
+// Cause function returns cause value.
+func (e TestGenerateContractRequestValidationError) Cause() error { return e.cause }
+
+// Key function returns key value.
+func (e TestGenerateContractRequestValidationError) Key() bool { return e.key }
+
+// ErrorName returns error name.
+func (e TestGenerateContractRequestValidationError) ErrorName() string {
+	return "TestGenerateContractRequestValidationError"
+}
+
+// Error satisfies the builtin error interface
+func (e TestGenerateContractRequestValidationError) Error() string {
+	cause := ""
+	if e.cause != nil {
+		cause = fmt.Sprintf(" | caused by: %v", e.cause)
+	}
+
+	key := ""
+	if e.key {
+		key = "key for "
+	}
+
+	return fmt.Sprintf(
+		"invalid %sTestGenerateContractRequest.%s: %s%s",
+		key,
+		e.field,
+		e.reason,
+		cause)
+}
+
+var _ error = TestGenerateContractRequestValidationError{}
+
+var _ interface {
+	Field() string
+	Reason() string
+	Key() bool
+	Cause() error
+	ErrorName() string
+} = TestGenerateContractRequestValidationError{}
+
+// Validate checks the field values on TestGenerateContractResponse with the
+// rules defined in the proto definition for this message. If any rules are
+// violated, the first error encountered is returned, or nil if there are no violations.
+func (m *TestGenerateContractResponse) Validate() error {
+	return m.validate(false)
+}
+
+// ValidateAll checks the field values on TestGenerateContractResponse with the
+// rules defined in the proto definition for this message. If any rules are
+// violated, the result is a list of violation errors wrapped in
+// TestGenerateContractResponseMultiError, or nil if none found.
+func (m *TestGenerateContractResponse) ValidateAll() error {
+	return m.validate(true)
+}
+
+func (m *TestGenerateContractResponse) validate(all bool) error {
+	if m == nil {
+		return nil
+	}
+
+	var errors []error
+
+	// no validation rules for ContractId
+
+	// no validation rules for ContractName
+
+	// no validation rules for DownloadUrl
+
+	// no validation rules for S3Key
+
+	// no validation rules for TemplateName
+
+	if all {
+		switch v := interface{}(m.GetCreatedAt()).(type) {
+		case interface{ ValidateAll() error }:
+			if err := v.ValidateAll(); err != nil {
+				errors = append(errors, TestGenerateContractResponseValidationError{
+					field:  "CreatedAt",
+					reason: "embedded message failed validation",
+					cause:  err,
+				})
+			}
+		case interface{ Validate() error }:
+			if err := v.Validate(); err != nil {
+				errors = append(errors, TestGenerateContractResponseValidationError{
+					field:  "CreatedAt",
+					reason: "embedded message failed validation",
+					cause:  err,
+				})
+			}
+		}
+	} else if v, ok := interface{}(m.GetCreatedAt()).(interface{ Validate() error }); ok {
+		if err := v.Validate(); err != nil {
+			return TestGenerateContractResponseValidationError{
+				field:  "CreatedAt",
+				reason: "embedded message failed validation",
+				cause:  err,
+			}
+		}
+	}
+
+	if len(errors) > 0 {
+		return TestGenerateContractResponseMultiError(errors)
+	}
+
+	return nil
+}
+
+// TestGenerateContractResponseMultiError is an error wrapping multiple
+// validation errors returned by TestGenerateContractResponse.ValidateAll() if
+// the designated constraints aren't met.
+type TestGenerateContractResponseMultiError []error
+
+// Error returns a concatenation of all the error messages it wraps.
+func (m TestGenerateContractResponseMultiError) Error() string {
+	msgs := make([]string, 0, len(m))
+	for _, err := range m {
+		msgs = append(msgs, err.Error())
+	}
+	return strings.Join(msgs, "; ")
+}
+
+// AllErrors returns a list of validation violation errors.
+func (m TestGenerateContractResponseMultiError) AllErrors() []error { return m }
+
+// TestGenerateContractResponseValidationError is the validation error returned
+// by TestGenerateContractResponse.Validate if the designated constraints
+// aren't met.
+type TestGenerateContractResponseValidationError struct {
+	field  string
+	reason string
+	cause  error
+	key    bool
+}
+
+// Field function returns field value.
+func (e TestGenerateContractResponseValidationError) Field() string { return e.field }
+
+// Reason function returns reason value.
+func (e TestGenerateContractResponseValidationError) Reason() string { return e.reason }
+
+// Cause function returns cause value.
+func (e TestGenerateContractResponseValidationError) Cause() error { return e.cause }
+
+// Key function returns key value.
+func (e TestGenerateContractResponseValidationError) Key() bool { return e.key }
+
+// ErrorName returns error name.
+func (e TestGenerateContractResponseValidationError) ErrorName() string {
+	return "TestGenerateContractResponseValidationError"
+}
+
+// Error satisfies the builtin error interface
+func (e TestGenerateContractResponseValidationError) Error() string {
+	cause := ""
+	if e.cause != nil {
+		cause = fmt.Sprintf(" | caused by: %v", e.cause)
+	}
+
+	key := ""
+	if e.key {
+		key = "key for "
+	}
+
+	return fmt.Sprintf(
+		"invalid %sTestGenerateContractResponse.%s: %s%s",
+		key,
+		e.field,
+		e.reason,
+		cause)
+}
+
+var _ error = TestGenerateContractResponseValidationError{}
+
+var _ interface {
+	Field() string
+	Reason() string
+	Key() bool
+	Cause() error
+	ErrorName() string
+} = TestGenerateContractResponseValidationError{}
