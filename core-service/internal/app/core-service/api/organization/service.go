@@ -17,7 +17,7 @@ type Service struct {
 }
 
 type OrganizationService interface {
-	CreateOrganization(ctx context.Context, name, industry, region, description, profileData string) (domain.Organization, error)
+	CreateOrganization(ctx context.Context, userID domain.ID, name, industry, region, description, profileData string) (domain.Organization, error)
 	GetOrganization(ctx context.Context, id domain.ID) (domain.Organization, error)
 	ListMyOrganizations(ctx context.Context, userID domain.ID) ([]domain.Organization, error)
 	UpdateOrganization(ctx context.Context, id domain.ID, name, industry, region, description, profileData *string) (domain.Organization, error)
@@ -51,7 +51,12 @@ func (s *Service) CreateOrganization(ctx context.Context, req *pb.CreateOrganiza
 	span, ctx := opentracing.StartSpanFromContext(ctx, "api.CreateOrganization")
 	defer span.Finish()
 
-	org, err := s.orgService.CreateOrganization(ctx, req.Name, req.Industry, req.Region, req.Description, req.ProfileData)
+	userID, err := interceptors.UserIDFromContext(ctx)
+	if err != nil {
+		return nil, err
+	}
+
+	org, err := s.orgService.CreateOrganization(ctx, userID, req.Name, req.Industry, req.Region, req.Description, req.ProfileData)
 	if err != nil {
 		return nil, err
 	}

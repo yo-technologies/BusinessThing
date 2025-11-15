@@ -115,7 +115,7 @@ func main() {
 
 	// Initialize Telegram validator
 	telegramValidator := telegram.NewValidator(
-		cfg.GetTelegramBotToken(),
+		cfg.GetTelegramBotTokens(),
 		cfg.GetTelegramInitDataTTL(),
 	)
 

@@ -57,6 +57,13 @@ service AuthService {
             body: "*"
         };
     }
+
+    // Обновить токен (получить новый токен с актуальным списком организаций)
+    rpc RefreshToken(RefreshTokenRequest) returns (RefreshTokenResponse) {
+        option (google.api.http) = {
+            post: "/v1/auth/refresh"
+        };
+    }
 }
 
 // ===== Organization Service =====
@@ -332,6 +339,14 @@ message CompleteRegistrationRequest {
 
 message CompleteRegistrationResponse {
     User user = 1;
+}
+
+message RefreshTokenRequest {
+    // Пустой запрос, user_id берется из JWT токена
+}
+
+message RefreshTokenResponse {
+    string access_token = 1;
 }
 
 // ===== Organization Messages =====

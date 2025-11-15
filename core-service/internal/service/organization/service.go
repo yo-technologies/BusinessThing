@@ -14,6 +14,7 @@ type repository interface {
 	GetOrganizationsByUserID(ctx context.Context, userID domain.ID) ([]domain.Organization, error)
 	UpdateOrganization(ctx context.Context, org domain.Organization) (domain.Organization, error)
 	DeleteOrganization(ctx context.Context, id domain.ID) error
+	CreateOrganizationMember(ctx context.Context, member domain.OrganizationMember) (domain.OrganizationMember, error)
 }
 
 type Service struct {
@@ -24,8 +25,8 @@ func New(repo repository) *Service {
 	return &Service{repo: repo}
 }
 
-// CreateOrganization creates a new organization
-func (s *Service) CreateOrganization(ctx context.Context, name, industry, region, description, profileData string) (domain.Organization, error) {
+// CreateOrganization creates a new organization and assigns creator as admin
+func (s *Service) CreateOrganization(ctx context.Context, userID domain.ID, name, industry, region, description, profileData string) (domain.Organization, error) {
 	span, ctx := opentracing.StartSpanFromContext(ctx, "service.organization.CreateOrganization")
 	defer span.Finish()
 
@@ -37,6 +38,14 @@ func (s *Service) CreateOrganization(ctx context.Context, name, industry, region
 	org := domain.NewOrganization(name, industry, region, description, profileData)
 
 	created, err := s.repo.CreateOrganization(ctx, org)
+	if err != nil {
+		return domain.Organization{}, err
+	}
+
+	// Create organization membership for creator with admin role
+	// Email is empty for now, can be updated later via profile
+	member := domain.NewOrganizationMember(created.ID, userID, "", domain.UserRoleAdmin)
+	_, err = s.repo.CreateOrganizationMember(ctx, member)
 	if err != nil {
 		return domain.Organization{}, err
 	}

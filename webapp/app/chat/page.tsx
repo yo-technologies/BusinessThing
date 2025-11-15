@@ -21,8 +21,8 @@ type StreamState = {
 
 export default function ChatPage() {
   const router = useRouter();
-  const { isAuthenticated, loading, user, isNewUser } = useAuth();
-  const { currentOrg, loading: orgLoading, needsOrganization } = useOrganization();
+  const { isAuthenticated, loading, user, isNewUser, organizations } = useAuth();
+  const { currentOrg, loading: orgLoading, needsOrganization } = useOrganization({ organizations });
   const { agent } = useApiClients();
 
   const [chat, setChat] = useState<AgentChat | null>(null);
@@ -41,10 +41,10 @@ export default function ChatPage() {
   const chatId = useMemo(() => chat?.id ?? null, [chat?.id]);
 
   useEffect(() => {
-    if (!loading && isAuthenticated && isNewUser) {
+    if (!loading && isNewUser) {
       router.replace("/onboarding");
     }
-  }, [isAuthenticated, isNewUser, loading, router]);
+  }, [isNewUser, loading, router]);
 
   useEffect(() => {
     if (!loading && !orgLoading && isAuthenticated && !isNewUser && needsOrganization) {
@@ -62,11 +62,13 @@ export default function ChatPage() {
   }, []);
 
   const loadChatAndLimits = useCallback(async () => {
+    if (!currentOrg?.id) return;
+    
     setInitialLoading(true);
     setError(null);
     try {
       const [chatsResp, limitsResp] = await Promise.all([
-        agent.v1.agentServiceListChats({ page: 1, pageSize: 1 }),
+        agent.v1.agentServiceListChats({ orgId: currentOrg.id, page: 1, pageSize: 1 }),
         agent.v1.agentServiceGetLlmLimits(),
       ]);
 
@@ -87,7 +89,7 @@ export default function ChatPage() {
       setInitialLoading(false);
       setTimeout(scrollToBottom, 0);
     }
-  }, [agent.v1, scrollToBottom]);
+  }, [agent.v1, scrollToBottom, currentOrg?.id]);
 
   useEffect(() => {
     if (!isAuthenticated || loading || isNewUser || !currentOrg?.id) return;
