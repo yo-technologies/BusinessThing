@@ -40,8 +40,8 @@ func GetToolsRegistry() map[domain.ToolName]*domain.ToolDefinition {
 			Parameters: map[string]interface{}{
 				"subagent_key": map[string]interface{}{
 					"type":        "string",
-					"description": "Ключ субагента (marketing_agent, legal_agent, finance_agent)",
-					"enum":        []string{"marketing_agent", "legal_agent", "finance_agent"},
+					"description": "Ключ субагента (marketing_agent, legal_agent, business_analyst_agent)",
+					"enum":        []string{"marketing_agent", "legal_agent", "business_analyst_agent"},
 				},
 				"task": map[string]interface{}{
 					"type":        "string",
