@@ -18,6 +18,7 @@ type Service struct {
 type AuthService interface {
 	AuthenticateWithTelegram(ctx context.Context, initData string) (string, *domain.User, bool, error)
 	CompleteRegistration(ctx context.Context, userID domain.ID, firstName, lastName string) (*domain.User, error)
+	RefreshToken(ctx context.Context, userID domain.ID) (string, error)
 }
 
 func NewService(authService AuthService) *Service {
@@ -46,10 +47,9 @@ func (s *Service) CompleteRegistration(ctx context.Context, req *pb.CompleteRegi
 	span, ctx := opentracing.StartSpanFromContext(ctx, "api.auth.CompleteRegistration")
 	defer span.Finish()
 
-	// Получаем ID пользователя из контекста (JWT)
-	userID, err := interceptors.UserIDFromContext(ctx)
+	userID, err := domain.ParseID(req.GetUserId())
 	if err != nil {
-		return nil, err
+		return nil, domain.NewInvalidArgumentError("invalid user_id")
 	}
 
 	user, err := s.authService.CompleteRegistration(ctx, userID, req.FirstName, req.LastName)
@@ -62,39 +62,33 @@ func (s *Service) CompleteRegistration(ctx context.Context, req *pb.CompleteRegi
 	}, nil
 }
 
+func (s *Service) RefreshToken(ctx context.Context, req *pb.RefreshTokenRequest) (*pb.RefreshTokenResponse, error) {
+	span, ctx := opentracing.StartSpanFromContext(ctx, "api.auth.RefreshToken")
+	defer span.Finish()
+
+	// Получаем userID из контекста (из JWT токена)
+	userID, err := interceptors.UserIDFromContext(ctx)
+	if err != nil {
+		return nil, err
+	}
+
+	token, err := s.authService.RefreshToken(ctx, userID)
+	if err != nil {
+		return nil, err
+	}
+
+	return &pb.RefreshTokenResponse{
+		AccessToken: token,
+	}, nil
+}
+
 func userToProto(user *domain.User) *pb.User {
 	return &pb.User{
 		Id:         user.ID.String(),
 		TelegramId: user.TelegramID,
 		FirstName:  user.FirstName,
 		LastName:   user.LastName,
-		Role:       pb.UserRole_USER_ROLE_UNSPECIFIED,     // Role хранится в OrganizationMember
-		Status:     pb.UserStatus_USER_STATUS_UNSPECIFIED, // Status хранится в OrganizationMember
 		CreatedAt:  timestamppb.New(user.CreatedAt),
 		UpdatedAt:  timestamppb.New(user.UpdatedAt),
-	}
-}
-
-func userRoleToProto(role domain.UserRole) pb.UserRole {
-	switch role {
-	case domain.UserRoleAdmin:
-		return pb.UserRole_USER_ROLE_ADMIN
-	case domain.UserRoleEmployee:
-		return pb.UserRole_USER_ROLE_EMPLOYEE
-	default:
-		return pb.UserRole_USER_ROLE_UNSPECIFIED
-	}
-}
-
-func userStatusToProto(status domain.UserStatus) pb.UserStatus {
-	switch status {
-	case domain.UserStatusPending:
-		return pb.UserStatus_USER_STATUS_PENDING
-	case domain.UserStatusActive:
-		return pb.UserStatus_USER_STATUS_ACTIVE
-	case domain.UserStatusInactive:
-		return pb.UserStatus_USER_STATUS_INACTIVE
-	default:
-		return pb.UserStatus_USER_STATUS_UNSPECIFIED
 	}
 }

@@ -133,14 +133,22 @@ func (p *Provider) ParseToken(ctx context.Context, token string) (domain.ID, err
 	return domain.ParseID(subject)
 }
 
-// GenerateAccessToken creates short-lived access JWT for the given user and organization.
-func (p *Provider) GenerateAccessToken(ctx context.Context, userID domain.ID, organizationID domain.ID, role domain.UserRole) (string, error) {
+// GenerateAccessToken creates short-lived access JWT for the given user with list of organizations.
+// The organizations list is for frontend use; backend validates organization_id from request.
+func (p *Provider) GenerateAccessToken(ctx context.Context, userID domain.ID, memberships []*domain.OrganizationMember) (string, error) {
+	orgs := make([]map[string]interface{}, 0, len(memberships))
+	for _, m := range memberships {
+		orgs = append(orgs, map[string]interface{}{
+			"id":   m.OrganizationID.String(),
+			"role": string(m.Role),
+		})
+	}
+
 	claims := jwt.MapClaims{
-		"sub":    userID.String(),
-		"org_id": organizationID.String(),
-		"role":   string(role),
-		"iat":    time.Now().Unix(),
-		"exp":    time.Now().Add(p.opts.AccessTTL).Unix(),
+		"sub":  userID.String(),
+		"orgs": orgs,
+		"iat":  time.Now().Unix(),
+		"exp":  time.Now().Add(p.opts.AccessTTL).Unix(),
 	}
 
 	token, err := p.opts.Credentials.NewWithClaims(claims)

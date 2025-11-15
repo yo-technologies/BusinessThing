@@ -1,18 +1,13 @@
 package telegram
 
 import (
-	"crypto/hmac"
-	"crypto/sha256"
-	"encoding/hex"
-	"encoding/json"
-	"fmt"
-	"net/url"
-	"sort"
-	"strconv"
-	"strings"
+	"context"
 	"time"
 
 	"core-service/internal/domain"
+	"core-service/internal/logger"
+
+	initdata "github.com/telegram-mini-apps/init-data-golang"
 )
 
 // UserPayload describes trimmed Telegram user object.
@@ -31,88 +26,64 @@ type InitData struct {
 
 // Validator validates Telegram init data strings coming from TMA.
 type Validator struct {
-	botToken string
-	maxAge   time.Duration
+	botTokens []string
+	maxAge    time.Duration
 }
 
 // NewValidator creates a new validator instance.
-func NewValidator(botToken string, maxAge time.Duration) *Validator {
-	return &Validator{botToken: botToken, maxAge: maxAge}
+func NewValidator(botTokens []string, maxAge time.Duration) *Validator {
+	return &Validator{botTokens: botTokens, maxAge: maxAge}
 }
 
 // Validate parses and validates init data. Returns ErrUnauthorized if invalid.
-func (v *Validator) Validate(initData string) (*InitData, error) {
-	if initData == "" {
+func (v *Validator) Validate(initDataStr string) (*InitData, error) {
+	ctx := context.Background()
+
+	if initDataStr == "" {
+		logger.Warn(ctx, "telegram validator: empty init data")
 		return nil, domain.ErrUnauthorized
 	}
 
-	values, err := url.ParseQuery(initData)
-	if err != nil {
-		return nil, domain.ErrUnauthorized
-	}
-
-	hash := values.Get("hash")
-	if hash == "" {
-		return nil, domain.ErrUnauthorized
-	}
-
-	values.Del("hash")
-
-	dataCheckString := buildDataCheckString(values)
-	if !v.verifyHash(dataCheckString, hash) {
-		return nil, domain.ErrUnauthorized
-	}
-
-	authDateUnix, err := strconv.ParseInt(values.Get("auth_date"), 10, 64)
-	if err != nil {
-		return nil, domain.ErrUnauthorized
-	}
-	authDate := time.Unix(authDateUnix, 0)
-	if v.maxAge > 0 && time.Since(authDate) > v.maxAge {
-		return nil, domain.ErrUnauthorized
-	}
-
-	var userPayload UserPayload
-	if err := json.Unmarshal([]byte(values.Get("user")), &userPayload); err != nil {
-		return nil, domain.ErrUnauthorized
-	}
-
-	return &InitData{
-		User:     userPayload,
-		AuthDate: authDate,
-		QueryID:  values.Get("query_id"),
-	}, nil
-}
-
-func buildDataCheckString(values url.Values) string {
-	parts := make([]string, 0, len(values))
-	for key, vals := range values {
-		if len(vals) == 0 {
-			continue
+	// Validate using the library - try all tokens
+	var lastErr error
+	for _, token := range v.botTokens {
+		if valErr := initdata.Validate(initDataStr, token, v.maxAge); valErr == nil {
+			// Valid token found, continue with parsing
+			goto parseinitdata
+		} else {
+			lastErr = valErr
 		}
-		parts = append(parts, fmt.Sprintf("%s=%s", key, vals[0]))
 	}
-	sort.Strings(parts)
-	return strings.Join(parts, "\n")
-}
+	// None of the tokens validated successfully
+	logger.Warnf(ctx, "telegram validator: validation failed with all tokens: %v", lastErr)
+	return nil, domain.ErrUnauthorized
 
-func (v *Validator) verifyHash(dataCheckString, hash string) bool {
-	if v.botToken == "" {
-		return false
-	}
+parseinitdata:
 
-	secretKeyMAC := hmac.New(sha256.New, []byte("WebAppData"))
-	secretKeyMAC.Write([]byte(v.botToken))
-	secretKey := secretKeyMAC.Sum(nil)
-
-	mac := hmac.New(sha256.New, secretKey)
-	mac.Write([]byte(dataCheckString))
-	expected := mac.Sum(nil)
-
-	actual, err := hex.DecodeString(hash)
+	// Parse init data
+	data, err := initdata.Parse(initDataStr)
 	if err != nil {
-		return false
+		logger.Warnf(ctx, "telegram validator: failed to parse init data: %v", err)
+		return nil, domain.ErrUnauthorized
 	}
 
-	return hmac.Equal(expected, actual)
+	// Map to our structure
+	result := &InitData{
+		AuthDate: data.AuthDate(),
+		QueryID:  data.QueryID,
+	}
+
+	// Extract user data
+	if data.User.ID != 0 {
+		result.User = UserPayload{
+			ID:           data.User.ID,
+			LanguageCode: data.User.LanguageCode,
+			PhotoURL:     data.User.PhotoURL,
+		}
+	} else {
+		logger.Warn(ctx, "telegram validator: user data not found in init data")
+		return nil, domain.ErrUnauthorized
+	}
+
+	return result, nil
 }

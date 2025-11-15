@@ -66,8 +66,8 @@ type S3 struct {
 }
 
 type Telegram struct {
-	BotToken           string `mapstructure:"bot_token"`
-	InitDataTTLSeconds int    `mapstructure:"init_data_ttl_seconds"`
+	BotTokens          []string `mapstructure:"bot_tokens"`
+	InitDataTTLSeconds int      `mapstructure:"init_data_ttl_seconds"`
 }
 
 // Config holds all runtime-configurable settings
@@ -144,13 +144,7 @@ func (c *Config) loadDefaults() {
 	viper.SetDefault("jwt.secret", "")
 	viper.SetDefault("jwt.access_ttl", "1h")
 	viper.SetDefault("rabbitmq.url", "amqp://guest:guest@localhost:5672/")
-	viper.SetDefault("s3.endpoint", "http://localhost:9000")
-	viper.SetDefault("s3.access_key", "minioadmin")
-	viper.SetDefault("s3.secret_key", "minioadmin")
-	viper.SetDefault("s3.region", "us-east-1")
-	viper.SetDefault("s3.bucket", "business-thing")
-	viper.SetDefault("s3.use_ssl", false)
-	viper.SetDefault("telegram.bot_token", "")
+	viper.SetDefault("telegram.bot_tokens", []string{})
 	viper.SetDefault("telegram.init_data_ttl_seconds", 86400)
 }
 
@@ -262,10 +256,10 @@ func (c *Config) GetRabbitMQQueueName() string {
 	return c.RabbitMQ.QueueName
 }
 
-func (c *Config) GetTelegramBotToken() string {
+func (c *Config) GetTelegramBotTokens() []string {
 	c.mu.RLock()
 	defer c.mu.RUnlock()
-	return c.Telegram.BotToken
+	return c.Telegram.BotTokens
 }
 
 func (c *Config) GetS3Endpoint() string {

@@ -50,10 +50,18 @@ service AuthService {
     }
 
     // Завершение регистрации нового пользователя (заполнение ФИО)
+    // Не требует JWT токена, так как новый пользователь его еще не получил
     rpc CompleteRegistration(CompleteRegistrationRequest) returns (CompleteRegistrationResponse) {
         option (google.api.http) = {
             post: "/v1/auth/complete-registration"
             body: "*"
+        };
+    }
+
+    // Обновить токен (получить новый токен с актуальным списком организаций)
+    rpc RefreshToken(RefreshTokenRequest) returns (RefreshTokenResponse) {
+        option (google.api.http) = {
+            post: "/v1/auth/refresh"
         };
     }
 }
@@ -108,7 +116,8 @@ service UserService {
         };
     }
 
-    // Принять приглашение (активация пользователя)
+    // Принять приглашение (добавление пользователя в организацию)
+    // Требует JWT токен пользователя, завершившего регистрацию
     rpc AcceptInvitation(AcceptInvitationRequest) returns (AcceptInvitationResponse) {
         option (google.api.http) = {
             post: "/v1/invitations/{token}/accept"
@@ -323,12 +332,21 @@ message AuthenticateWithTelegramResponse {
 }
 
 message CompleteRegistrationRequest {
-    string first_name = 1 [(validate.rules).string = {min_len: 1, max_len: 100}];
-    string last_name = 2 [(validate.rules).string = {min_len: 1, max_len: 100}];
+    string user_id = 1 [(validate.rules).string.uuid = true];
+    string first_name = 2 [(validate.rules).string = {min_len: 1, max_len: 100}];
+    string last_name = 3 [(validate.rules).string = {min_len: 1, max_len: 100}];
 }
 
 message CompleteRegistrationResponse {
     User user = 1;
+}
+
+message RefreshTokenRequest {
+    // Пустой запрос, user_id берется из JWT токена
+}
+
+message RefreshTokenResponse {
+    string access_token = 1;
 }
 
 // ===== Organization Messages =====

@@ -22,6 +22,7 @@ const _ = grpc.SupportPackageIsVersion9
 const (
 	AuthService_AuthenticateWithTelegram_FullMethodName = "/core.api.core.AuthService/AuthenticateWithTelegram"
 	AuthService_CompleteRegistration_FullMethodName     = "/core.api.core.AuthService/CompleteRegistration"
+	AuthService_RefreshToken_FullMethodName             = "/core.api.core.AuthService/RefreshToken"
 )
 
 // AuthServiceClient is the client API for AuthService service.
@@ -33,7 +34,10 @@ type AuthServiceClient interface {
 	// Авторизация через Telegram WebApp initData
 	AuthenticateWithTelegram(ctx context.Context, in *AuthenticateWithTelegramRequest, opts ...grpc.CallOption) (*AuthenticateWithTelegramResponse, error)
 	// Завершение регистрации нового пользователя (заполнение ФИО)
+	// Не требует JWT токена, так как новый пользователь его еще не получил
 	CompleteRegistration(ctx context.Context, in *CompleteRegistrationRequest, opts ...grpc.CallOption) (*CompleteRegistrationResponse, error)
+	// Обновить токен (получить новый токен с актуальным списком организаций)
+	RefreshToken(ctx context.Context, in *RefreshTokenRequest, opts ...grpc.CallOption) (*RefreshTokenResponse, error)
 }
 
 type authServiceClient struct {
@@ -64,6 +68,16 @@ func (c *authServiceClient) CompleteRegistration(ctx context.Context, in *Comple
 	return out, nil
 }
 
+func (c *authServiceClient) RefreshToken(ctx context.Context, in *RefreshTokenRequest, opts ...grpc.CallOption) (*RefreshTokenResponse, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(RefreshTokenResponse)
+	err := c.cc.Invoke(ctx, AuthService_RefreshToken_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 // AuthServiceServer is the server API for AuthService service.
 // All implementations must embed UnimplementedAuthServiceServer
 // for forward compatibility.
@@ -73,7 +87,10 @@ type AuthServiceServer interface {
 	// Авторизация через Telegram WebApp initData
 	AuthenticateWithTelegram(context.Context, *AuthenticateWithTelegramRequest) (*AuthenticateWithTelegramResponse, error)
 	// Завершение регистрации нового пользователя (заполнение ФИО)
+	// Не требует JWT токена, так как новый пользователь его еще не получил
 	CompleteRegistration(context.Context, *CompleteRegistrationRequest) (*CompleteRegistrationResponse, error)
+	// Обновить токен (получить новый токен с актуальным списком организаций)
+	RefreshToken(context.Context, *RefreshTokenRequest) (*RefreshTokenResponse, error)
 	mustEmbedUnimplementedAuthServiceServer()
 }
 
@@ -89,6 +106,9 @@ func (UnimplementedAuthServiceServer) AuthenticateWithTelegram(context.Context, 
 }
 func (UnimplementedAuthServiceServer) CompleteRegistration(context.Context, *CompleteRegistrationRequest) (*CompleteRegistrationResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method CompleteRegistration not implemented")
+}
+func (UnimplementedAuthServiceServer) RefreshToken(context.Context, *RefreshTokenRequest) (*RefreshTokenResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method RefreshToken not implemented")
 }
 func (UnimplementedAuthServiceServer) mustEmbedUnimplementedAuthServiceServer() {}
 func (UnimplementedAuthServiceServer) testEmbeddedByValue()                     {}
@@ -147,6 +167,24 @@ func _AuthService_CompleteRegistration_Handler(srv interface{}, ctx context.Cont
 	return interceptor(ctx, in, info, handler)
 }
 
+func _AuthService_RefreshToken_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(RefreshTokenRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(AuthServiceServer).RefreshToken(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: AuthService_RefreshToken_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(AuthServiceServer).RefreshToken(ctx, req.(*RefreshTokenRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 // AuthService_ServiceDesc is the grpc.ServiceDesc for AuthService service.
 // It's only intended for direct use with grpc.RegisterService,
 // and not to be introspected or modified (even as a copy)
@@ -161,6 +199,10 @@ var AuthService_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "CompleteRegistration",
 			Handler:    _AuthService_CompleteRegistration_Handler,
+		},
+		{
+			MethodName: "RefreshToken",
+			Handler:    _AuthService_RefreshToken_Handler,
 		},
 	},
 	Streams:  []grpc.StreamDesc{},
@@ -452,7 +494,8 @@ const (
 type UserServiceClient interface {
 	// Пригласить пользователя (создать одноразовую ссылку)
 	InviteUser(ctx context.Context, in *InviteUserRequest, opts ...grpc.CallOption) (*InviteUserResponse, error)
-	// Принять приглашение (активация пользователя)
+	// Принять приглашение (добавление пользователя в организацию)
+	// Требует JWT токен пользователя, завершившего регистрацию
 	AcceptInvitation(ctx context.Context, in *AcceptInvitationRequest, opts ...grpc.CallOption) (*AcceptInvitationResponse, error)
 	// Список пользователей организации
 	ListUsers(ctx context.Context, in *ListUsersRequest, opts ...grpc.CallOption) (*ListUsersResponse, error)
@@ -540,7 +583,8 @@ func (c *userServiceClient) DeactivateUser(ctx context.Context, in *DeactivateUs
 type UserServiceServer interface {
 	// Пригласить пользователя (создать одноразовую ссылку)
 	InviteUser(context.Context, *InviteUserRequest) (*InviteUserResponse, error)
-	// Принять приглашение (активация пользователя)
+	// Принять приглашение (добавление пользователя в организацию)
+	// Требует JWT токен пользователя, завершившего регистрацию
 	AcceptInvitation(context.Context, *AcceptInvitationRequest) (*AcceptInvitationResponse, error)
 	// Список пользователей организации
 	ListUsers(context.Context, *ListUsersRequest) (*ListUsersResponse, error)

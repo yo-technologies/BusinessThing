@@ -7,7 +7,8 @@ import { Providers } from "./providers";
 import { siteConfig } from "@/config/site";
 import { fontSans } from "@/config/fonts";
 import { BottomNavbar } from "@/components/layout/BottomNavbar";
-import { DebugPanel } from "@/components/layout/DebugPanel";
+import { OrganizationSwitcher } from "@/components/layout/OrganizationSwitcher";
+import { TelegramInit } from "@/components/TelegramInit";
 
 export const metadata: Metadata = {
   title: {
@@ -33,18 +34,21 @@ export default function RootLayout({
   children: React.ReactNode;
 }) {
   return (
-    <html suppressHydrationWarning lang="en">
+    <html suppressHydrationWarning lang="ru">
       <head />
       <body
         className={clsx(
-          "min-h-screen text-foreground bg-background font-sans antialiased",
+          "h-screen max-h-screen bg-background font-sans antialiased text-foreground pt-24",
           fontSans.variable,
         )}
       >
         <Providers themeProps={{ attribute: "class", defaultTheme: "dark" }}>
-          <div className="relative flex flex-col h-screen">
-            <DebugPanel />
-            <main className="flex-grow pt-16 px-6 pb-20">{children}</main>
+          <TelegramInit />
+          <div className="flex h-full flex-col bg-gradient-to-b from-background via-background to-default-100">
+            <OrganizationSwitcher />
+            <main className="flex-1 px-3 pb-20 md:px-6">
+              <div className="mx-auto flex h-full max-w-4xl flex-col">{children}</div>
+            </main>
             <BottomNavbar />
           </div>
         </Providers>

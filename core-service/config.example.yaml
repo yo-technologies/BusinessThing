@@ -36,5 +36,6 @@ s3:
   use_ssl: false
 
 telegram:
-  bot_token: ""  # Получите токен у @BotFather в Telegram
+  bot_tokens:  # Список валидных токенов ботов (получите токены у @BotFather в Telegram)
+    - ""
   init_data_ttl_seconds: 86400  # TTL для проверки initData (24 часа)

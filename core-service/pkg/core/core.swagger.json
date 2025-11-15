@@ -45,7 +45,7 @@
   "paths": {
     "/v1/auth/complete-registration": {
       "post": {
-        "summary": "Завершение регистрации нового пользователя (заполнение ФИО)",
+        "summary": "Завершение регистрации нового пользователя (заполнение ФИО)\nНе требует JWT токена, так как новый пользователь его еще не получил",
         "operationId": "AuthService_CompleteRegistration",
         "responses": {
           "200": {
@@ -71,6 +71,29 @@
             }
           }
         ],
+        "tags": [
+          "AuthService"
+        ]
+      }
+    },
+    "/v1/auth/refresh": {
+      "post": {
+        "summary": "Обновить токен (получить новый токен с актуальным списком организаций)",
+        "operationId": "AuthService_RefreshToken",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/coreRefreshTokenResponse"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/rpcStatus"
+            }
+          }
+        },
         "tags": [
           "AuthService"
         ]
@@ -273,7 +296,7 @@
     },
     "/v1/invitations/{token}/accept": {
       "post": {
-        "summary": "Принять приглашение (активация пользователя)",
+        "summary": "Принять приглашение (добавление пользователя в организацию)\nТребует JWT токен пользователя, завершившего регистрацию",
         "operationId": "UserService_AcceptInvitation",
         "responses": {
           "200": {
@@ -1395,6 +1418,9 @@
     "coreCompleteRegistrationRequest": {
       "type": "object",
       "properties": {
+        "userId": {
+          "type": "string"
+        },
         "firstName": {
           "type": "string"
         },
@@ -1851,6 +1877,14 @@
         "deletedAt": {
           "type": "string",
           "format": "date-time"
+        }
+      }
+    },
+    "coreRefreshTokenResponse": {
+      "type": "object",
+      "properties": {
+        "accessToken": {
+          "type": "string"
         }
       }
     },

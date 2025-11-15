@@ -99,22 +99,22 @@ func (a *App) setupGRPC() {
 	// Unprotected methods (public endpoints)
 	unprotected := []string{
 		"/core.api.core.AuthService/AuthenticateWithTelegram",
-		"/core.api.core.UserService/AcceptInvitation",
+		"/core.api.core.AuthService/CompleteRegistration",
 	}
 
 	// Setup interceptors
 	unaryInterceptors := []grpc.UnaryServerInterceptor{
 		interceptors.RecoveryInterceptor,
 		interceptors.TracingInterceptor,
-		interceptors.NewUnaryAuthInterceptor(a.jwtProvider, unprotected...),
 		interceptors.ErrCodesInterceptor,
+		interceptors.NewUnaryAuthInterceptor(a.jwtProvider, unprotected...),
 	}
 
 	streamInterceptors := []grpc.StreamServerInterceptor{
 		interceptors.RecoveryStreamInterceptor,
 		interceptors.TracingStreamInterceptor,
-		interceptors.NewStreamAuthInterceptor(a.jwtProvider, unprotected...),
 		interceptors.ErrCodesStreamInterceptor,
+		interceptors.NewStreamAuthInterceptor(a.jwtProvider, unprotected...),
 	}
 
 	// Create gRPC server
@@ -244,14 +244,16 @@ func (a *App) startHTTPGateway(ctx context.Context) error {
 
 	httpMux.Mount("/", http.StripPrefix(a.options.httpPathPrefix, gatewayMuxWithCORS))
 
+	baseMux := chi.NewRouter()
 	prefix := a.options.httpPathPrefix
 	if prefix == "" {
 		prefix = "/"
 	}
+	baseMux.Mount(prefix, httpMux)
 
 	a.httpServer = &http.Server{
 		Addr:    httpAddr,
-		Handler: httpMux,
+		Handler: baseMux,
 	}
 
 	logger.Infof(ctx, "Starting HTTP gateway on %s with prefix '%s'", httpAddr, prefix)
