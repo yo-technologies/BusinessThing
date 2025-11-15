@@ -13,7 +13,7 @@ services:
       - "--entrypoints.web.http.redirections.entrypoint.to=websecure"
       - "--entrypoints.web.http.redirections.entrypoint.scheme=https"
 
-      - "--certificatesresolvers.letsencrypt.acme.email=admin@6036484-cd72267.twc1.net"
+      - "--certificatesresolvers.letsencrypt.acme.email=admin@businessthing.ru"
       - "--certificatesresolvers.letsencrypt.acme.storage=/letsencrypt/acme.json"
       - "--certificatesresolvers.letsencrypt.acme.tlschallenge=true"
 
@@ -28,7 +28,7 @@ services:
 
     labels:
       - traefik.enable=true
-      - traefik.http.routers.traefik.rule=Host(`traefik.6036484-cd72267.twc1.net`)
+      - traefik.http.routers.traefik.rule=Host(`traefik.businessthing.ru`)
       - traefik.http.routers.traefik.entrypoints=websecure
       - traefik.http.routers.traefik.tls.certresolver=letsencrypt
       - traefik.http.routers.traefik.service=api@internal
