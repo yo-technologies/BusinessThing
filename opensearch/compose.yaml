@@ -29,6 +29,7 @@ services:
   opensearch-dashboards:
     image: opensearchproject/opensearch-dashboards:2
     container_name: opensearch-dashboards
+    profiles: [dev, full]
     ports:
       - "5601:5601"
     environment:
