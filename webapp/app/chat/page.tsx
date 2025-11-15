@@ -21,8 +21,8 @@ type StreamState = {
 
 export default function ChatPage() {
   const router = useRouter();
-  const { isAuthenticated, loading, user, isNewUser } = useAuth();
-  const { currentOrg, loading: orgLoading, needsOrganization } = useOrganization();
+  const { isAuthenticated, loading, user, isNewUser, organizations } = useAuth();
+  const { currentOrg, loading: orgLoading, needsOrganization } = useOrganization({ organizations });
   const { agent } = useApiClients();
 
   const [chat, setChat] = useState<AgentChat | null>(null);
@@ -41,10 +41,10 @@ export default function ChatPage() {
   const chatId = useMemo(() => chat?.id ?? null, [chat?.id]);
 
   useEffect(() => {
-    if (!loading && isAuthenticated && isNewUser) {
+    if (!loading && isNewUser) {
       router.replace("/onboarding");
     }
-  }, [isAuthenticated, isNewUser, loading, router]);
+  }, [isNewUser, loading, router]);
 
   useEffect(() => {
     if (!loading && !orgLoading && isAuthenticated && !isNewUser && needsOrganization) {

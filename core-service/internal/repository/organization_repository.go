@@ -11,6 +11,14 @@ import (
 	"github.com/opentracing/opentracing-go"
 )
 
+// normalizeProfileData ensures profile_data is valid JSON for JSONB column
+func normalizeProfileData(profileData string) string {
+	if profileData == "" {
+		return "{}"
+	}
+	return profileData
+}
+
 // CreateOrganization inserts a new organization
 func (r *PGXRepository) CreateOrganization(ctx context.Context, org domain.Organization) (domain.Organization, error) {
 	span, ctx := opentracing.StartSpanFromContext(ctx, "repository.CreateOrganization")
@@ -30,7 +38,7 @@ func (r *PGXRepository) CreateOrganization(ctx context.Context, org domain.Organ
 		org.Industry,
 		org.Region,
 		org.Description,
-		org.ProfileData,
+		normalizeProfileData(org.ProfileData),
 		org.CreatedAt,
 		org.UpdatedAt,
 	)
@@ -87,7 +95,7 @@ func (r *PGXRepository) UpdateOrganization(ctx context.Context, org domain.Organ
 		org.Industry,
 		org.Region,
 		org.Description,
-		org.ProfileData,
+		normalizeProfileData(org.ProfileData),
 		org.UpdatedAt,
 	)
 	if err != nil {
