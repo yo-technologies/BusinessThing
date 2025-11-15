@@ -5,6 +5,7 @@ import (
 	"core-service/internal/domain"
 	"core-service/internal/logger"
 	"errors"
+	"fmt"
 
 	"github.com/georgysavva/scany/v2/pgxscan"
 	"github.com/jackc/pgx/v5"
@@ -99,7 +100,7 @@ func (r *PGXRepository) ListDocuments(ctx context.Context, organizationID domain
 	}
 
 	// Get documents
-	query += ` ORDER BY created_at DESC LIMIT $` + string(rune(len(args)+1)) + ` OFFSET $` + string(rune(len(args)+2))
+	query += fmt.Sprintf(` ORDER BY created_at DESC LIMIT $%d OFFSET $%d`, len(args)+1, len(args)+2)
 	args = append(args, limit, offset)
 
 	var docs []domain.Document
