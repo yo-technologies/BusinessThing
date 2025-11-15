@@ -60,18 +60,23 @@ type Jaeger struct {
 	Endpoint string `mapstructure:"endpoint"`
 }
 
+type CoreService struct {
+	Address string `mapstructure:"address"`
+}
+
 type Config struct {
 	mu sync.RWMutex
 
-	ServiceName string     `mapstructure:"service_name"`
-	HTTP        HTTP       `mapstructure:"http"`
-	GRPC        GRPC       `mapstructure:"grpc"`
-	RabbitMQ    RabbitMQ   `mapstructure:"rabbitmq"`
-	S3          S3         `mapstructure:"s3"`
-	OpenSearch  OpenSearch `mapstructure:"opensearch"`
-	Embeddings  Embeddings `mapstructure:"embeddings"`
-	Chunking    Chunking   `mapstructure:"chunking"`
-	Jaeger      Jaeger     `mapstructure:"jaeger"`
+	ServiceName string      `mapstructure:"service_name"`
+	HTTP        HTTP        `mapstructure:"http"`
+	GRPC        GRPC        `mapstructure:"grpc"`
+	RabbitMQ    RabbitMQ    `mapstructure:"rabbitmq"`
+	S3          S3          `mapstructure:"s3"`
+	OpenSearch  OpenSearch  `mapstructure:"opensearch"`
+	Embeddings  Embeddings  `mapstructure:"embeddings"`
+	Chunking    Chunking    `mapstructure:"chunking"`
+	Jaeger      Jaeger      `mapstructure:"jaeger"`
+	CoreService CoreService `mapstructure:"core_service"`
 }
 
 var (
@@ -105,6 +110,7 @@ func (c *Config) loadDefaults() {
 	c.Embeddings.BatchSize = 100
 	c.Chunking.MaxChunkSize = 1000
 	c.Chunking.OverlapSize = 200
+	c.CoreService.Address = "localhost:50051"
 }
 
 func Initialize(configPath string) error {
@@ -293,4 +299,10 @@ func (c *Config) GetJaegerEndpoint() string {
 	c.mu.RLock()
 	defer c.mu.RUnlock()
 	return c.Jaeger.Endpoint
+}
+
+func (c *Config) GetCoreServiceAddress() string {
+	c.mu.RLock()
+	defer c.mu.RUnlock()
+	return c.CoreService.Address
 }

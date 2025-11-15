@@ -141,9 +141,10 @@ graph TB
    - WebApp → core-backend: создание записи документа
    - core-backend → RabbitMQ: публикация задачи на обработку
    - Document Processing: consume задачи из RabbitMQ
+   - Document Processing → core-backend (gRPC): обновление статуса на PROCESSING
    - Document Processing: извлечение текста, разбиение на чанки, генерация embeddings
    - Document Processing → Vector DB: индексация (write embeddings)
-   - Document Processing → core-backend: обновление статуса документа
+   - Document Processing → core-backend (gRPC): обновление статуса на INDEXED или FAILED
 
 4. **Интеграция amoCRM:**
    - LLM Service ↔ amoCRM MCP Server

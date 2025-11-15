@@ -4,6 +4,7 @@ go 1.24.4
 
 require (
 	github.com/aws/aws-sdk-go v1.55.5
+	github.com/envoyproxy/protoc-gen-validate v1.2.1
 	github.com/fsnotify/fsnotify v1.9.0
 	github.com/go-chi/chi/v5 v5.2.3
 	github.com/google/uuid v1.6.0
