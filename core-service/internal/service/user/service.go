@@ -90,6 +90,11 @@ func (s *Service) AcceptInvitation(ctx context.Context, userID domain.ID, token 
 		return nil, err
 	}
 
+	// Check if user completed registration
+	if !user.RegistrationCompleted {
+		return nil, domain.NewInvalidArgumentError("user must complete registration before accepting invitation")
+	}
+
 	// Check if user already member of this organization
 	existingMember, err := s.repo.GetOrganizationMember(ctx, userID, invitation.OrganizationID)
 	if err == nil && existingMember != nil && existingMember.Status == domain.UserStatusActive {
