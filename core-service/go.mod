@@ -22,6 +22,7 @@ require (
 	github.com/rs/cors v1.11.1
 	github.com/spf13/viper v1.19.0
 	github.com/swaggest/swgui v1.8.5
+	github.com/telegram-mini-apps/init-data-golang v1.5.0
 	github.com/uber/jaeger-client-go v2.30.0+incompatible
 	github.com/uber/jaeger-lib v2.4.1+incompatible
 	go.uber.org/zap v1.27.0
