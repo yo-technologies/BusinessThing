@@ -62,7 +62,7 @@ jaeger:
 
 # Адрес core-service для получения банковских данных
 core_service:
-  address: "localhost:50051"
+  address: "localhost:50055"
 
 # Настройки HTTP-сервера (Gateway для gRPC)
 http:

@@ -4,57 +4,45 @@ import (
 	"context"
 	"core-service/internal/config"
 	"core-service/internal/logger"
-	"errors"
-	"flag"
-	"log"
+	"database/sql"
+	"os"
 
-	"github.com/golang-migrate/migrate/v4"
 	_ "github.com/golang-migrate/migrate/v4/database/postgres"
 	_ "github.com/golang-migrate/migrate/v4/source/file"
+	"github.com/joho/godotenv"
+	"github.com/pressly/goose/v3"
 )
 
+func init() {
+	logger.Init()
+	godotenv.Load()
+}
+
 func main() {
-	var direction string
-	var configPath string
-	flag.StringVar(&direction, "direction", "up", "Migration direction: up or down")
-	flag.StringVar(&configPath, "config", "config.yaml", "Path to config file")
-	flag.Parse()
+	ctx, cancel := context.WithCancel(context.Background())
+	defer cancel()
 
-	ctx := context.Background()
-
-	// Initialize config
-	if err := config.Initialize(configPath); err != nil {
-		log.Fatalf("Failed to initialize config: %v", err)
+	cfgPath := os.Getenv("CONFIG_PATH")
+	if cfgPath == "" {
+		cfgPath = "config.yaml"
 	}
+
+	if err := config.Initialize(cfgPath); err != nil {
+		logger.Fatalf(ctx, "failed to initialize config: %v", err)
+	}
+
 	cfg := config.Get()
 
-	// Setup logger
-	logger.Init()
-	logger.Info(ctx, "Starting migration")
+	postgresURL := cfg.GetDBDSN()
 
-	// Create migrator
-	m, err := migrate.New(
-		"file://migrations",
-		cfg.GetDBDSN(),
-	)
+	sqlDB, err := sql.Open("postgres", postgresURL)
 	if err != nil {
-		logger.Fatalf(ctx, "Failed to create migrator: %v", err)
+		logger.Fatalf(ctx, "failed to connect to database: %v", err)
 	}
-	defer m.Close()
 
-	// Run migration
-	switch direction {
-	case "up":
-		if err := m.Up(); err != nil && !errors.Is(err, migrate.ErrNoChange) {
-			logger.Fatalf(ctx, "Failed to migrate up: %v", err)
-		}
-		logger.Info(ctx, "Migration up completed successfully")
-	case "down":
-		if err := m.Down(); err != nil && !errors.Is(err, migrate.ErrNoChange) {
-			logger.Fatalf(ctx, "Failed to migrate down: %v", err)
-		}
-		logger.Info(ctx, "Migration down completed successfully")
-	default:
-		logger.Fatalf(ctx, "Unknown direction: %s", direction)
+	if err := goose.RunContext(ctx, "up", sqlDB, "migrations"); err != nil {
+		logger.Fatalf(ctx, "failed to apply migrations: %v", err)
 	}
+
+	logger.Info(ctx, "migrations applied")
 }
