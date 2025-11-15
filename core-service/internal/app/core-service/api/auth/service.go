@@ -2,9 +2,9 @@ package auth
 
 import (
 	"context"
-	pb "core-service/bin/core/api/core"
 	"core-service/internal/app/interceptors"
 	"core-service/internal/domain"
+	pb "core-service/pkg/core"
 
 	"github.com/opentracing/opentracing-go"
 	"google.golang.org/protobuf/types/known/timestamppb"
@@ -64,14 +64,14 @@ func (s *Service) CompleteRegistration(ctx context.Context, req *pb.CompleteRegi
 
 func userToProto(user *domain.User) *pb.User {
 	return &pb.User{
-		Id:             user.ID.String(),
-		TelegramId:     user.TelegramID,
-		FirstName:      user.FirstName,
-		LastName:       user.LastName,
-		Role:           pb.UserRole_USER_ROLE_UNSPECIFIED, // Role хранится в OrganizationMember
-		Status:         pb.UserStatus_USER_STATUS_UNSPECIFIED, // Status хранится в OrganizationMember
-		CreatedAt:      timestamppb.New(user.CreatedAt),
-		UpdatedAt:      timestamppb.New(user.UpdatedAt),
+		Id:         user.ID.String(),
+		TelegramId: user.TelegramID,
+		FirstName:  user.FirstName,
+		LastName:   user.LastName,
+		Role:       pb.UserRole_USER_ROLE_UNSPECIFIED,     // Role хранится в OrganizationMember
+		Status:     pb.UserStatus_USER_STATUS_UNSPECIFIED, // Status хранится в OrganizationMember
+		CreatedAt:  timestamppb.New(user.CreatedAt),
+		UpdatedAt:  timestamppb.New(user.UpdatedAt),
 	}
 }
 

@@ -2,7 +2,6 @@ package app
 
 import (
 	"context"
-	pb "core-service/bin/core/api/core"
 	"core-service/internal/app/core-service/api/auth"
 	"core-service/internal/app/core-service/api/contract"
 	"core-service/internal/app/core-service/api/document"
@@ -14,13 +13,16 @@ import (
 	"core-service/internal/config"
 	"core-service/internal/jwt"
 	"core-service/internal/logger"
+	pb "core-service/pkg/core"
 	"fmt"
 	"net"
 	"net/http"
 
-	grpc_middleware "github.com/grpc-ecosystem/go-grpc-middleware"
+	"github.com/go-chi/chi/v5"
 	"github.com/grpc-ecosystem/grpc-gateway/v2/runtime"
+	"github.com/prometheus/client_golang/prometheus/promhttp"
 	"github.com/rs/cors"
+	"github.com/swaggest/swgui/v5emb"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/credentials/insecure"
 	"google.golang.org/grpc/reflection"
@@ -90,8 +92,8 @@ func (a *App) setupGRPC() {
 
 	// Create gRPC server
 	a.grpcServer = grpc.NewServer(
-		grpc.UnaryInterceptor(grpc_middleware.ChainUnaryServer(unaryInterceptors...)),
-		grpc.StreamInterceptor(grpc_middleware.ChainStreamServer(streamInterceptors...)),
+		grpc.ChainUnaryInterceptor(unaryInterceptors...),
+		grpc.ChainStreamInterceptor(streamInterceptors...),
 	)
 
 	// Register services
@@ -147,7 +149,7 @@ func (a *App) startHTTPGateway(ctx context.Context) error {
 	grpcAddr := fmt.Sprintf("localhost:%d", a.cfg.GRPC.Port)
 	httpAddr := a.cfg.GetHTTPAddress()
 
-	mux := runtime.NewServeMux(
+	gatewayMux := runtime.NewServeMux(
 		runtime.WithIncomingHeaderMatcher(func(key string) (string, bool) {
 			switch key {
 			case "Authorization", "authorization":
@@ -161,25 +163,25 @@ func (a *App) startHTTPGateway(ctx context.Context) error {
 	opts := []grpc.DialOption{grpc.WithTransportCredentials(insecure.NewCredentials())}
 
 	// Register all services with HTTP gateway
-	if err := pb.RegisterAuthServiceHandlerFromEndpoint(ctx, mux, grpcAddr, opts); err != nil {
+	if err := pb.RegisterAuthServiceHandlerFromEndpoint(ctx, gatewayMux, grpcAddr, opts); err != nil {
 		return fmt.Errorf("failed to register auth handler: %w", err)
 	}
-	if err := pb.RegisterOrganizationServiceHandlerFromEndpoint(ctx, mux, grpcAddr, opts); err != nil {
+	if err := pb.RegisterOrganizationServiceHandlerFromEndpoint(ctx, gatewayMux, grpcAddr, opts); err != nil {
 		return fmt.Errorf("failed to register organization handler: %w", err)
 	}
-	if err := pb.RegisterUserServiceHandlerFromEndpoint(ctx, mux, grpcAddr, opts); err != nil {
+	if err := pb.RegisterUserServiceHandlerFromEndpoint(ctx, gatewayMux, grpcAddr, opts); err != nil {
 		return fmt.Errorf("failed to register user handler: %w", err)
 	}
-	if err := pb.RegisterDocumentServiceHandlerFromEndpoint(ctx, mux, grpcAddr, opts); err != nil {
+	if err := pb.RegisterDocumentServiceHandlerFromEndpoint(ctx, gatewayMux, grpcAddr, opts); err != nil {
 		return fmt.Errorf("failed to register document handler: %w", err)
 	}
-	if err := pb.RegisterNoteServiceHandlerFromEndpoint(ctx, mux, grpcAddr, opts); err != nil {
+	if err := pb.RegisterNoteServiceHandlerFromEndpoint(ctx, gatewayMux, grpcAddr, opts); err != nil {
 		return fmt.Errorf("failed to register note handler: %w", err)
 	}
-	if err := pb.RegisterContractTemplateServiceHandlerFromEndpoint(ctx, mux, grpcAddr, opts); err != nil {
+	if err := pb.RegisterContractTemplateServiceHandlerFromEndpoint(ctx, gatewayMux, grpcAddr, opts); err != nil {
 		return fmt.Errorf("failed to register template handler: %w", err)
 	}
-	if err := pb.RegisterGeneratedContractServiceHandlerFromEndpoint(ctx, mux, grpcAddr, opts); err != nil {
+	if err := pb.RegisterGeneratedContractServiceHandlerFromEndpoint(ctx, gatewayMux, grpcAddr, opts); err != nil {
 		return fmt.Errorf("failed to register contract handler: %w", err)
 	}
 
@@ -190,10 +192,33 @@ func (a *App) startHTTPGateway(ctx context.Context) error {
 		AllowedHeaders:   []string{"*"},
 		AllowCredentials: true,
 	})
+	gatewayMuxWithCORS := corsHandler.Handler(gatewayMux)
+
+	// Setup HTTP router with additional endpoints
+	httpMux := chi.NewRouter()
+
+	httpMux.HandleFunc("/swagger", func(w http.ResponseWriter, request *http.Request) {
+		logger.Info(request.Context(), "serving swagger file")
+		w.Header().Set("Content-Type", "application/json")
+		w.Write(pb.GetSwaggerJSON())
+	})
+	httpMux.Mount("/docs/", v5emb.NewHandler(
+		"Core Service",
+		"/swagger",
+		"/docs/",
+	))
+
+	httpMux.Handle("/metrics", promhttp.Handler())
+	httpMux.HandleFunc("/health", func(w http.ResponseWriter, r *http.Request) {
+		w.WriteHeader(http.StatusOK)
+		w.Write([]byte("OK"))
+	})
+
+	httpMux.Mount("/", gatewayMuxWithCORS)
 
 	a.httpServer = &http.Server{
 		Addr:    httpAddr,
-		Handler: corsHandler.Handler(mux),
+		Handler: httpMux,
 	}
 
 	logger.Infof(ctx, "Starting HTTP gateway on %s", httpAddr)

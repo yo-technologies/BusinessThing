@@ -1,25 +1,68 @@
-FROM golang:1.23-alpine AS builder
+ARG GO_VERSION=1.24.4
+FROM --platform=$BUILDPLATFORM golang:${GO_VERSION} AS build
+WORKDIR /src
 
-RUN apk add --no-cache git make
+RUN --mount=type=cache,target=/go/pkg/mod/ \
+    --mount=type=bind,source=go.sum,target=go.sum \
+    --mount=type=bind,source=go.mod,target=go.mod \
+    go mod download -x
 
-WORKDIR /app
+ARG TARGETARCH
 
-COPY go.mod go.sum ./
-RUN go mod download
+RUN --mount=type=cache,target=/go/pkg/mod/ \
+    --mount=type=bind,target=. \
+    CGO_ENABLED=0 GOARCH=$TARGETARCH go build -o /bin/server ./cmd/core-service
 
-COPY . .
+RUN --mount=type=cache,target=/go/pkg/mod/ \
+    --mount=type=bind,target=. \
+    CGO_ENABLED=0 GOARCH=$TARGETARCH go build -o /bin/migrate ./cmd/migrate
 
-RUN CGO_ENABLED=0 GOOS=linux go build -o /bin/core-service ./cmd/core-service
-RUN CGO_ENABLED=0 GOOS=linux go build -o /bin/migrate ./cmd/migrate
+FROM alpine:latest AS final
 
-FROM alpine:latest
+RUN --mount=type=cache,target=/var/cache/apk \
+    apk --update add \
+    ca-certificates \
+    tzdata \
+    && \
+    update-ca-certificates
 
-RUN apk --no-cache add ca-certificates
+ARG UID=10001
+RUN adduser \
+    --disabled-password \
+    --gecos "" \
+    --home "/nonexistent" \
+    --shell "/sbin/nologin" \
+    --no-create-home \
+    --uid "${UID}" \
+    appuser
+USER appuser
 
-WORKDIR /root/
+COPY --from=build /bin/server /bin/
 
-COPY --from=builder /bin/core-service .
-COPY --from=builder /bin/migrate .
-COPY --from=builder /app/migrations ./migrations
+ENTRYPOINT [ "/bin/server" ]
 
-CMD ["./core-service"]
+FROM alpine:latest AS migrate
+
+RUN --mount=type=cache,target=/var/cache/apk \
+    apk --update add \
+    ca-certificates \
+    tzdata \
+    && \
+    update-ca-certificates
+
+ARG UID=10001
+
+RUN adduser \
+    --disabled-password \
+    --gecos "" \
+    --home "/nonexistent" \
+    --shell "/sbin/nologin" \
+    --no-create-home \
+    --uid "${UID}" \
+    appuser
+
+USER appuser
+
+COPY --from=build /bin/migrate /bin/
+
+ENTRYPOINT [ "/bin/migrate" ]

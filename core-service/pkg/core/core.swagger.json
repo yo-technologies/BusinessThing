@@ -40,6 +40,39 @@
     "application/json"
   ],
   "paths": {
+    "/v1/auth/complete-registration": {
+      "post": {
+        "summary": "Завершение регистрации нового пользователя (заполнение ФИО)",
+        "operationId": "AuthService_CompleteRegistration",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/coreCompleteRegistrationResponse"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/rpcStatus"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/coreCompleteRegistrationRequest"
+            }
+          }
+        ],
+        "tags": [
+          "AuthService"
+        ]
+      }
+    },
     "/v1/auth/telegram": {
       "post": {
         "summary": "Авторизация через Telegram WebApp initData",
@@ -1235,18 +1268,7 @@
       }
     },
     "UserServiceAcceptInvitationBody": {
-      "type": "object",
-      "properties": {
-        "telegramId": {
-          "type": "string"
-        },
-        "firstName": {
-          "type": "string"
-        },
-        "lastName": {
-          "type": "string"
-        }
-      }
+      "type": "object"
     },
     "UserServiceDeactivateUserBody": {
       "type": "object"
@@ -1292,6 +1314,29 @@
         "accessToken": {
           "type": "string"
         },
+        "user": {
+          "$ref": "#/definitions/coreUser"
+        },
+        "isNewUser": {
+          "type": "boolean",
+          "title": "Флаг нового пользователя, требуется заполнение профиля"
+        }
+      }
+    },
+    "coreCompleteRegistrationRequest": {
+      "type": "object",
+      "properties": {
+        "firstName": {
+          "type": "string"
+        },
+        "lastName": {
+          "type": "string"
+        }
+      }
+    },
+    "coreCompleteRegistrationResponse": {
+      "type": "object",
+      "properties": {
         "user": {
           "$ref": "#/definitions/coreUser"
         }

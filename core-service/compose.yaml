@@ -1,76 +1,47 @@
-version: '3.8'
-
 services:
-  core-service-db:
-    image: postgres:16-alpine
-    container_name: core-service-db
-    environment:
-      POSTGRES_USER: core
-      POSTGRES_PASSWORD: core_password
-      POSTGRES_DB: core_db
-    ports:
-      - "5433:5432"
-    volumes:
-      - core_db_data:/var/lib/postgresql/data
-    healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U core"]
-      interval: 10s
-      timeout: 5s
-      retries: 5
-
-  rabbitmq:
-    image: rabbitmq:3-management-alpine
-    container_name: core-rabbitmq
-    environment:
-      RABBITMQ_DEFAULT_USER: core
-      RABBITMQ_DEFAULT_PASS: core_password
-    ports:
-      - "5672:5672"
-      - "15672:15672"
-    volumes:
-      - rabbitmq_data:/var/lib/rabbitmq
-    healthcheck:
-      test: ["CMD", "rabbitmq-diagnostics", "ping"]
-      interval: 10s
-      timeout: 5s
-      retries: 5
-
-  redis:
-    image: redis:7-alpine
-    container_name: core-redis
-    command: redis-server --requirepass core_password
-    ports:
-      - "6379:6379"
-    volumes:
-      - redis_data:/data
-    healthcheck:
-      test: ["CMD", "redis-cli", "ping"]
-      interval: 10s
-      timeout: 5s
-      retries: 5
-
   core-service:
+    container_name: core-service
+    profiles: [backend, full]
     build:
       context: .
       dockerfile: Dockerfile
-    container_name: core-service
+      target: final
+    volumes:
+      - type: bind
+        source: ./config.docker.yaml
+        target: /config.yaml
+        read_only: true
+    ports:
+      - "8085:8085"
+      - "50065:50065"
     depends_on:
       core-service-db:
         condition: service_healthy
-      rabbitmq:
-        condition: service_healthy
-      redis:
-        condition: service_healthy
-    ports:
-      - "50052:50052"
-      - "8081:8081"
-    environment:
-      - CONFIG_PATH=/root/config.yaml
-    volumes:
-      - ./config.yaml:/root/config.yaml
-    command: sh -c "./migrate -direction up && ./core-service"
+      jaeger:
+        condition: service_started
+      core-service-migrate:
+        condition: service_completed_successfully
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.core.rule=Host(`core.6036484-cd72267.twc1.net`)"
+      - "traefik.http.routers.core.entrypoints=websecure"
+      - "traefik.http.routers.core.tls.certresolver=letsencrypt"
+      - "traefik.http.services.core.loadbalancer.server.port=8085"
 
-volumes:
-  core_db_data:
-  rabbitmq_data:
-  redis_data:
+  core-service-migrate:
+    container_name: core-service-migrate
+    profiles: [backend, full]
+    build:
+      context: .
+      dockerfile: Dockerfile
+      target: migrate
+    environment:
+      - CONFIG_PATH=/config.yaml
+    volumes:
+      - ./migrations:/migrations
+      - type: bind
+        source: ./config.docker.yaml
+        target: /config.yaml
+        read_only: true
+    depends_on:
+      - core-service-db
