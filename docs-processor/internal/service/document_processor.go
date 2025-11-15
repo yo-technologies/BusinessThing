@@ -3,14 +3,17 @@ package service
 import (
 	"context"
 	"fmt"
+	"io"
 
 	"docs-processor/internal/chunker"
+	"docs-processor/internal/coreservice"
 	"docs-processor/internal/domain"
 	"docs-processor/internal/embeddings"
 	"docs-processor/internal/logger"
 	"docs-processor/internal/parser"
 	"docs-processor/internal/storage"
 	"docs-processor/internal/vectordb"
+	pb "docs-processor/pkg/core"
 
 	"github.com/opentracing/opentracing-go"
 )
@@ -21,6 +24,7 @@ type DocumentProcessor struct {
 	chunker        *chunker.Chunker
 	embeddingsCli  *embeddings.Client
 	vectorDB       *vectordb.OpenSearchClient
+	coreClient     *coreservice.Client
 	batchSize      int
 }
 
@@ -30,6 +34,7 @@ func NewDocumentProcessor(
 	chunker *chunker.Chunker,
 	embeddingsCli *embeddings.Client,
 	vectorDB *vectordb.OpenSearchClient,
+	coreClient *coreservice.Client,
 	batchSize int,
 ) *DocumentProcessor {
 	return &DocumentProcessor{
@@ -38,6 +43,7 @@ func NewDocumentProcessor(
 		chunker:        chunker,
 		embeddingsCli:  embeddingsCli,
 		vectorDB:       vectorDB,
+		coreClient:     coreClient,
 		batchSize:      batchSize,
 	}
 }
@@ -46,16 +52,34 @@ func (p *DocumentProcessor) ProcessDocument(ctx context.Context, job *domain.Pro
 	span, ctx := opentracing.StartSpanFromContext(ctx, "service.DocumentProcessor.ProcessDocument")
 	defer span.Finish()
 
+	var err error
+	defer func() {
+		if err != nil {
+			logger.Error(ctx, "Document processing failed", "document_id", job.DocumentID, "error", err)
+			updateErr := p.coreClient.UpdateDocumentStatus(ctx, job.DocumentID.String(), pb.DocumentStatus_DOCUMENT_STATUS_FAILED, err.Error())
+			if updateErr != nil {
+				logger.Error(ctx, "Failed to update document status to FAILED", "error", updateErr)
+			}
+		}
+	}()
+
 	logger.Info(ctx, "Starting document processing", "document_id", job.DocumentID)
 
-	reader, err := p.s3Client.GetObject(ctx, job.S3Key)
+	// Обновляем статус на PROCESSING
+	if err := p.coreClient.UpdateDocumentStatus(ctx, job.DocumentID.String(), pb.DocumentStatus_DOCUMENT_STATUS_PROCESSING, ""); err != nil {
+		logger.Warn(ctx, "Failed to update document status to PROCESSING", "error", err)
+	}
+
+	var reader io.ReadCloser
+	reader, err = p.s3Client.GetObject(ctx, job.S3Key)
 	if err != nil {
 		logger.Error(ctx, "Failed to get document from S3", "error", err)
 		return fmt.Errorf("failed to get document from storage: %w", err)
 	}
 	defer reader.Close()
 
-	text, err := p.parserRegistry.Parse(ctx, job.DocumentType, reader)
+	var text string
+	text, err = p.parserRegistry.Parse(ctx, job.DocumentType, reader)
 	if err != nil {
 		logger.Error(ctx, "Failed to parse document", "error", err)
 		return fmt.Errorf("failed to parse document: %w", err)
@@ -64,7 +88,8 @@ func (p *DocumentProcessor) ProcessDocument(ctx context.Context, job *domain.Pro
 	logger.Info(ctx, "Document parsed", "text_length", len(text))
 	logger.Info(ctx, "Document", "text", text[:400])
 
-	chunks, err := p.chunker.ChunkText(ctx, job.DocumentID, text)
+	var chunks []*domain.Chunk
+	chunks, err = p.chunker.ChunkText(ctx, job.DocumentID, text)
 	if err != nil {
 		logger.Error(ctx, "Failed to chunk document", "error", err)
 		return fmt.Errorf("failed to chunk document: %w", err)
@@ -74,6 +99,11 @@ func (p *DocumentProcessor) ProcessDocument(ctx context.Context, job *domain.Pro
 
 	if err := p.generateAndIndexEmbeddings(ctx, chunks, job); err != nil {
 		return err
+	}
+
+	// Обновляем статус на INDEXED при успешной обработке
+	if err := p.coreClient.UpdateDocumentStatus(ctx, job.DocumentID.String(), pb.DocumentStatus_DOCUMENT_STATUS_INDEXED, ""); err != nil {
+		logger.Warn(ctx, "Failed to update document status to INDEXED", "error", err)
 	}
 
 	logger.Info(ctx, "Document processing completed", "document_id", job.DocumentID)

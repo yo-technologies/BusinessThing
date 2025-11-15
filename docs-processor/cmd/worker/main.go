@@ -10,6 +10,7 @@ import (
 
 	"docs-processor/internal/chunker"
 	"docs-processor/internal/config"
+	"docs-processor/internal/coreservice"
 	"docs-processor/internal/embeddings"
 	"docs-processor/internal/logger"
 	"docs-processor/internal/parser"
@@ -84,12 +85,19 @@ func main() {
 		cfg.GetChunkingOverlapSize(),
 	)
 
+	coreClient, err := coreservice.NewClient(cfg.GetCoreServiceAddress())
+	if err != nil {
+		logger.Fatal(ctx, "Failed to create core-service client", "error", err)
+	}
+	defer coreClient.Close()
+
 	documentProcessor := service.NewDocumentProcessor(
 		s3Client,
 		parserRegistry,
 		textChunker,
 		embeddingsCli,
 		vectorDB,
+		coreClient,
 		cfg.GetEmbeddingsBatchSize(),
 	)
 

@@ -1,5 +1,6 @@
 OUT_PATH:=$(CURDIR)/pkg
 LOCAL_BIN:=$(CURDIR)/bin
+CORE_SERVICE_PATH:=$(CURDIR)/../core-service
 
 build:
 	go build -o bin/doc-processor cmd/doc-processor/main.go
@@ -15,6 +16,7 @@ bin-deps: .vendor-proto
 generate:
 	mkdir -p ${OUT_PATH}
 	make .generate
+	make .generate-core-service
 	go mod tidy
 
 .generate:
@@ -25,6 +27,12 @@ generate:
 		--plugin=protoc-gen-openapiv2=$(LOCAL_BIN)/protoc-gen-openapiv2 --openapiv2_out=${OUT_PATH} \
 		--plugin=protoc-gen-validate=$(LOCAL_BIN)/protoc-gen-validate --validate_out="lang=go,paths=source_relative:${OUT_PATH}" \
 		./api/**/*.proto
+
+.generate-core-service:
+	protoc --proto_path ${CORE_SERVICE_PATH}/api --proto_path vendor.protogen \
+		--plugin=protoc-gen-go=$(LOCAL_BIN)/protoc-gen-go --go_out=${OUT_PATH} --go_opt=paths=source_relative \
+		--plugin=protoc-gen-go-grpc=$(LOCAL_BIN)/protoc-gen-go-grpc --go-grpc_out=${OUT_PATH} --go-grpc_opt=paths=source_relative \
+		${CORE_SERVICE_PATH}/api/**/*.proto
 
 .vendor-proto: .vendor-proto/google/protobuf .vendor-proto/google/api .vendor-proto/protoc-gen-openapiv2/options .vendor-proto/validate
 
