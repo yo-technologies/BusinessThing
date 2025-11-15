@@ -26,13 +26,13 @@ type InitData struct {
 
 // Validator validates Telegram init data strings coming from TMA.
 type Validator struct {
-	botToken string
-	maxAge   time.Duration
+	botTokens []string
+	maxAge    time.Duration
 }
 
 // NewValidator creates a new validator instance.
-func NewValidator(botToken string, maxAge time.Duration) *Validator {
-	return &Validator{botToken: botToken, maxAge: maxAge}
+func NewValidator(botTokens []string, maxAge time.Duration) *Validator {
+	return &Validator{botTokens: botTokens, maxAge: maxAge}
 }
 
 // Validate parses and validates init data. Returns ErrUnauthorized if invalid.
@@ -44,11 +44,21 @@ func (v *Validator) Validate(initDataStr string) (*InitData, error) {
 		return nil, domain.ErrUnauthorized
 	}
 
-	// Validate using the library
-	if err := initdata.Validate(initDataStr, v.botToken, v.maxAge); err != nil {
-		logger.Warnf(ctx, "telegram validator: validation failed: %v", err)
-		return nil, domain.ErrUnauthorized
+	// Validate using the library - try all tokens
+	var lastErr error
+	for _, token := range v.botTokens {
+		if valErr := initdata.Validate(initDataStr, token, v.maxAge); valErr == nil {
+			// Valid token found, continue with parsing
+			goto parseinitdata
+		} else {
+			lastErr = valErr
+		}
 	}
+	// None of the tokens validated successfully
+	logger.Warnf(ctx, "telegram validator: validation failed with all tokens: %v", lastErr)
+	return nil, domain.ErrUnauthorized
+
+parseinitdata:
 
 	// Parse init data
 	data, err := initdata.Parse(initDataStr)
