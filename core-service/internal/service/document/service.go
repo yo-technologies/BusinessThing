@@ -7,7 +7,6 @@ import (
 	"strings"
 
 	"github.com/opentracing/opentracing-go"
-	amqp "github.com/rabbitmq/amqp091-go"
 )
 
 type repository interface {
@@ -18,13 +17,17 @@ type repository interface {
 	DeleteDocument(ctx context.Context, id domain.ID) error
 }
 
+type queueClient interface {
+	PublishMessage(ctx context.Context, message interface{}) error
+}
+
 type Service struct {
 	repo      repository
-	queue     *amqp.Channel
+	queue     queueClient
 	queueName string
 }
 
-func New(repo repository, queue *amqp.Channel, queueName string) *Service {
+func New(repo repository, queue queueClient, queueName string) *Service {
 	return &Service{
 		repo:      repo,
 		queue:     queue,
@@ -137,14 +140,5 @@ func (s *Service) publishProcessingJob(ctx context.Context, doc domain.Document)
 		return err
 	}
 
-	return s.queue.Publish(
-		"",          // exchange
-		s.queueName, // routing key
-		false,       // mandatory
-		false,       // immediate
-		amqp.Publishing{
-			ContentType: "application/json",
-			Body:        body,
-		},
-	)
+	return s.queue.PublishMessage(ctx, body)
 }

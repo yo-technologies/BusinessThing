@@ -26,7 +26,6 @@ import (
 	"syscall"
 
 	"github.com/jackc/pgx/v5/pgxpool"
-	amqp "github.com/rabbitmq/amqp091-go"
 )
 
 func main() {
@@ -71,36 +70,17 @@ func main() {
 	repo := repository.NewPGXRepository(contextManager)
 
 	// Initialize RabbitMQ
-	var amqpChannel *amqp.Channel
-	var queueClient *queue.RabbitMQClient
-	if rabbitURL := cfg.GetRabbitMQURL(); rabbitURL != "" {
-		conn, err := amqp.Dial(rabbitURL)
-		if err != nil {
-			logger.Warnf(ctx, "Failed to connect to RabbitMQ: %v", err)
-		} else {
-			defer conn.Close()
-			amqpChannel, err = conn.Channel()
-			if err != nil {
-				logger.Warnf(ctx, "Failed to open RabbitMQ channel: %v", err)
-			} else {
-				defer amqpChannel.Close()
-				logger.Info(ctx, "RabbitMQ connection established")
-			}
-
-			// Create queue client for template indexing
-			queueClient, err = queue.NewRabbitMQClient(rabbitURL, cfg.GetRabbitMQQueueName())
-			if err != nil {
-				logger.Warnf(ctx, "Failed to create RabbitMQ queue client: %v", err)
-			} else {
-				defer queueClient.Close()
-			}
-		}
+	// Create queue client for template indexing
+	queueClient, err := queue.NewRabbitMQClient(cfg.GetRabbitMQURL(), cfg.GetRabbitMQQueueName())
+	if err != nil {
+		logger.Fatalf(ctx, "Failed to create RabbitMQ queue client: %v", err)
 	}
+	defer queueClient.Close()
 
 	// Initialize services
 	orgService := organization.New(repo)
 	userService := user.New(repo)
-	docService := document.New(repo, amqpChannel, "document_processing")
+	docService := document.New(repo, queueClient, "document_processing")
 	noteService := note.New(repo)
 	templateService := template.New(repo, queueClient, contextManager)
 	contractService := contract.New(repo)
