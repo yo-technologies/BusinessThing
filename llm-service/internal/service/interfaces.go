@@ -88,6 +88,7 @@ type MessageStream interface {
 	SendUsage(usage *dto.ChatUsageDTO) error
 	SendError(err error) error
 	SendChat(chat *domain.Chat) error
+	SendFinal(chat *domain.Chat, messages []*domain.Message) error
 }
 
 // ToolExecutor - сервис для выполнения инструментов
@@ -97,6 +98,30 @@ type ToolExecutor interface {
 
 	// CanExecute проверяет, может ли инструмент быть выполнен
 	CanExecute(toolName string, agentKey string) bool
+}
+
+// MCPClient - интерфейс для работы с MCP серверами
+type MCPClient interface {
+	// Initialize инициализирует соединение с MCP сервером
+	Initialize(ctx context.Context) error
+
+	// GetTools возвращает список инструментов от MCP сервера (с кешированием)
+	GetTools(ctx context.Context) ([]*domain.ToolDefinition, error)
+
+	// CallTool выполняет вызов инструмента на MCP сервере
+	CallTool(ctx context.Context, toolName string, arguments map[string]interface{}) (interface{}, error)
+
+	// HasTool проверяет, доступен ли инструмент на MCP сервере
+	HasTool(ctx context.Context, toolName string) bool
+
+	// GetTool получает определение конкретного инструмента
+	GetTool(ctx context.Context, toolName string) (*domain.ToolDefinition, error)
+
+	// RefreshTools принудительно обновляет кеш инструментов
+	RefreshTools(ctx context.Context) error
+
+	// Close закрывает соединение с MCP сервером
+	Close() error
 }
 
 // SubagentManager - сервис для управления субагентами

@@ -15,12 +15,18 @@ services:
             - "8084:8084"
             - "50063:50063"
         depends_on:
-            llm-agent-db:
+            llm-service-db:
                 condition: service_healthy
             jaeger:
                 condition: service_started
             llm-agent-migrate:
                 condition: service_completed_successfully
+        labels:
+            - "traefik.enable=true"
+            - "traefik.http.routers.llmagent.rule=Host(`agent.6036484-cd72267.twc1.net`)"
+            - "traefik.http.routers.llmagent.entrypoints=websecure"
+            - "traefik.http.routers.llmagent.tls.certresolver=letsencrypt"
+            - "traefik.http.services.llmagent.loadbalancer.server.port=8084"
 
     llm-agent-migrate:
         container_name: llm-agent-migrate
@@ -38,4 +44,4 @@ services:
               target: /config.yaml
               read_only: true
         depends_on:
-            - llm-agent-db
+            - llm-service-db

@@ -112,7 +112,7 @@ func (m *Manager) GetMessages(ctx context.Context, chatID, userID, orgID domain.
 		return nil, 0, domain.ErrNotFound
 	}
 
-	messages, total, err := m.messageRepo.ListMessagesByChatIDWithToolCalls(ctx, chatID, limit, offset)
+	messages, total, err := m.messageRepo.ListMessagesWithSubchatsWithToolCalls(ctx, chatID, limit, offset)
 	if err != nil {
 		return nil, 0, domain.NewInternalError("failed to get messages", err)
 	}

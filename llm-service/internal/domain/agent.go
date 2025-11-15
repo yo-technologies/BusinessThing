@@ -3,8 +3,6 @@ package domain
 import (
 	"slices"
 	"strings"
-
-	"github.com/samber/lo"
 )
 
 type ToolName string
@@ -17,11 +15,56 @@ const (
 	ToolNameWebSearch ToolName = "web_search"
 	// Инструменты памяти
 	ToolNameSaveOrganizationNote ToolName = "save_organization_note"
+	// MCP инструменты (префикс для динамических инструментов)
 )
+
+const AmoCRMMCPToolPrefix = "ammo-crm-"
+
+var mcpPrefixes = []string{
+	AmoCRMMCPToolPrefix,
+}
 
 var AllowedToolNames = []ToolName{
 	ToolNameWebSearch,
 	ToolNameSaveOrganizationNote,
+}
+
+// IsMCPTool проверяет, является ли инструмент MCP инструментом
+func IsMCPTool(toolName string) bool {
+	for _, prefix := range mcpPrefixes {
+		if strings.HasPrefix(toolName, prefix) {
+			return true
+		}
+	}
+	return false
+}
+
+// GetMCPToolName извлекает имя инструмента без префикса MCP
+func GetMCPToolName(toolName string) string {
+	if IsMCPTool(toolName) {
+		for _, prefix := range mcpPrefixes {
+			if strings.HasPrefix(toolName, prefix) {
+				return toolName[len(prefix):]
+			}
+		}
+	}
+	return toolName
+}
+
+// MatchesToolPattern проверяет, соответствует ли имя инструмента паттерну
+// Поддерживает паттерны с * в конце (например, "ammo-crm-*" для всех MCP инструментов)
+func MatchesToolPattern(toolName, pattern string) bool {
+	if pattern == string(toolName) {
+		return true
+	}
+
+	// Проверяем паттерн со звездочкой
+	if strings.HasSuffix(pattern, "*") {
+		prefix := strings.TrimSuffix(pattern, "*")
+		return strings.HasPrefix(string(toolName), prefix)
+	}
+
+	return false
 }
 
 // AgentDefinition - декларативное определение агента из конфигурации
@@ -52,9 +95,15 @@ func (ad *AgentDefinition) GetSystemPrompt() string {
 
 // GetAllowedToolNames - возвращает список разрешенных инструментов
 func (ad *AgentDefinition) GetAllowedToolNames() []ToolName {
-	tools := lo.Filter(ad.AllowedTools, func(t ToolName, _ int) bool {
-		return slices.Contains(AllowedToolNames, t)
-	})
+	tools := make([]ToolName, 0)
+
+	// Добавляем разрешенные инструменты, включая MCP инструменты и паттерны
+	for _, t := range ad.AllowedTools {
+		// Проверяем, что это либо известный инструмент, либо MCP инструмент/паттерн
+		if slices.Contains(AllowedToolNames, t) || IsMCPTool(string(t)) {
+			tools = append(tools, t)
+		}
+	}
 
 	// Если агент - субагент, добавляем специальный tool для завершения
 	if ad.IsSubagent {

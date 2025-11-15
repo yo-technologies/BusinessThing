@@ -20,6 +20,7 @@ import (
 	"llm-service/internal/jwt"
 	openai_llm "llm-service/internal/llm/openai"
 	"llm-service/internal/logger"
+	"llm-service/internal/mcp"
 	"llm-service/internal/rag"
 	"llm-service/internal/repository"
 	"llm-service/internal/service/agent"
@@ -131,8 +132,26 @@ func Run() error {
 	}
 	tavilyClient := websearch.NewTavilyClient(tavilyAPIKey)
 
+	// Initialize AmoCRM MCP client
+	mcpClient, err := mcp.NewSSEClient(cfg.GetAmoCRMMCPAddress())
+	if err != nil {
+		return fmt.Errorf("failed to create AmoCRM MCP client: %w", err)
+	}
+	defer mcpClient.Close()
+
+	// Initialize AmoCRM MCP connection
+	if err := mcpClient.Initialize(ctx); err != nil {
+		return fmt.Errorf("failed to initialize AmoCRM MCP client: %w", err)
+	}
+
+	// Sync MCP tools to agent manager
+	if err := agentManager.SetMCPClient(ctx, mcpClient); err != nil {
+		return fmt.Errorf("failed to sync MCP tools: %w", err)
+	}
+	logger.Info(ctx, "AmoCRM MCP tools synced successfully")
+
 	// Initialize tool executor
-	toolExecutor := tool.NewExecutor(agentManager, subagentManager, tavilyClient, orgMemoryService)
+	toolExecutor := tool.NewExecutor(agentManager, subagentManager, tavilyClient, orgMemoryService, mcpClient)
 
 	// Initialize agent executor
 	agentExecutor := executor.NewExecutor(

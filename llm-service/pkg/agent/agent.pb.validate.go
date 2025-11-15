@@ -1232,6 +1232,47 @@ func (m *StreamMessageResponse) validate(all bool) error {
 			}
 		}
 
+	case *StreamMessageResponse_Final:
+		if v == nil {
+			err := StreamMessageResponseValidationError{
+				field:  "Event",
+				reason: "oneof value cannot be a typed-nil",
+			}
+			if !all {
+				return err
+			}
+			errors = append(errors, err)
+		}
+
+		if all {
+			switch v := interface{}(m.GetFinal()).(type) {
+			case interface{ ValidateAll() error }:
+				if err := v.ValidateAll(); err != nil {
+					errors = append(errors, StreamMessageResponseValidationError{
+						field:  "Final",
+						reason: "embedded message failed validation",
+						cause:  err,
+					})
+				}
+			case interface{ Validate() error }:
+				if err := v.Validate(); err != nil {
+					errors = append(errors, StreamMessageResponseValidationError{
+						field:  "Final",
+						reason: "embedded message failed validation",
+						cause:  err,
+					})
+				}
+			}
+		} else if v, ok := interface{}(m.GetFinal()).(interface{ Validate() error }); ok {
+			if err := v.Validate(); err != nil {
+				return StreamMessageResponseValidationError{
+					field:  "Final",
+					reason: "embedded message failed validation",
+					cause:  err,
+				}
+			}
+		}
+
 	default:
 		_ = v // ensures v is used
 	}
@@ -2751,6 +2792,170 @@ var _ interface {
 	Cause() error
 	ErrorName() string
 } = ChatEventValidationError{}
+
+// Validate checks the field values on FinalEvent with the rules defined in the
+// proto definition for this message. If any rules are violated, the first
+// error encountered is returned, or nil if there are no violations.
+func (m *FinalEvent) Validate() error {
+	return m.validate(false)
+}
+
+// ValidateAll checks the field values on FinalEvent with the rules defined in
+// the proto definition for this message. If any rules are violated, the
+// result is a list of violation errors wrapped in FinalEventMultiError, or
+// nil if none found.
+func (m *FinalEvent) ValidateAll() error {
+	return m.validate(true)
+}
+
+func (m *FinalEvent) validate(all bool) error {
+	if m == nil {
+		return nil
+	}
+
+	var errors []error
+
+	if all {
+		switch v := interface{}(m.GetChat()).(type) {
+		case interface{ ValidateAll() error }:
+			if err := v.ValidateAll(); err != nil {
+				errors = append(errors, FinalEventValidationError{
+					field:  "Chat",
+					reason: "embedded message failed validation",
+					cause:  err,
+				})
+			}
+		case interface{ Validate() error }:
+			if err := v.Validate(); err != nil {
+				errors = append(errors, FinalEventValidationError{
+					field:  "Chat",
+					reason: "embedded message failed validation",
+					cause:  err,
+				})
+			}
+		}
+	} else if v, ok := interface{}(m.GetChat()).(interface{ Validate() error }); ok {
+		if err := v.Validate(); err != nil {
+			return FinalEventValidationError{
+				field:  "Chat",
+				reason: "embedded message failed validation",
+				cause:  err,
+			}
+		}
+	}
+
+	for idx, item := range m.GetMessages() {
+		_, _ = idx, item
+
+		if all {
+			switch v := interface{}(item).(type) {
+			case interface{ ValidateAll() error }:
+				if err := v.ValidateAll(); err != nil {
+					errors = append(errors, FinalEventValidationError{
+						field:  fmt.Sprintf("Messages[%v]", idx),
+						reason: "embedded message failed validation",
+						cause:  err,
+					})
+				}
+			case interface{ Validate() error }:
+				if err := v.Validate(); err != nil {
+					errors = append(errors, FinalEventValidationError{
+						field:  fmt.Sprintf("Messages[%v]", idx),
+						reason: "embedded message failed validation",
+						cause:  err,
+					})
+				}
+			}
+		} else if v, ok := interface{}(item).(interface{ Validate() error }); ok {
+			if err := v.Validate(); err != nil {
+				return FinalEventValidationError{
+					field:  fmt.Sprintf("Messages[%v]", idx),
+					reason: "embedded message failed validation",
+					cause:  err,
+				}
+			}
+		}
+
+	}
+
+	// no validation rules for TotalMessages
+
+	if len(errors) > 0 {
+		return FinalEventMultiError(errors)
+	}
+
+	return nil
+}
+
+// FinalEventMultiError is an error wrapping multiple validation errors
+// returned by FinalEvent.ValidateAll() if the designated constraints aren't met.
+type FinalEventMultiError []error
+
+// Error returns a concatenation of all the error messages it wraps.
+func (m FinalEventMultiError) Error() string {
+	msgs := make([]string, 0, len(m))
+	for _, err := range m {
+		msgs = append(msgs, err.Error())
+	}
+	return strings.Join(msgs, "; ")
+}
+
+// AllErrors returns a list of validation violation errors.
+func (m FinalEventMultiError) AllErrors() []error { return m }
+
+// FinalEventValidationError is the validation error returned by
+// FinalEvent.Validate if the designated constraints aren't met.
+type FinalEventValidationError struct {
+	field  string
+	reason string
+	cause  error
+	key    bool
+}
+
+// Field function returns field value.
+func (e FinalEventValidationError) Field() string { return e.field }
+
+// Reason function returns reason value.
+func (e FinalEventValidationError) Reason() string { return e.reason }
+
+// Cause function returns cause value.
+func (e FinalEventValidationError) Cause() error { return e.cause }
+
+// Key function returns key value.
+func (e FinalEventValidationError) Key() bool { return e.key }
+
+// ErrorName returns error name.
+func (e FinalEventValidationError) ErrorName() string { return "FinalEventValidationError" }
+
+// Error satisfies the builtin error interface
+func (e FinalEventValidationError) Error() string {
+	cause := ""
+	if e.cause != nil {
+		cause = fmt.Sprintf(" | caused by: %v", e.cause)
+	}
+
+	key := ""
+	if e.key {
+		key = "key for "
+	}
+
+	return fmt.Sprintf(
+		"invalid %sFinalEvent.%s: %s%s",
+		key,
+		e.field,
+		e.reason,
+		cause)
+}
+
+var _ error = FinalEventValidationError{}
+
+var _ interface {
+	Field() string
+	Reason() string
+	Key() bool
+	Cause() error
+	ErrorName() string
+} = FinalEventValidationError{}
 
 // Validate checks the field values on ChatUsage with the rules defined in the
 // proto definition for this message. If any rules are violated, the first
