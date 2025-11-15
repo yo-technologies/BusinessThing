@@ -1,18 +1,13 @@
 package telegram
 
 import (
-	"crypto/hmac"
-	"crypto/sha256"
-	"encoding/hex"
-	"encoding/json"
-	"fmt"
-	"net/url"
-	"sort"
-	"strconv"
-	"strings"
+	"context"
 	"time"
 
 	"core-service/internal/domain"
+	"core-service/internal/logger"
+
+	initdata "github.com/telegram-mini-apps/init-data-golang"
 )
 
 // UserPayload describes trimmed Telegram user object.
@@ -41,78 +36,44 @@ func NewValidator(botToken string, maxAge time.Duration) *Validator {
 }
 
 // Validate parses and validates init data. Returns ErrUnauthorized if invalid.
-func (v *Validator) Validate(initData string) (*InitData, error) {
-	if initData == "" {
+func (v *Validator) Validate(initDataStr string) (*InitData, error) {
+	ctx := context.Background()
+
+	if initDataStr == "" {
+		logger.Warn(ctx, "telegram validator: empty init data")
 		return nil, domain.ErrUnauthorized
 	}
 
-	values, err := url.ParseQuery(initData)
+	// Validate using the library
+	if err := initdata.Validate(initDataStr, v.botToken, v.maxAge); err != nil {
+		logger.Warnf(ctx, "telegram validator: validation failed: %v", err)
+		return nil, domain.ErrUnauthorized
+	}
+
+	// Parse init data
+	data, err := initdata.Parse(initDataStr)
 	if err != nil {
+		logger.Warnf(ctx, "telegram validator: failed to parse init data: %v", err)
 		return nil, domain.ErrUnauthorized
 	}
 
-	hash := values.Get("hash")
-	if hash == "" {
-		return nil, domain.ErrUnauthorized
+	// Map to our structure
+	result := &InitData{
+		AuthDate: data.AuthDate(),
+		QueryID:  data.QueryID,
 	}
 
-	values.Del("hash")
-
-	dataCheckString := buildDataCheckString(values)
-	if !v.verifyHash(dataCheckString, hash) {
-		return nil, domain.ErrUnauthorized
-	}
-
-	authDateUnix, err := strconv.ParseInt(values.Get("auth_date"), 10, 64)
-	if err != nil {
-		return nil, domain.ErrUnauthorized
-	}
-	authDate := time.Unix(authDateUnix, 0)
-	if v.maxAge > 0 && time.Since(authDate) > v.maxAge {
-		return nil, domain.ErrUnauthorized
-	}
-
-	var userPayload UserPayload
-	if err := json.Unmarshal([]byte(values.Get("user")), &userPayload); err != nil {
-		return nil, domain.ErrUnauthorized
-	}
-
-	return &InitData{
-		User:     userPayload,
-		AuthDate: authDate,
-		QueryID:  values.Get("query_id"),
-	}, nil
-}
-
-func buildDataCheckString(values url.Values) string {
-	parts := make([]string, 0, len(values))
-	for key, vals := range values {
-		if len(vals) == 0 {
-			continue
+	// Extract user data
+	if data.User.ID != 0 {
+		result.User = UserPayload{
+			ID:           data.User.ID,
+			LanguageCode: data.User.LanguageCode,
+			PhotoURL:     data.User.PhotoURL,
 		}
-		parts = append(parts, fmt.Sprintf("%s=%s", key, vals[0]))
-	}
-	sort.Strings(parts)
-	return strings.Join(parts, "\n")
-}
-
-func (v *Validator) verifyHash(dataCheckString, hash string) bool {
-	if v.botToken == "" {
-		return false
+	} else {
+		logger.Warn(ctx, "telegram validator: user data not found in init data")
+		return nil, domain.ErrUnauthorized
 	}
 
-	secretKeyMAC := hmac.New(sha256.New, []byte("WebAppData"))
-	secretKeyMAC.Write([]byte(v.botToken))
-	secretKey := secretKeyMAC.Sum(nil)
-
-	mac := hmac.New(sha256.New, secretKey)
-	mac.Write([]byte(dataCheckString))
-	expected := mac.Sum(nil)
-
-	actual, err := hex.DecodeString(hash)
-	if err != nil {
-		return false
-	}
-
-	return hmac.Equal(expected, actual)
+	return result, nil
 }

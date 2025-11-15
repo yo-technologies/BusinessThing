@@ -1395,6 +1395,9 @@
     "coreCompleteRegistrationRequest": {
       "type": "object",
       "properties": {
+        "userId": {
+          "type": "string"
+        },
         "firstName": {
           "type": "string"
         },

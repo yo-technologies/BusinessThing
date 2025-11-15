@@ -29,11 +29,13 @@ func NewUnaryAuthInterceptor(provider *jwt.Provider, unprotected ...string) grpc
 
 		token, err := tokenFromMetadata(ctx)
 		if err != nil {
+			logger.Warnf(ctx, "auth failed in %s: %v", info.FullMethod, err)
 			return nil, domain.ErrUnauthorized
 		}
 
 		userID, err := provider.ParseToken(ctx, token)
 		if err != nil {
+			logger.Warnf(ctx, "token parse failed in %s: %v", info.FullMethod, err)
 			return nil, err
 		}
 
@@ -61,11 +63,13 @@ func NewStreamAuthInterceptor(provider *jwt.Provider, unprotected ...string) grp
 
 		token, err := tokenFromMetadata(ss.Context())
 		if err != nil {
+			logger.Warnf(ctx, "auth failed in stream %s: %v", info.FullMethod, err)
 			return domain.ErrUnauthorized
 		}
 
 		userID, err := provider.ParseToken(ss.Context(), token)
 		if err != nil {
+			logger.Warnf(ctx, "token parse failed in stream %s: %v", info.FullMethod, err)
 			return err
 		}
 
@@ -93,6 +97,7 @@ func tokenFromMetadata(ctx context.Context) (string, error) {
 		vals = md.Get("Authorization")
 	}
 	if len(vals) == 0 {
+		logger.Warn(ctx, "authorization header not found in metadata")
 		return "", domain.ErrUnauthorized
 	}
 
@@ -102,6 +107,7 @@ func tokenFromMetadata(ctx context.Context) (string, error) {
 		token = after
 	}
 	if token == "" {
+		logger.Warn(ctx, "empty token after removing Bearer prefix")
 		return "", domain.ErrUnauthorized
 	}
 

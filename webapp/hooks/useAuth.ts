@@ -1,47 +1,82 @@
 // alpha/webapp/hooks/useAuth.ts
-import { useState, useEffect } from 'react';
+"use client";
+
+import { useEffect, useState } from "react";
+import { useRawInitData } from "@telegram-apps/sdk-react";
+
+import { CoreAuthenticateWithTelegramRequest } from "@/api/api.core.generated";
+import { setAuthToken, useApiClients } from "@/api/client";
+
+interface AuthUser {
+  id?: string;
+  firstName?: string;
+  lastName?: string;
+}
 
 interface AuthState {
   isAuthenticated: boolean;
-  isAdmin: boolean;
-  isEmployee: boolean;
-  user: { id: string; name: string; role: 'Admin' | 'Employee' } | null;
   loading: boolean;
-}
-
-const mockAdmin: AuthState = {
-  isAuthenticated: true,
-  isAdmin: true, // Default to Admin
-  isEmployee: false,
-  user: { id: 'admin-123', name: 'Admin User', role: 'Admin' },
-  loading: false,
-}
-
-const mockEmployee: AuthState = {
-  isAuthenticated: true,
-  isAdmin: false, // Default to Admin
-  isEmployee: true,
-  user: { id: 'admin-123', name: 'Admin User', role: 'Employee' },
-  loading: false,
+  user: AuthUser | null;
+  isNewUser: boolean;
 }
 
 export const useAuth = (): AuthState => {
-  const [authState, setAuthState] = useState<AuthState>({
+  const initData = typeof window !== "undefined" ? useRawInitData() : null;
+  const { core } = useApiClients();
+  const [state, setState] = useState<AuthState>({
     isAuthenticated: false,
-    isAdmin: false,
-    isEmployee: false,
+    loading: true,
     user: null,
-    loading: true    
+    isNewUser: false,
   });
 
   useEffect(() => {
-    // For now, we'll simulate an authenticated admin user after a short delay.
-    const simulateAuth = setTimeout(() => {
-      setAuthState(mockAdmin);
-    }, 500); // Simulate a network request
+    if (typeof window === "undefined" || !initData) {
+      return;
+    }
 
-    return () => clearTimeout(simulateAuth);
-  }, []); // Empty dependency array to run once
+    let cancelled = false;
 
-  return authState;
+    const authenticate = async () => {
+      try {
+        console.log("Authenticating with initData:", initData);
+        
+        const payload: CoreAuthenticateWithTelegramRequest = { initData };
+
+        const response = await core.v1.authServiceAuthenticateWithTelegram(payload, {
+          secure: false,
+        });
+
+        if (cancelled) {
+          return;
+        }
+
+        const { accessToken, user, isNewUser } = response.data;
+
+        if (accessToken) {
+          setAuthToken(accessToken);
+        }
+
+        setState({
+          isAuthenticated: Boolean(accessToken),
+          loading: false,
+          user: user ?? null,
+          isNewUser: Boolean(isNewUser),
+        });
+      } catch (error) {
+        console.error("Auth error", error);
+        if (!cancelled) {
+          setState((prev) => ({ ...prev, loading: false }));
+        }
+      }
+    };
+
+    authenticate();
+
+    return () => {
+      cancelled = true;
+    };
+  }, [initData]);
+
+  return state;
 };

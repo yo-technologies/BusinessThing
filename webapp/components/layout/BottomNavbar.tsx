@@ -14,7 +14,7 @@ import {
   DocumentDuplicateIcon as SolidDocumentDuplicateIcon,
   Cog6ToothIcon as SolidCog6ToothIcon,
 } from "@heroicons/react/24/solid";
-import { clsx } from "clsx";
+import clsx from "clsx";
 
 const navigationItems = [
   {
@@ -48,8 +48,8 @@ export const BottomNavbar = () => {
   const pathname = usePathname();
 
   return (
-    <nav className="fixed bottom-0 left-0 right-0 z-50 bg-background border-t border-default-200">
-      <div className="flex justify-around max-w-lg mx-auto">
+    <nav className="fixed bottom-0 left-0 right-0 z-50 border-t border-default-200 bg-background/80 backdrop-blur-md">
+      <div className="mx-auto flex max-w-lg justify-around px-2 py-1 mb-2">
         {navigationItems.map(({ href, label, Icon, SolidIcon }) => {
           const isActive = pathname.startsWith(href);
           const CurrentIcon = isActive ? SolidIcon : Icon;
@@ -59,15 +59,15 @@ export const BottomNavbar = () => {
               key={href}
               href={href}
               className={clsx(
-                "flex flex-col items-center justify-center w-full pt-2 pb-1 text-sm",
+                "flex w-full flex-col items-center justify-center gap-0.5 rounded-full px-1 py-1 text-[11px] font-medium transition-colors",
                 {
-                  "text-primary": isActive,
-                  "text-foreground-500 hover:text-foreground-700": !isActive,
-                }
+                  "text-primary bg-primary-50": isActive,
+                  "text-default-500 hover:text-default-700": !isActive,
+                },
               )}
             >
-              <CurrentIcon className="w-6 h-6" />
-              <span>{label}</span>
+              <CurrentIcon className="h-5 w-5" />
+              <span className="text-[11px]">{label}</span>
             </Link>
           );
         })}

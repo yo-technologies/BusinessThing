@@ -288,8 +288,9 @@ func (x *AuthenticateWithTelegramResponse) GetIsNewUser() bool {
 
 type CompleteRegistrationRequest struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
-	FirstName     string                 `protobuf:"bytes,1,opt,name=first_name,json=firstName,proto3" json:"first_name,omitempty"`
-	LastName      string                 `protobuf:"bytes,2,opt,name=last_name,json=lastName,proto3" json:"last_name,omitempty"`
+	UserId        string                 `protobuf:"bytes,1,opt,name=user_id,json=userId,proto3" json:"user_id,omitempty"`
+	FirstName     string                 `protobuf:"bytes,2,opt,name=first_name,json=firstName,proto3" json:"first_name,omitempty"`
+	LastName      string                 `protobuf:"bytes,3,opt,name=last_name,json=lastName,proto3" json:"last_name,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -322,6 +323,13 @@ func (x *CompleteRegistrationRequest) ProtoReflect() protoreflect.Message {
 // Deprecated: Use CompleteRegistrationRequest.ProtoReflect.Descriptor instead.
 func (*CompleteRegistrationRequest) Descriptor() ([]byte, []int) {
 	return file_core_core_proto_rawDescGZIP(), []int{2}
+}
+
+func (x *CompleteRegistrationRequest) GetUserId() string {
+	if x != nil {
+		return x.UserId
+	}
+	return ""
 }
 
 func (x *CompleteRegistrationRequest) GetFirstName() string {
@@ -3919,11 +3927,12 @@ const file_core_core_proto_rawDesc = "" +
 	" AuthenticateWithTelegramResponse\x12!\n" +
 	"\faccess_token\x18\x01 \x01(\tR\vaccessToken\x12'\n" +
 	"\x04user\x18\x02 \x01(\v2\x13.core.api.core.UserR\x04user\x12\x1e\n" +
-	"\vis_new_user\x18\x03 \x01(\bR\tisNewUser\"o\n" +
-	"\x1bCompleteRegistrationRequest\x12(\n" +
+	"\vis_new_user\x18\x03 \x01(\bR\tisNewUser\"\x92\x01\n" +
+	"\x1bCompleteRegistrationRequest\x12!\n" +
+	"\auser_id\x18\x01 \x01(\tB\b\xfaB\x05r\x03\xb0\x01\x01R\x06userId\x12(\n" +
 	"\n" +
-	"first_name\x18\x01 \x01(\tB\t\xfaB\x06r\x04\x10\x01\x18dR\tfirstName\x12&\n" +
-	"\tlast_name\x18\x02 \x01(\tB\t\xfaB\x06r\x04\x10\x01\x18dR\blastName\"G\n" +
+	"first_name\x18\x02 \x01(\tB\t\xfaB\x06r\x04\x10\x01\x18dR\tfirstName\x12&\n" +
+	"\tlast_name\x18\x03 \x01(\tB\t\xfaB\x06r\x04\x10\x01\x18dR\blastName\"G\n" +
 	"\x1cCompleteRegistrationResponse\x12'\n" +
 	"\x04user\x18\x01 \x01(\v2\x13.core.api.core.UserR\x04user\"\xb4\x01\n" +
 	"\x19CreateOrganizationRequest\x12\x1e\n" +
