@@ -300,6 +300,25 @@ service GeneratedContractService {
     }
 }
 
+// ===== Storage Service =====
+service StorageService {
+    // Получить presigned URL для загрузки документа
+    rpc GenerateUploadURL(GenerateUploadURLRequest) returns (GenerateUploadURLResponse) {
+        option (google.api.http) = {
+            post: "/v1/storage/upload-url"
+            body: "*"
+        };
+    }
+
+    // Получить presigned URL для скачивания документа
+    rpc GenerateDownloadURL(GenerateDownloadURLRequest) returns (GenerateDownloadURLResponse) {
+        option (google.api.http) = {
+            post: "/v1/storage/download-url"
+            body: "*"
+        };
+    }
+}
+
 // ===== Auth Messages =====
 
 message AuthenticateWithTelegramRequest {
@@ -695,3 +714,27 @@ message GeneratedContract {
     string file_type = 7;
     google.protobuf.Timestamp created_at = 8;
 }
+
+// ===== Storage Messages =====
+
+message GenerateUploadURLRequest {
+    string organization_id = 1 [(validate.rules).string.min_len = 1];
+    string file_name = 2 [(validate.rules).string = {min_len: 1, max_len: 255}];
+    string content_type = 3 [(validate.rules).string = {min_len: 1, max_len: 100}];
+}
+
+message GenerateUploadURLResponse {
+    string upload_url = 1;
+    string s3_key = 2;
+    int64 expires_in_seconds = 3;
+}
+
+message GenerateDownloadURLRequest {
+    string s3_key = 1 [(validate.rules).string.min_len = 1];
+}
+
+message GenerateDownloadURLResponse {
+    string download_url = 1;
+    int64 expires_in_seconds = 2;
+}
+

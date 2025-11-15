@@ -8264,3 +8264,466 @@ var _ interface {
 	Cause() error
 	ErrorName() string
 } = GeneratedContractValidationError{}
+
+// Validate checks the field values on GenerateUploadURLRequest with the rules
+// defined in the proto definition for this message. If any rules are
+// violated, the first error encountered is returned, or nil if there are no violations.
+func (m *GenerateUploadURLRequest) Validate() error {
+	return m.validate(false)
+}
+
+// ValidateAll checks the field values on GenerateUploadURLRequest with the
+// rules defined in the proto definition for this message. If any rules are
+// violated, the result is a list of violation errors wrapped in
+// GenerateUploadURLRequestMultiError, or nil if none found.
+func (m *GenerateUploadURLRequest) ValidateAll() error {
+	return m.validate(true)
+}
+
+func (m *GenerateUploadURLRequest) validate(all bool) error {
+	if m == nil {
+		return nil
+	}
+
+	var errors []error
+
+	if utf8.RuneCountInString(m.GetOrganizationId()) < 1 {
+		err := GenerateUploadURLRequestValidationError{
+			field:  "OrganizationId",
+			reason: "value length must be at least 1 runes",
+		}
+		if !all {
+			return err
+		}
+		errors = append(errors, err)
+	}
+
+	if l := utf8.RuneCountInString(m.GetFileName()); l < 1 || l > 255 {
+		err := GenerateUploadURLRequestValidationError{
+			field:  "FileName",
+			reason: "value length must be between 1 and 255 runes, inclusive",
+		}
+		if !all {
+			return err
+		}
+		errors = append(errors, err)
+	}
+
+	if l := utf8.RuneCountInString(m.GetContentType()); l < 1 || l > 100 {
+		err := GenerateUploadURLRequestValidationError{
+			field:  "ContentType",
+			reason: "value length must be between 1 and 100 runes, inclusive",
+		}
+		if !all {
+			return err
+		}
+		errors = append(errors, err)
+	}
+
+	if len(errors) > 0 {
+		return GenerateUploadURLRequestMultiError(errors)
+	}
+
+	return nil
+}
+
+// GenerateUploadURLRequestMultiError is an error wrapping multiple validation
+// errors returned by GenerateUploadURLRequest.ValidateAll() if the designated
+// constraints aren't met.
+type GenerateUploadURLRequestMultiError []error
+
+// Error returns a concatenation of all the error messages it wraps.
+func (m GenerateUploadURLRequestMultiError) Error() string {
+	msgs := make([]string, 0, len(m))
+	for _, err := range m {
+		msgs = append(msgs, err.Error())
+	}
+	return strings.Join(msgs, "; ")
+}
+
+// AllErrors returns a list of validation violation errors.
+func (m GenerateUploadURLRequestMultiError) AllErrors() []error { return m }
+
+// GenerateUploadURLRequestValidationError is the validation error returned by
+// GenerateUploadURLRequest.Validate if the designated constraints aren't met.
+type GenerateUploadURLRequestValidationError struct {
+	field  string
+	reason string
+	cause  error
+	key    bool
+}
+
+// Field function returns field value.
+func (e GenerateUploadURLRequestValidationError) Field() string { return e.field }
+
+// Reason function returns reason value.
+func (e GenerateUploadURLRequestValidationError) Reason() string { return e.reason }
+
+// Cause function returns cause value.
+func (e GenerateUploadURLRequestValidationError) Cause() error { return e.cause }
+
+// Key function returns key value.
+func (e GenerateUploadURLRequestValidationError) Key() bool { return e.key }
+
+// ErrorName returns error name.
+func (e GenerateUploadURLRequestValidationError) ErrorName() string {
+	return "GenerateUploadURLRequestValidationError"
+}
+
+// Error satisfies the builtin error interface
+func (e GenerateUploadURLRequestValidationError) Error() string {
+	cause := ""
+	if e.cause != nil {
+		cause = fmt.Sprintf(" | caused by: %v", e.cause)
+	}
+
+	key := ""
+	if e.key {
+		key = "key for "
+	}
+
+	return fmt.Sprintf(
+		"invalid %sGenerateUploadURLRequest.%s: %s%s",
+		key,
+		e.field,
+		e.reason,
+		cause)
+}
+
+var _ error = GenerateUploadURLRequestValidationError{}
+
+var _ interface {
+	Field() string
+	Reason() string
+	Key() bool
+	Cause() error
+	ErrorName() string
+} = GenerateUploadURLRequestValidationError{}
+
+// Validate checks the field values on GenerateUploadURLResponse with the rules
+// defined in the proto definition for this message. If any rules are
+// violated, the first error encountered is returned, or nil if there are no violations.
+func (m *GenerateUploadURLResponse) Validate() error {
+	return m.validate(false)
+}
+
+// ValidateAll checks the field values on GenerateUploadURLResponse with the
+// rules defined in the proto definition for this message. If any rules are
+// violated, the result is a list of violation errors wrapped in
+// GenerateUploadURLResponseMultiError, or nil if none found.
+func (m *GenerateUploadURLResponse) ValidateAll() error {
+	return m.validate(true)
+}
+
+func (m *GenerateUploadURLResponse) validate(all bool) error {
+	if m == nil {
+		return nil
+	}
+
+	var errors []error
+
+	// no validation rules for UploadUrl
+
+	// no validation rules for S3Key
+
+	// no validation rules for ExpiresInSeconds
+
+	if len(errors) > 0 {
+		return GenerateUploadURLResponseMultiError(errors)
+	}
+
+	return nil
+}
+
+// GenerateUploadURLResponseMultiError is an error wrapping multiple validation
+// errors returned by GenerateUploadURLResponse.ValidateAll() if the
+// designated constraints aren't met.
+type GenerateUploadURLResponseMultiError []error
+
+// Error returns a concatenation of all the error messages it wraps.
+func (m GenerateUploadURLResponseMultiError) Error() string {
+	msgs := make([]string, 0, len(m))
+	for _, err := range m {
+		msgs = append(msgs, err.Error())
+	}
+	return strings.Join(msgs, "; ")
+}
+
+// AllErrors returns a list of validation violation errors.
+func (m GenerateUploadURLResponseMultiError) AllErrors() []error { return m }
+
+// GenerateUploadURLResponseValidationError is the validation error returned by
+// GenerateUploadURLResponse.Validate if the designated constraints aren't met.
+type GenerateUploadURLResponseValidationError struct {
+	field  string
+	reason string
+	cause  error
+	key    bool
+}
+
+// Field function returns field value.
+func (e GenerateUploadURLResponseValidationError) Field() string { return e.field }
+
+// Reason function returns reason value.
+func (e GenerateUploadURLResponseValidationError) Reason() string { return e.reason }
+
+// Cause function returns cause value.
+func (e GenerateUploadURLResponseValidationError) Cause() error { return e.cause }
+
+// Key function returns key value.
+func (e GenerateUploadURLResponseValidationError) Key() bool { return e.key }
+
+// ErrorName returns error name.
+func (e GenerateUploadURLResponseValidationError) ErrorName() string {
+	return "GenerateUploadURLResponseValidationError"
+}
+
+// Error satisfies the builtin error interface
+func (e GenerateUploadURLResponseValidationError) Error() string {
+	cause := ""
+	if e.cause != nil {
+		cause = fmt.Sprintf(" | caused by: %v", e.cause)
+	}
+
+	key := ""
+	if e.key {
+		key = "key for "
+	}
+
+	return fmt.Sprintf(
+		"invalid %sGenerateUploadURLResponse.%s: %s%s",
+		key,
+		e.field,
+		e.reason,
+		cause)
+}
+
+var _ error = GenerateUploadURLResponseValidationError{}
+
+var _ interface {
+	Field() string
+	Reason() string
+	Key() bool
+	Cause() error
+	ErrorName() string
+} = GenerateUploadURLResponseValidationError{}
+
+// Validate checks the field values on GenerateDownloadURLRequest with the
+// rules defined in the proto definition for this message. If any rules are
+// violated, the first error encountered is returned, or nil if there are no violations.
+func (m *GenerateDownloadURLRequest) Validate() error {
+	return m.validate(false)
+}
+
+// ValidateAll checks the field values on GenerateDownloadURLRequest with the
+// rules defined in the proto definition for this message. If any rules are
+// violated, the result is a list of violation errors wrapped in
+// GenerateDownloadURLRequestMultiError, or nil if none found.
+func (m *GenerateDownloadURLRequest) ValidateAll() error {
+	return m.validate(true)
+}
+
+func (m *GenerateDownloadURLRequest) validate(all bool) error {
+	if m == nil {
+		return nil
+	}
+
+	var errors []error
+
+	if utf8.RuneCountInString(m.GetS3Key()) < 1 {
+		err := GenerateDownloadURLRequestValidationError{
+			field:  "S3Key",
+			reason: "value length must be at least 1 runes",
+		}
+		if !all {
+			return err
+		}
+		errors = append(errors, err)
+	}
+
+	if len(errors) > 0 {
+		return GenerateDownloadURLRequestMultiError(errors)
+	}
+
+	return nil
+}
+
+// GenerateDownloadURLRequestMultiError is an error wrapping multiple
+// validation errors returned by GenerateDownloadURLRequest.ValidateAll() if
+// the designated constraints aren't met.
+type GenerateDownloadURLRequestMultiError []error
+
+// Error returns a concatenation of all the error messages it wraps.
+func (m GenerateDownloadURLRequestMultiError) Error() string {
+	msgs := make([]string, 0, len(m))
+	for _, err := range m {
+		msgs = append(msgs, err.Error())
+	}
+	return strings.Join(msgs, "; ")
+}
+
+// AllErrors returns a list of validation violation errors.
+func (m GenerateDownloadURLRequestMultiError) AllErrors() []error { return m }
+
+// GenerateDownloadURLRequestValidationError is the validation error returned
+// by GenerateDownloadURLRequest.Validate if the designated constraints aren't met.
+type GenerateDownloadURLRequestValidationError struct {
+	field  string
+	reason string
+	cause  error
+	key    bool
+}
+
+// Field function returns field value.
+func (e GenerateDownloadURLRequestValidationError) Field() string { return e.field }
+
+// Reason function returns reason value.
+func (e GenerateDownloadURLRequestValidationError) Reason() string { return e.reason }
+
+// Cause function returns cause value.
+func (e GenerateDownloadURLRequestValidationError) Cause() error { return e.cause }
+
+// Key function returns key value.
+func (e GenerateDownloadURLRequestValidationError) Key() bool { return e.key }
+
+// ErrorName returns error name.
+func (e GenerateDownloadURLRequestValidationError) ErrorName() string {
+	return "GenerateDownloadURLRequestValidationError"
+}
+
+// Error satisfies the builtin error interface
+func (e GenerateDownloadURLRequestValidationError) Error() string {
+	cause := ""
+	if e.cause != nil {
+		cause = fmt.Sprintf(" | caused by: %v", e.cause)
+	}
+
+	key := ""
+	if e.key {
+		key = "key for "
+	}
+
+	return fmt.Sprintf(
+		"invalid %sGenerateDownloadURLRequest.%s: %s%s",
+		key,
+		e.field,
+		e.reason,
+		cause)
+}
+
+var _ error = GenerateDownloadURLRequestValidationError{}
+
+var _ interface {
+	Field() string
+	Reason() string
+	Key() bool
+	Cause() error
+	ErrorName() string
+} = GenerateDownloadURLRequestValidationError{}
+
+// Validate checks the field values on GenerateDownloadURLResponse with the
+// rules defined in the proto definition for this message. If any rules are
+// violated, the first error encountered is returned, or nil if there are no violations.
+func (m *GenerateDownloadURLResponse) Validate() error {
+	return m.validate(false)
+}
+
+// ValidateAll checks the field values on GenerateDownloadURLResponse with the
+// rules defined in the proto definition for this message. If any rules are
+// violated, the result is a list of violation errors wrapped in
+// GenerateDownloadURLResponseMultiError, or nil if none found.
+func (m *GenerateDownloadURLResponse) ValidateAll() error {
+	return m.validate(true)
+}
+
+func (m *GenerateDownloadURLResponse) validate(all bool) error {
+	if m == nil {
+		return nil
+	}
+
+	var errors []error
+
+	// no validation rules for DownloadUrl
+
+	// no validation rules for ExpiresInSeconds
+
+	if len(errors) > 0 {
+		return GenerateDownloadURLResponseMultiError(errors)
+	}
+
+	return nil
+}
+
+// GenerateDownloadURLResponseMultiError is an error wrapping multiple
+// validation errors returned by GenerateDownloadURLResponse.ValidateAll() if
+// the designated constraints aren't met.
+type GenerateDownloadURLResponseMultiError []error
+
+// Error returns a concatenation of all the error messages it wraps.
+func (m GenerateDownloadURLResponseMultiError) Error() string {
+	msgs := make([]string, 0, len(m))
+	for _, err := range m {
+		msgs = append(msgs, err.Error())
+	}
+	return strings.Join(msgs, "; ")
+}
+
+// AllErrors returns a list of validation violation errors.
+func (m GenerateDownloadURLResponseMultiError) AllErrors() []error { return m }
+
+// GenerateDownloadURLResponseValidationError is the validation error returned
+// by GenerateDownloadURLResponse.Validate if the designated constraints
+// aren't met.
+type GenerateDownloadURLResponseValidationError struct {
+	field  string
+	reason string
+	cause  error
+	key    bool
+}
+
+// Field function returns field value.
+func (e GenerateDownloadURLResponseValidationError) Field() string { return e.field }
+
+// Reason function returns reason value.
+func (e GenerateDownloadURLResponseValidationError) Reason() string { return e.reason }
+
+// Cause function returns cause value.
+func (e GenerateDownloadURLResponseValidationError) Cause() error { return e.cause }
+
+// Key function returns key value.
+func (e GenerateDownloadURLResponseValidationError) Key() bool { return e.key }
+
+// ErrorName returns error name.
+func (e GenerateDownloadURLResponseValidationError) ErrorName() string {
+	return "GenerateDownloadURLResponseValidationError"
+}
+
+// Error satisfies the builtin error interface
+func (e GenerateDownloadURLResponseValidationError) Error() string {
+	cause := ""
+	if e.cause != nil {
+		cause = fmt.Sprintf(" | caused by: %v", e.cause)
+	}
+
+	key := ""
+	if e.key {
+		key = "key for "
+	}
+
+	return fmt.Sprintf(
+		"invalid %sGenerateDownloadURLResponse.%s: %s%s",
+		key,
+		e.field,
+		e.reason,
+		cause)
+}
+
+var _ error = GenerateDownloadURLResponseValidationError{}
+
+var _ interface {
+	Field() string
+	Reason() string
+	Key() bool
+	Cause() error
+	ErrorName() string
+} = GenerateDownloadURLResponseValidationError{}

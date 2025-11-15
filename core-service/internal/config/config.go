@@ -56,6 +56,15 @@ type RabbitMQ struct {
 	QueueName string `mapstructure:"queue_name"`
 }
 
+type S3 struct {
+	Endpoint  string `mapstructure:"endpoint"`
+	AccessKey string `mapstructure:"access_key"`
+	SecretKey string `mapstructure:"secret_key"`
+	Region    string `mapstructure:"region"`
+	Bucket    string `mapstructure:"bucket"`
+	UseSSL    bool   `mapstructure:"use_ssl"`
+}
+
 type Telegram struct {
 	BotTokens          []string `mapstructure:"bot_tokens"`
 	InitDataTTLSeconds int      `mapstructure:"init_data_ttl_seconds"`
@@ -72,6 +81,7 @@ type Config struct {
 	JWT         JWT      `mapstructure:"jwt"`
 	Jaeger      Jaeger   `mapstructure:"jaeger"`
 	RabbitMQ    RabbitMQ `mapstructure:"rabbitmq"`
+	S3          S3       `mapstructure:"s3"`
 	Telegram    Telegram `mapstructure:"telegram"`
 }
 
@@ -250,6 +260,42 @@ func (c *Config) GetTelegramBotTokens() []string {
 	c.mu.RLock()
 	defer c.mu.RUnlock()
 	return c.Telegram.BotTokens
+}
+
+func (c *Config) GetS3Endpoint() string {
+	c.mu.RLock()
+	defer c.mu.RUnlock()
+	return c.S3.Endpoint
+}
+
+func (c *Config) GetS3AccessKey() string {
+	c.mu.RLock()
+	defer c.mu.RUnlock()
+	return c.S3.AccessKey
+}
+
+func (c *Config) GetS3SecretKey() string {
+	c.mu.RLock()
+	defer c.mu.RUnlock()
+	return c.S3.SecretKey
+}
+
+func (c *Config) GetS3Region() string {
+	c.mu.RLock()
+	defer c.mu.RUnlock()
+	return c.S3.Region
+}
+
+func (c *Config) GetS3Bucket() string {
+	c.mu.RLock()
+	defer c.mu.RUnlock()
+	return c.S3.Bucket
+}
+
+func (c *Config) GetS3UseSSL() bool {
+	c.mu.RLock()
+	defer c.mu.RUnlock()
+	return c.S3.UseSSL
 }
 
 func (c *Config) GetTelegramInitDataTTL() time.Duration {

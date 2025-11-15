@@ -7,6 +7,7 @@ import (
 	"core-service/internal/app/core-service/api/document"
 	"core-service/internal/app/core-service/api/note"
 	"core-service/internal/app/core-service/api/organization"
+	"core-service/internal/app/core-service/api/storage"
 	"core-service/internal/app/core-service/api/template"
 	"core-service/internal/app/core-service/api/user"
 	"core-service/internal/app/interceptors"
@@ -53,6 +54,7 @@ type App struct {
 	noteService     *note.Service
 	templateService *template.Service
 	contractService *contract.Service
+	storageService  *storage.Service
 	authService     *auth.Service
 	grpcServer      *grpc.Server
 	httpServer      *http.Server
@@ -66,6 +68,7 @@ type Services struct {
 	NoteService         note.NoteService
 	TemplateService     template.TemplateService
 	ContractService     contract.ContractService
+	StorageService      storage.StorageService
 }
 
 func New(cfg *config.Config, jwtProvider *jwt.Provider, services Services, authSvc *auth.Service, opts ...OptionsFunc) *App {
@@ -83,6 +86,7 @@ func New(cfg *config.Config, jwtProvider *jwt.Provider, services Services, authS
 		noteService:     note.NewService(services.NoteService),
 		templateService: template.NewService(services.TemplateService),
 		contractService: contract.NewService(services.ContractService),
+		storageService:  storage.NewService(services.StorageService),
 		authService:     authSvc,
 		options:         options,
 	}
@@ -127,6 +131,7 @@ func (a *App) setupGRPC() {
 	pb.RegisterNoteServiceServer(a.grpcServer, a.noteService)
 	pb.RegisterContractTemplateServiceServer(a.grpcServer, a.templateService)
 	pb.RegisterGeneratedContractServiceServer(a.grpcServer, a.contractService)
+	pb.RegisterStorageServiceServer(a.grpcServer, a.storageService)
 
 	// Register reflection for grpcurl
 	reflection.Register(a.grpcServer)

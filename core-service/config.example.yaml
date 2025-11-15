@@ -27,6 +27,14 @@ rabbitmq:
   url: "amqp://guest:guest@localhost:5672/"
   queue_name: "document_processing"
 
+s3:
+  endpoint: "http://localhost:9000"
+  access_key: "minioadmin"
+  secret_key: "minioadmin"
+  region: "us-east-1"
+  bucket: "business-thing"
+  use_ssl: false
+
 telegram:
   bot_tokens:  # Список валидных токенов ботов (получите токены у @BotFather в Telegram)
     - ""
