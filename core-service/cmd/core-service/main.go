@@ -15,8 +15,10 @@ import (
 	"core-service/internal/service/document"
 	"core-service/internal/service/note"
 	"core-service/internal/service/organization"
+	"core-service/internal/service/storage"
 	"core-service/internal/service/template"
 	"core-service/internal/service/user"
+	storagepkg "core-service/internal/storage"
 	"core-service/internal/telegram"
 	"core-service/internal/tracer"
 	"flag"
@@ -77,6 +79,20 @@ func main() {
 	}
 	defer queueClient.Close()
 
+	// Initialize S3 client
+	s3Client, err := storagepkg.NewS3Client(
+		cfg.GetS3Endpoint(),
+		cfg.GetS3AccessKey(),
+		cfg.GetS3SecretKey(),
+		cfg.GetS3Region(),
+		cfg.GetS3Bucket(),
+		cfg.GetS3UseSSL(),
+	)
+	if err != nil {
+		logger.Fatalf(ctx, "Failed to create S3 client: %v", err)
+	}
+	logger.Info(ctx, "S3 client initialized")
+
 	// Initialize services
 	orgService := organization.New(repo)
 	userService := user.New(repo)
@@ -84,6 +100,7 @@ func main() {
 	noteService := note.New(repo)
 	templateService := template.New(repo, queueClient, contextManager)
 	contractService := contract.New(repo)
+	storageService := storage.New(s3Client)
 
 	// Initialize JWT provider
 	jwtSecret := cfg.GetJWTSecret()
@@ -116,6 +133,7 @@ func main() {
 		NoteService:         noteService,
 		TemplateService:     templateService,
 		ContractService:     contractService,
+		StorageService:      storageService,
 	}, authAPIService,
 		app.WithHTTPPathPrefix(cfg.GetHTTPPathPrefix()),
 	)

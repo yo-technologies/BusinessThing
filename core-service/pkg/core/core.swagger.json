@@ -26,6 +26,9 @@
     },
     {
       "name": "GeneratedContractService"
+    },
+    {
+      "name": "StorageService"
     }
   ],
   "basePath": "/api",
@@ -941,6 +944,72 @@
         ]
       }
     },
+    "/v1/storage/download-url": {
+      "post": {
+        "summary": "Получить presigned URL для скачивания документа",
+        "operationId": "StorageService_GenerateDownloadURL",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/coreGenerateDownloadURLResponse"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/rpcStatus"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/coreGenerateDownloadURLRequest"
+            }
+          }
+        ],
+        "tags": [
+          "StorageService"
+        ]
+      }
+    },
+    "/v1/storage/upload-url": {
+      "post": {
+        "summary": "Получить presigned URL для загрузки документа",
+        "operationId": "StorageService_GenerateUploadURL",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/coreGenerateUploadURLResponse"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/rpcStatus"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/coreGenerateUploadURLRequest"
+            }
+          }
+        ],
+        "tags": [
+          "StorageService"
+        ]
+      }
+    },
     "/v1/templates/{id}": {
       "get": {
         "summary": "Получить шаблон",
@@ -1469,6 +1538,55 @@
         "DOCUMENT_STATUS_FAILED"
       ],
       "default": "DOCUMENT_STATUS_UNSPECIFIED"
+    },
+    "coreGenerateDownloadURLRequest": {
+      "type": "object",
+      "properties": {
+        "s3Key": {
+          "type": "string"
+        }
+      }
+    },
+    "coreGenerateDownloadURLResponse": {
+      "type": "object",
+      "properties": {
+        "downloadUrl": {
+          "type": "string"
+        },
+        "expiresInSeconds": {
+          "type": "string",
+          "format": "int64"
+        }
+      }
+    },
+    "coreGenerateUploadURLRequest": {
+      "type": "object",
+      "properties": {
+        "organizationId": {
+          "type": "string"
+        },
+        "fileName": {
+          "type": "string"
+        },
+        "contentType": {
+          "type": "string"
+        }
+      }
+    },
+    "coreGenerateUploadURLResponse": {
+      "type": "object",
+      "properties": {
+        "uploadUrl": {
+          "type": "string"
+        },
+        "s3Key": {
+          "type": "string"
+        },
+        "expiresInSeconds": {
+          "type": "string",
+          "format": "int64"
+        }
+      }
     },
     "coreGeneratedContract": {
       "type": "object",

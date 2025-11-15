@@ -27,6 +27,14 @@ rabbitmq:
   url: "amqp://guest:guest@localhost:5672/"
   queue_name: "document_processing"
 
+s3:
+  endpoint: "http://localhost:9000"
+  access_key: "minioadmin"
+  secret_key: "minioadmin"
+  region: "us-east-1"
+  bucket: "business-thing"
+  use_ssl: false
+
 telegram:
   bot_token: ""  # Получите токен у @BotFather в Telegram
   init_data_ttl_seconds: 86400  # TTL для проверки initData (24 часа)
