@@ -25,8 +25,8 @@ type DocumentWithLoading = CoreDocument & { deleting?: boolean };
 
 export default function DocumentsPage() {
   const router = useRouter();
-  const { loading: authLoading, isAuthenticated, isNewUser } = useAuth();
-  const { currentOrg, loading: orgLoading, needsOrganization } = useOrganization();
+  const { loading: authLoading, isAuthenticated, isNewUser, organizations } = useAuth();
+  const { currentOrg, loading: orgLoading, needsOrganization } = useOrganization({ organizations });
   const { core } = useApiClients();
 
   const [documents, setDocuments] = useState<DocumentWithLoading[]>([]);
@@ -36,10 +36,10 @@ export default function DocumentsPage() {
   const { isOpen, onOpen, onClose } = useDisclosure();
 
   useEffect(() => {
-    if (!authLoading && isAuthenticated && isNewUser) {
+    if (!authLoading && isNewUser) {
       router.replace("/onboarding");
     }
-  }, [isAuthenticated, isNewUser, authLoading, router]);
+  }, [isNewUser, authLoading, router]);
 
   useEffect(() => {
     if (!authLoading && !orgLoading && isAuthenticated && !isNewUser && needsOrganization) {

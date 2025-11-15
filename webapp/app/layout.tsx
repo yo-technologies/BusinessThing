@@ -8,6 +8,7 @@ import { siteConfig } from "@/config/site";
 import { fontSans } from "@/config/fonts";
 import { BottomNavbar } from "@/components/layout/BottomNavbar";
 import { OrganizationSwitcher } from "@/components/layout/OrganizationSwitcher";
+import { TelegramInit } from "@/components/TelegramInit";
 
 export const metadata: Metadata = {
   title: {
@@ -42,6 +43,7 @@ export default function RootLayout({
         )}
       >
         <Providers themeProps={{ attribute: "class", defaultTheme: "dark" }}>
+          <TelegramInit />
           <div className="flex min-h-screen flex-col bg-gradient-to-b from-background via-background to-default-100">
             <div className="fixed left-0 right-0 top-0 z-40 flex items-center justify-between border-b border-default-200 bg-background/80 px-4 py-2 backdrop-blur-md">
               <OrganizationSwitcher />
