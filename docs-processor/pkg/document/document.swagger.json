@@ -54,6 +54,39 @@
           "DocumentService"
         ]
       }
+    },
+    "/v1/templates/search": {
+      "post": {
+        "summary": "SearchTemplates ищет релевантные шаблоны договоров по запросу",
+        "operationId": "DocumentService_SearchTemplates",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/documentSearchTemplatesResponse"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/rpcStatus"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/documentSearchTemplatesRequest"
+            }
+          }
+        ],
+        "tags": [
+          "DocumentService"
+        ]
+      }
     }
   },
   "definitions": {
@@ -127,6 +160,67 @@
             "type": "object",
             "$ref": "#/definitions/documentDocumentChunk"
           }
+        }
+      }
+    },
+    "documentSearchTemplatesRequest": {
+      "type": "object",
+      "properties": {
+        "query": {
+          "type": "string",
+          "title": "query - текст запроса для поиска шаблона"
+        },
+        "organizationId": {
+          "type": "string",
+          "title": "organization_id - ID организации для фильтрации шаблонов"
+        },
+        "limit": {
+          "type": "integer",
+          "format": "int32",
+          "title": "limit - максимальное количество результатов"
+        }
+      }
+    },
+    "documentSearchTemplatesResponse": {
+      "type": "object",
+      "properties": {
+        "templates": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "$ref": "#/definitions/documentTemplateSearchResult"
+          }
+        }
+      }
+    },
+    "documentTemplateSearchResult": {
+      "type": "object",
+      "properties": {
+        "templateId": {
+          "type": "string",
+          "title": "template_id - ID шаблона из core-service"
+        },
+        "name": {
+          "type": "string",
+          "title": "name - название шаблона"
+        },
+        "description": {
+          "type": "string",
+          "title": "description - описание шаблона"
+        },
+        "templateType": {
+          "type": "string",
+          "title": "template_type - тип шаблона"
+        },
+        "fieldsCount": {
+          "type": "integer",
+          "format": "int32",
+          "title": "fields_count - количество полей для заполнения"
+        },
+        "score": {
+          "type": "number",
+          "format": "float",
+          "title": "score - оценка релевантности (0.0 - 1.0)"
         }
       }
     },

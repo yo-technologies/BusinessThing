@@ -2,6 +2,7 @@ package document
 
 import (
 	"context"
+	"fmt"
 
 	"docs-processor/internal/domain"
 	"docs-processor/internal/service"
@@ -12,12 +13,14 @@ import (
 
 type Service struct {
 	desc.UnimplementedDocumentServiceServer
-	searchService *service.SearchService
+	searchService     *service.SearchService
+	templateProcessor *service.TemplateProcessor
 }
 
-func NewService(searchService *service.SearchService) *Service {
+func NewService(searchService *service.SearchService, templateProcessor *service.TemplateProcessor) *Service {
 	return &Service{
-		searchService: searchService,
+		searchService:     searchService,
+		templateProcessor: templateProcessor,
 	}
 }
 
@@ -25,7 +28,11 @@ func (s *Service) SearchChunks(ctx context.Context, req *desc.SearchChunksReques
 	span, ctx := opentracing.StartSpanFromContext(ctx, "api.document.Service.SearchChunks")
 	defer span.Finish()
 
-	organizationID := domain.ID(req.OrganizationId)
+	organizationID, err := domain.ParseID(req.GetOrganizationId())
+	if err != nil {
+		return nil, fmt.Errorf("invalid organization_id: %w", err)
+	}
+
 	limit := int(req.Limit)
 	if limit == 0 {
 		limit = 10
@@ -55,5 +62,41 @@ func (s *Service) SearchChunks(ctx context.Context, req *desc.SearchChunksReques
 
 	return &desc.SearchChunksResponse{
 		Chunks: chunks,
+	}, nil
+}
+
+func (s *Service) SearchTemplates(ctx context.Context, req *desc.SearchTemplatesRequest) (*desc.SearchTemplatesResponse, error) {
+	span, ctx := opentracing.StartSpanFromContext(ctx, "api.document.Service.SearchTemplates")
+	defer span.Finish()
+
+	organizationID, err := domain.ParseID(req.GetOrganizationId())
+	if err != nil {
+		return nil, fmt.Errorf("invalid organization_id: %w", err)
+	}
+
+	limit := int(req.Limit)
+	if limit <= 0 || limit > 100 {
+		limit = 10
+	}
+
+	results, err := s.templateProcessor.SearchTemplates(ctx, organizationID, req.Query, limit)
+	if err != nil {
+		return nil, err
+	}
+
+	templates := make([]*desc.TemplateSearchResult, len(results))
+	for i, r := range results {
+		templates[i] = &desc.TemplateSearchResult{
+			TemplateId:   r.TemplateID.String(),
+			Name:         r.Name,
+			Description:  r.Description,
+			TemplateType: r.TemplateType,
+			FieldsCount:  int32(r.FieldsCount),
+			Score:        r.Score,
+		}
+	}
+
+	return &desc.SearchTemplatesResponse{
+		Templates: templates,
 	}, nil
 }

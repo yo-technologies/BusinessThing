@@ -19,7 +19,8 @@ import (
 const _ = grpc.SupportPackageIsVersion9
 
 const (
-	DocumentService_SearchChunks_FullMethodName = "/document.DocumentService/SearchChunks"
+	DocumentService_SearchChunks_FullMethodName    = "/document.DocumentService/SearchChunks"
+	DocumentService_SearchTemplates_FullMethodName = "/document.DocumentService/SearchTemplates"
 )
 
 // DocumentServiceClient is the client API for DocumentService service.
@@ -30,6 +31,8 @@ const (
 type DocumentServiceClient interface {
 	// SearchChunks ищет релевантные фрагменты документов по запросу
 	SearchChunks(ctx context.Context, in *SearchChunksRequest, opts ...grpc.CallOption) (*SearchChunksResponse, error)
+	// SearchTemplates ищет релевантные шаблоны договоров по запросу
+	SearchTemplates(ctx context.Context, in *SearchTemplatesRequest, opts ...grpc.CallOption) (*SearchTemplatesResponse, error)
 }
 
 type documentServiceClient struct {
@@ -50,6 +53,16 @@ func (c *documentServiceClient) SearchChunks(ctx context.Context, in *SearchChun
 	return out, nil
 }
 
+func (c *documentServiceClient) SearchTemplates(ctx context.Context, in *SearchTemplatesRequest, opts ...grpc.CallOption) (*SearchTemplatesResponse, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(SearchTemplatesResponse)
+	err := c.cc.Invoke(ctx, DocumentService_SearchTemplates_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 // DocumentServiceServer is the server API for DocumentService service.
 // All implementations must embed UnimplementedDocumentServiceServer
 // for forward compatibility.
@@ -58,6 +71,8 @@ func (c *documentServiceClient) SearchChunks(ctx context.Context, in *SearchChun
 type DocumentServiceServer interface {
 	// SearchChunks ищет релевантные фрагменты документов по запросу
 	SearchChunks(context.Context, *SearchChunksRequest) (*SearchChunksResponse, error)
+	// SearchTemplates ищет релевантные шаблоны договоров по запросу
+	SearchTemplates(context.Context, *SearchTemplatesRequest) (*SearchTemplatesResponse, error)
 	mustEmbedUnimplementedDocumentServiceServer()
 }
 
@@ -70,6 +85,9 @@ type UnimplementedDocumentServiceServer struct{}
 
 func (UnimplementedDocumentServiceServer) SearchChunks(context.Context, *SearchChunksRequest) (*SearchChunksResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method SearchChunks not implemented")
+}
+func (UnimplementedDocumentServiceServer) SearchTemplates(context.Context, *SearchTemplatesRequest) (*SearchTemplatesResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method SearchTemplates not implemented")
 }
 func (UnimplementedDocumentServiceServer) mustEmbedUnimplementedDocumentServiceServer() {}
 func (UnimplementedDocumentServiceServer) testEmbeddedByValue()                         {}
@@ -110,6 +128,24 @@ func _DocumentService_SearchChunks_Handler(srv interface{}, ctx context.Context,
 	return interceptor(ctx, in, info, handler)
 }
 
+func _DocumentService_SearchTemplates_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(SearchTemplatesRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(DocumentServiceServer).SearchTemplates(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: DocumentService_SearchTemplates_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(DocumentServiceServer).SearchTemplates(ctx, req.(*SearchTemplatesRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 // DocumentService_ServiceDesc is the grpc.ServiceDesc for DocumentService service.
 // It's only intended for direct use with grpc.RegisterService,
 // and not to be introspected or modified (even as a copy)
@@ -120,6 +156,10 @@ var DocumentService_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "SearchChunks",
 			Handler:    _DocumentService_SearchChunks_Handler,
+		},
+		{
+			MethodName: "SearchTemplates",
+			Handler:    _DocumentService_SearchTemplates_Handler,
 		},
 	},
 	Streams:  []grpc.StreamDesc{},

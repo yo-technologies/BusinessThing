@@ -30,6 +30,14 @@ service DocumentService {
       body: "*"
     };
   }
+
+  // SearchTemplates ищет релевантные шаблоны договоров по запросу
+  rpc SearchTemplates(SearchTemplatesRequest) returns (SearchTemplatesResponse) {
+    option (google.api.http) = {
+      post: "/v1/templates/search"
+      body: "*"
+    };
+  }
 }
 
 message SearchChunksRequest {
@@ -62,4 +70,34 @@ message DocumentChunk {
   float score = 6;
   // metadata - дополнительные метаданные фрагмента
   map<string, string> metadata = 7;
+}
+
+// Шаблоны договоров
+
+message SearchTemplatesRequest {
+  // query - текст запроса для поиска шаблона
+  string query = 1;
+  // organization_id - ID организации для фильтрации шаблонов
+  string organization_id = 2;
+  // limit - максимальное количество результатов
+  int32 limit = 3;
+}
+
+message SearchTemplatesResponse {
+  repeated TemplateSearchResult templates = 1;
+}
+
+message TemplateSearchResult {
+  // template_id - ID шаблона из core-service
+  string template_id = 1;
+  // name - название шаблона
+  string name = 2;
+  // description - описание шаблона
+  string description = 3;
+  // template_type - тип шаблона
+  string template_type = 4;
+  // fields_count - количество полей для заполнения
+  int32 fields_count = 5;
+  // score - оценка релевантности (0.0 - 1.0)
+  float score = 6;
 }

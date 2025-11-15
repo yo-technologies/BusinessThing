@@ -89,6 +89,9 @@ var LegalAgent = &domain.AgentDefinition{
 	AllowedTools: []domain.ToolName{
 		domain.ToolNameWebSearch,
 		domain.ToolNameSaveOrganizationNote,
+		domain.ToolNameSearchContractTemplates,
+		domain.ToolNameGenerateContract,
+		domain.ToolNameListGeneratedContracts,
 	},
 	CanCallSubagents: false,
 	IsSubagent:       true,

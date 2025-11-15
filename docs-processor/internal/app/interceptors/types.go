@@ -35,13 +35,13 @@ func WithUserID(ctx context.Context, userID domain.ID) context.Context {
 func UserIDFromContext(ctx context.Context) (domain.ID, error) {
 	val := ctx.Value(userIDContextKey)
 	if val == nil {
-		return "", domain.ErrUnauthorized
+		return domain.ID{}, domain.ErrUnauthorized
 	}
-	id, ok := val.(domain.ID)
+	userID, ok := val.(domain.ID)
 	if !ok {
-		return "", errors.New("invalid user id in context")
+		return domain.ID{}, errors.New("invalid user ID in context")
 	}
-	return id, nil
+	return userID, nil
 }
 
 // WithAccessToken stores access token string in context for downstream handlers

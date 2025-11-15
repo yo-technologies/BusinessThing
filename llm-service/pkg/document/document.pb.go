@@ -238,6 +238,203 @@ func (x *DocumentChunk) GetMetadata() map[string]string {
 	return nil
 }
 
+type SearchTemplatesRequest struct {
+	state protoimpl.MessageState `protogen:"open.v1"`
+	// query - текст запроса для поиска шаблона
+	Query string `protobuf:"bytes,1,opt,name=query,proto3" json:"query,omitempty"`
+	// organization_id - ID организации для фильтрации шаблонов
+	OrganizationId string `protobuf:"bytes,2,opt,name=organization_id,json=organizationId,proto3" json:"organization_id,omitempty"`
+	// limit - максимальное количество результатов
+	Limit         int32 `protobuf:"varint,3,opt,name=limit,proto3" json:"limit,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *SearchTemplatesRequest) Reset() {
+	*x = SearchTemplatesRequest{}
+	mi := &file_document_document_proto_msgTypes[3]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *SearchTemplatesRequest) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*SearchTemplatesRequest) ProtoMessage() {}
+
+func (x *SearchTemplatesRequest) ProtoReflect() protoreflect.Message {
+	mi := &file_document_document_proto_msgTypes[3]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use SearchTemplatesRequest.ProtoReflect.Descriptor instead.
+func (*SearchTemplatesRequest) Descriptor() ([]byte, []int) {
+	return file_document_document_proto_rawDescGZIP(), []int{3}
+}
+
+func (x *SearchTemplatesRequest) GetQuery() string {
+	if x != nil {
+		return x.Query
+	}
+	return ""
+}
+
+func (x *SearchTemplatesRequest) GetOrganizationId() string {
+	if x != nil {
+		return x.OrganizationId
+	}
+	return ""
+}
+
+func (x *SearchTemplatesRequest) GetLimit() int32 {
+	if x != nil {
+		return x.Limit
+	}
+	return 0
+}
+
+type SearchTemplatesResponse struct {
+	state         protoimpl.MessageState  `protogen:"open.v1"`
+	Templates     []*TemplateSearchResult `protobuf:"bytes,1,rep,name=templates,proto3" json:"templates,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *SearchTemplatesResponse) Reset() {
+	*x = SearchTemplatesResponse{}
+	mi := &file_document_document_proto_msgTypes[4]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *SearchTemplatesResponse) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*SearchTemplatesResponse) ProtoMessage() {}
+
+func (x *SearchTemplatesResponse) ProtoReflect() protoreflect.Message {
+	mi := &file_document_document_proto_msgTypes[4]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use SearchTemplatesResponse.ProtoReflect.Descriptor instead.
+func (*SearchTemplatesResponse) Descriptor() ([]byte, []int) {
+	return file_document_document_proto_rawDescGZIP(), []int{4}
+}
+
+func (x *SearchTemplatesResponse) GetTemplates() []*TemplateSearchResult {
+	if x != nil {
+		return x.Templates
+	}
+	return nil
+}
+
+type TemplateSearchResult struct {
+	state protoimpl.MessageState `protogen:"open.v1"`
+	// template_id - ID шаблона из core-service
+	TemplateId string `protobuf:"bytes,1,opt,name=template_id,json=templateId,proto3" json:"template_id,omitempty"`
+	// name - название шаблона
+	Name string `protobuf:"bytes,2,opt,name=name,proto3" json:"name,omitempty"`
+	// description - описание шаблона
+	Description string `protobuf:"bytes,3,opt,name=description,proto3" json:"description,omitempty"`
+	// template_type - тип шаблона
+	TemplateType string `protobuf:"bytes,4,opt,name=template_type,json=templateType,proto3" json:"template_type,omitempty"`
+	// fields_count - количество полей для заполнения
+	FieldsCount int32 `protobuf:"varint,5,opt,name=fields_count,json=fieldsCount,proto3" json:"fields_count,omitempty"`
+	// score - оценка релевантности (0.0 - 1.0)
+	Score         float32 `protobuf:"fixed32,6,opt,name=score,proto3" json:"score,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *TemplateSearchResult) Reset() {
+	*x = TemplateSearchResult{}
+	mi := &file_document_document_proto_msgTypes[5]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *TemplateSearchResult) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*TemplateSearchResult) ProtoMessage() {}
+
+func (x *TemplateSearchResult) ProtoReflect() protoreflect.Message {
+	mi := &file_document_document_proto_msgTypes[5]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use TemplateSearchResult.ProtoReflect.Descriptor instead.
+func (*TemplateSearchResult) Descriptor() ([]byte, []int) {
+	return file_document_document_proto_rawDescGZIP(), []int{5}
+}
+
+func (x *TemplateSearchResult) GetTemplateId() string {
+	if x != nil {
+		return x.TemplateId
+	}
+	return ""
+}
+
+func (x *TemplateSearchResult) GetName() string {
+	if x != nil {
+		return x.Name
+	}
+	return ""
+}
+
+func (x *TemplateSearchResult) GetDescription() string {
+	if x != nil {
+		return x.Description
+	}
+	return ""
+}
+
+func (x *TemplateSearchResult) GetTemplateType() string {
+	if x != nil {
+		return x.TemplateType
+	}
+	return ""
+}
+
+func (x *TemplateSearchResult) GetFieldsCount() int32 {
+	if x != nil {
+		return x.FieldsCount
+	}
+	return 0
+}
+
+func (x *TemplateSearchResult) GetScore() float32 {
+	if x != nil {
+		return x.Score
+	}
+	return 0
+}
+
 var File_document_document_proto protoreflect.FileDescriptor
 
 const file_document_document_proto_rawDesc = "" +
@@ -261,9 +458,24 @@ const file_document_document_proto_rawDesc = "" +
 	"\bmetadata\x18\a \x03(\v2%.document.DocumentChunk.MetadataEntryR\bmetadata\x1a;\n" +
 	"\rMetadataEntry\x12\x10\n" +
 	"\x03key\x18\x01 \x01(\tR\x03key\x12\x14\n" +
-	"\x05value\x18\x02 \x01(\tR\x05value:\x028\x012\x81\x01\n" +
+	"\x05value\x18\x02 \x01(\tR\x05value:\x028\x01\"m\n" +
+	"\x16SearchTemplatesRequest\x12\x14\n" +
+	"\x05query\x18\x01 \x01(\tR\x05query\x12'\n" +
+	"\x0forganization_id\x18\x02 \x01(\tR\x0eorganizationId\x12\x14\n" +
+	"\x05limit\x18\x03 \x01(\x05R\x05limit\"W\n" +
+	"\x17SearchTemplatesResponse\x12<\n" +
+	"\ttemplates\x18\x01 \x03(\v2\x1e.document.TemplateSearchResultR\ttemplates\"\xcb\x01\n" +
+	"\x14TemplateSearchResult\x12\x1f\n" +
+	"\vtemplate_id\x18\x01 \x01(\tR\n" +
+	"templateId\x12\x12\n" +
+	"\x04name\x18\x02 \x01(\tR\x04name\x12 \n" +
+	"\vdescription\x18\x03 \x01(\tR\vdescription\x12#\n" +
+	"\rtemplate_type\x18\x04 \x01(\tR\ftemplateType\x12!\n" +
+	"\ffields_count\x18\x05 \x01(\x05R\vfieldsCount\x12\x14\n" +
+	"\x05score\x18\x06 \x01(\x02R\x05score2\xfa\x01\n" +
 	"\x0fDocumentService\x12n\n" +
-	"\fSearchChunks\x12\x1d.document.SearchChunksRequest\x1a\x1e.document.SearchChunksResponse\"\x1f\x82\xd3\xe4\x93\x02\x19:\x01*\"\x14/v1/documents/searchB\xa7\x01\x92A\x86\x01\x12V\n" +
+	"\fSearchChunks\x12\x1d.document.SearchChunksRequest\x1a\x1e.document.SearchChunksResponse\"\x1f\x82\xd3\xe4\x93\x02\x19:\x01*\"\x14/v1/documents/search\x12w\n" +
+	"\x0fSearchTemplates\x12 .document.SearchTemplatesRequest\x1a!.document.SearchTemplatesResponse\"\x1f\x82\xd3\xe4\x93\x02\x19:\x01*\"\x14/v1/templates/searchB\xa7\x01\x92A\x86\x01\x12V\n" +
 	"\x17Document Processing API\x124API for Document Processing Service of BusinessThing2\x051.0.0\"\x04/api*\x02\x01\x022\x10application/json:\x10application/jsonZ\x1bdocs-processor/pkg/documentb\x06proto3"
 
 var (
@@ -278,23 +490,29 @@ func file_document_document_proto_rawDescGZIP() []byte {
 	return file_document_document_proto_rawDescData
 }
 
-var file_document_document_proto_msgTypes = make([]protoimpl.MessageInfo, 4)
+var file_document_document_proto_msgTypes = make([]protoimpl.MessageInfo, 7)
 var file_document_document_proto_goTypes = []any{
-	(*SearchChunksRequest)(nil),  // 0: document.SearchChunksRequest
-	(*SearchChunksResponse)(nil), // 1: document.SearchChunksResponse
-	(*DocumentChunk)(nil),        // 2: document.DocumentChunk
-	nil,                          // 3: document.DocumentChunk.MetadataEntry
+	(*SearchChunksRequest)(nil),     // 0: document.SearchChunksRequest
+	(*SearchChunksResponse)(nil),    // 1: document.SearchChunksResponse
+	(*DocumentChunk)(nil),           // 2: document.DocumentChunk
+	(*SearchTemplatesRequest)(nil),  // 3: document.SearchTemplatesRequest
+	(*SearchTemplatesResponse)(nil), // 4: document.SearchTemplatesResponse
+	(*TemplateSearchResult)(nil),    // 5: document.TemplateSearchResult
+	nil,                             // 6: document.DocumentChunk.MetadataEntry
 }
 var file_document_document_proto_depIdxs = []int32{
 	2, // 0: document.SearchChunksResponse.chunks:type_name -> document.DocumentChunk
-	3, // 1: document.DocumentChunk.metadata:type_name -> document.DocumentChunk.MetadataEntry
-	0, // 2: document.DocumentService.SearchChunks:input_type -> document.SearchChunksRequest
-	1, // 3: document.DocumentService.SearchChunks:output_type -> document.SearchChunksResponse
-	3, // [3:4] is the sub-list for method output_type
-	2, // [2:3] is the sub-list for method input_type
-	2, // [2:2] is the sub-list for extension type_name
-	2, // [2:2] is the sub-list for extension extendee
-	0, // [0:2] is the sub-list for field type_name
+	6, // 1: document.DocumentChunk.metadata:type_name -> document.DocumentChunk.MetadataEntry
+	5, // 2: document.SearchTemplatesResponse.templates:type_name -> document.TemplateSearchResult
+	0, // 3: document.DocumentService.SearchChunks:input_type -> document.SearchChunksRequest
+	3, // 4: document.DocumentService.SearchTemplates:input_type -> document.SearchTemplatesRequest
+	1, // 5: document.DocumentService.SearchChunks:output_type -> document.SearchChunksResponse
+	4, // 6: document.DocumentService.SearchTemplates:output_type -> document.SearchTemplatesResponse
+	5, // [5:7] is the sub-list for method output_type
+	3, // [3:5] is the sub-list for method input_type
+	3, // [3:3] is the sub-list for extension type_name
+	3, // [3:3] is the sub-list for extension extendee
+	0, // [0:3] is the sub-list for field type_name
 }
 
 func init() { file_document_document_proto_init() }
@@ -308,7 +526,7 @@ func file_document_document_proto_init() {
 			GoPackagePath: reflect.TypeOf(x{}).PkgPath(),
 			RawDescriptor: unsafe.Slice(unsafe.StringData(file_document_document_proto_rawDesc), len(file_document_document_proto_rawDesc)),
 			NumEnums:      0,
-			NumMessages:   4,
+			NumMessages:   7,
 			NumExtensions: 0,
 			NumServices:   1,
 		},

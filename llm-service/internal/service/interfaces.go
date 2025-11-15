@@ -156,3 +156,18 @@ type OrganizationMemoryService interface {
 	// DeleteFact удаляет факт организации
 	DeleteFact(ctx context.Context, organizationID domain.ID, factID domain.ID) error
 }
+
+// ContractSearchService - сервис для поиска шаблонов контрактов
+type ContractSearchService interface {
+	// SearchTemplates ищет подходящие шаблоны договоров
+	SearchTemplates(ctx context.Context, organizationID, query string, limit int) (interface{}, error)
+}
+
+// ContractGeneratorService - сервис для генерации контрактов
+type ContractGeneratorService interface {
+	// GenerateContract генерирует договор из шаблона с заполненными данными
+	GenerateContract(ctx context.Context, organizationID, templateID, contractName string, filledData map[string]interface{}) (interface{}, error)
+
+	// ListContracts получает список сгенерированных контрактов
+	ListContracts(ctx context.Context, organizationID string, limit, offset int) (interface{}, error)
+}

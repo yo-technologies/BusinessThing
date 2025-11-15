@@ -54,6 +54,16 @@ func main() {
 		logger.Fatal(ctx, "Failed to create OpenSearch client", "error", err)
 	}
 
+	templatesDB, err := vectordb.NewTemplatesClient(
+		cfg.GetOpenSearchAddresses(),
+		cfg.GetOpenSearchUsername(),
+		cfg.GetOpenSearchPassword(),
+		cfg.GetOpenSearchTemplatesIndex(),
+	)
+	if err != nil {
+		logger.Fatal(ctx, "Failed to create templates OpenSearch client", "error", err)
+	}
+
 	embeddingsCli := embeddings.NewClient(
 		cfg.GetEmbeddingsBaseURL(),
 		cfg.GetEmbeddingsAPIKey(),
@@ -61,9 +71,11 @@ func main() {
 	)
 
 	searchService := service.NewSearchService(embeddingsCli, vectorDB)
+	templateProcessor := service.NewTemplateProcessor(embeddingsCli, templatesDB)
 
 	application := app.New(
 		searchService,
+		templateProcessor,
 		app.WithGrpcPort(cfg.GetGRPCPort()),
 		app.WithGatewayPort(cfg.GetHTTPPort()),
 		app.WithEnableGateway(cfg.GetEnableGateway()),

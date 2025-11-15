@@ -2,6 +2,7 @@ services:
   traefik:
     image: traefik:v3.6.1
     container_name: traefik
+    profiles: [full]
     command:
       - "--providers.docker=true"
       - "--providers.docker.exposedbydefault=false"

@@ -52,7 +52,8 @@ type Jaeger struct {
 }
 
 type RabbitMQ struct {
-	URL string `mapstructure:"url"`
+	URL       string `mapstructure:"url"`
+	QueueName string `mapstructure:"queue_name"`
 }
 
 type Telegram struct {
@@ -237,6 +238,12 @@ func (c *Config) GetRabbitMQURL() string {
 	c.mu.RLock()
 	defer c.mu.RUnlock()
 	return c.RabbitMQ.URL
+}
+
+func (c *Config) GetRabbitMQQueueName() string {
+	c.mu.RLock()
+	defer c.mu.RUnlock()
+	return c.RabbitMQ.QueueName
 }
 
 func (c *Config) GetTelegramBotToken() string {

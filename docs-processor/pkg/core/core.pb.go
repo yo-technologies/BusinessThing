@@ -2188,6 +2188,7 @@ type CreateTemplateRequest struct {
 	// JSON с полями шаблона
 	FieldsSchema    string `protobuf:"bytes,5,opt,name=fields_schema,json=fieldsSchema,proto3" json:"fields_schema,omitempty"`
 	ContentTemplate string `protobuf:"bytes,6,opt,name=content_template,json=contentTemplate,proto3" json:"content_template,omitempty"`
+	S3TemplateKey   string `protobuf:"bytes,7,opt,name=s3_template_key,json=s3TemplateKey,proto3" json:"s3_template_key,omitempty"`
 	unknownFields   protoimpl.UnknownFields
 	sizeCache       protoimpl.SizeCache
 }
@@ -2260,6 +2261,13 @@ func (x *CreateTemplateRequest) GetFieldsSchema() string {
 func (x *CreateTemplateRequest) GetContentTemplate() string {
 	if x != nil {
 		return x.ContentTemplate
+	}
+	return ""
+}
+
+func (x *CreateTemplateRequest) GetS3TemplateKey() string {
+	if x != nil {
+		return x.S3TemplateKey
 	}
 	return ""
 }
@@ -2531,6 +2539,7 @@ type UpdateTemplateRequest struct {
 	Description     *string                `protobuf:"bytes,3,opt,name=description,proto3,oneof" json:"description,omitempty"`
 	FieldsSchema    *string                `protobuf:"bytes,4,opt,name=fields_schema,json=fieldsSchema,proto3,oneof" json:"fields_schema,omitempty"`
 	ContentTemplate *string                `protobuf:"bytes,5,opt,name=content_template,json=contentTemplate,proto3,oneof" json:"content_template,omitempty"`
+	S3TemplateKey   *string                `protobuf:"bytes,6,opt,name=s3_template_key,json=s3TemplateKey,proto3,oneof" json:"s3_template_key,omitempty"`
 	unknownFields   protoimpl.UnknownFields
 	sizeCache       protoimpl.SizeCache
 }
@@ -2596,6 +2605,13 @@ func (x *UpdateTemplateRequest) GetFieldsSchema() string {
 func (x *UpdateTemplateRequest) GetContentTemplate() string {
 	if x != nil && x.ContentTemplate != nil {
 		return *x.ContentTemplate
+	}
+	return ""
+}
+
+func (x *UpdateTemplateRequest) GetS3TemplateKey() string {
+	if x != nil && x.S3TemplateKey != nil {
+		return *x.S3TemplateKey
 	}
 	return ""
 }
@@ -3494,8 +3510,9 @@ type ContractTemplate struct {
 	TemplateType    string                 `protobuf:"bytes,5,opt,name=template_type,json=templateType,proto3" json:"template_type,omitempty"`
 	FieldsSchema    string                 `protobuf:"bytes,6,opt,name=fields_schema,json=fieldsSchema,proto3" json:"fields_schema,omitempty"`
 	ContentTemplate string                 `protobuf:"bytes,7,opt,name=content_template,json=contentTemplate,proto3" json:"content_template,omitempty"`
-	CreatedAt       *timestamppb.Timestamp `protobuf:"bytes,8,opt,name=created_at,json=createdAt,proto3" json:"created_at,omitempty"`
-	UpdatedAt       *timestamppb.Timestamp `protobuf:"bytes,9,opt,name=updated_at,json=updatedAt,proto3" json:"updated_at,omitempty"`
+	S3TemplateKey   string                 `protobuf:"bytes,8,opt,name=s3_template_key,json=s3TemplateKey,proto3" json:"s3_template_key,omitempty"`
+	CreatedAt       *timestamppb.Timestamp `protobuf:"bytes,9,opt,name=created_at,json=createdAt,proto3" json:"created_at,omitempty"`
+	UpdatedAt       *timestamppb.Timestamp `protobuf:"bytes,10,opt,name=updated_at,json=updatedAt,proto3" json:"updated_at,omitempty"`
 	unknownFields   protoimpl.UnknownFields
 	sizeCache       protoimpl.SizeCache
 }
@@ -3575,6 +3592,13 @@ func (x *ContractTemplate) GetFieldsSchema() string {
 func (x *ContractTemplate) GetContentTemplate() string {
 	if x != nil {
 		return x.ContentTemplate
+	}
+	return ""
+}
+
+func (x *ContractTemplate) GetS3TemplateKey() string {
+	if x != nil {
+		return x.S3TemplateKey
 	}
 	return ""
 }
@@ -3822,7 +3846,7 @@ const file_core_core_proto_rawDesc = "" +
 	"\x0fGetNoteResponse\x12'\n" +
 	"\x04note\x18\x01 \x01(\v2\x13.core.api.core.NoteR\x04note\",\n" +
 	"\x11DeleteNoteRequest\x12\x17\n" +
-	"\x02id\x18\x01 \x01(\tB\a\xfaB\x04r\x02\x10\x01R\x02id\"\x80\x02\n" +
+	"\x02id\x18\x01 \x01(\tB\a\xfaB\x04r\x02\x10\x01R\x02id\"\xa8\x02\n" +
 	"\x15CreateTemplateRequest\x120\n" +
 	"\x0forganization_id\x18\x01 \x01(\tB\a\xfaB\x04r\x02\x10\x01R\x0eorganizationId\x12\x1e\n" +
 	"\x04name\x18\x02 \x01(\tB\n" +
@@ -3830,7 +3854,8 @@ const file_core_core_proto_rawDesc = "" +
 	"\vdescription\x18\x03 \x01(\tR\vdescription\x12#\n" +
 	"\rtemplate_type\x18\x04 \x01(\tR\ftemplateType\x12#\n" +
 	"\rfields_schema\x18\x05 \x01(\tR\ffieldsSchema\x12)\n" +
-	"\x10content_template\x18\x06 \x01(\tR\x0fcontentTemplate\"U\n" +
+	"\x10content_template\x18\x06 \x01(\tR\x0fcontentTemplate\x12&\n" +
+	"\x0fs3_template_key\x18\a \x01(\tR\rs3TemplateKey\"U\n" +
 	"\x16CreateTemplateResponse\x12;\n" +
 	"\btemplate\x18\x01 \x01(\v2\x1f.core.api.core.ContractTemplateR\btemplate\"-\n" +
 	"\x12GetTemplateRequest\x12\x17\n" +
@@ -3845,17 +3870,19 @@ const file_core_core_proto_rawDesc = "" +
 	"\ttemplates\x18\x01 \x03(\v2\x1f.core.api.core.ContractTemplateR\ttemplates\x12\x14\n" +
 	"\x05total\x18\x02 \x01(\x05R\x05total\x12\x12\n" +
 	"\x04page\x18\x03 \x01(\x05R\x04page\x12\x1b\n" +
-	"\tpage_size\x18\x04 \x01(\x05R\bpageSize\"\x8a\x02\n" +
+	"\tpage_size\x18\x04 \x01(\x05R\bpageSize\"\xcb\x02\n" +
 	"\x15UpdateTemplateRequest\x12\x17\n" +
 	"\x02id\x18\x01 \x01(\tB\a\xfaB\x04r\x02\x10\x01R\x02id\x12\x17\n" +
 	"\x04name\x18\x02 \x01(\tH\x00R\x04name\x88\x01\x01\x12%\n" +
 	"\vdescription\x18\x03 \x01(\tH\x01R\vdescription\x88\x01\x01\x12(\n" +
 	"\rfields_schema\x18\x04 \x01(\tH\x02R\ffieldsSchema\x88\x01\x01\x12.\n" +
-	"\x10content_template\x18\x05 \x01(\tH\x03R\x0fcontentTemplate\x88\x01\x01B\a\n" +
+	"\x10content_template\x18\x05 \x01(\tH\x03R\x0fcontentTemplate\x88\x01\x01\x12+\n" +
+	"\x0fs3_template_key\x18\x06 \x01(\tH\x04R\rs3TemplateKey\x88\x01\x01B\a\n" +
 	"\x05_nameB\x0e\n" +
 	"\f_descriptionB\x10\n" +
 	"\x0e_fields_schemaB\x13\n" +
-	"\x11_content_template\"U\n" +
+	"\x11_content_templateB\x12\n" +
+	"\x10_s3_template_key\"U\n" +
 	"\x16UpdateTemplateResponse\x12;\n" +
 	"\btemplate\x18\x01 \x01(\v2\x1f.core.api.core.ContractTemplateR\btemplate\"0\n" +
 	"\x15DeleteTemplateRequest\x12\x17\n" +
@@ -3935,7 +3962,7 @@ const file_core_core_proto_rawDesc = "" +
 	"\x0forganization_id\x18\x02 \x01(\tR\x0eorganizationId\x12\x18\n" +
 	"\acontent\x18\x03 \x01(\tR\acontent\x129\n" +
 	"\n" +
-	"created_at\x18\x04 \x01(\v2\x1a.google.protobuf.TimestampR\tcreatedAt\"\xec\x02\n" +
+	"created_at\x18\x04 \x01(\v2\x1a.google.protobuf.TimestampR\tcreatedAt\"\x94\x03\n" +
 	"\x10ContractTemplate\x12\x0e\n" +
 	"\x02id\x18\x01 \x01(\tR\x02id\x12'\n" +
 	"\x0forganization_id\x18\x02 \x01(\tR\x0eorganizationId\x12\x12\n" +
@@ -3943,11 +3970,13 @@ const file_core_core_proto_rawDesc = "" +
 	"\vdescription\x18\x04 \x01(\tR\vdescription\x12#\n" +
 	"\rtemplate_type\x18\x05 \x01(\tR\ftemplateType\x12#\n" +
 	"\rfields_schema\x18\x06 \x01(\tR\ffieldsSchema\x12)\n" +
-	"\x10content_template\x18\a \x01(\tR\x0fcontentTemplate\x129\n" +
+	"\x10content_template\x18\a \x01(\tR\x0fcontentTemplate\x12&\n" +
+	"\x0fs3_template_key\x18\b \x01(\tR\rs3TemplateKey\x129\n" +
 	"\n" +
-	"created_at\x18\b \x01(\v2\x1a.google.protobuf.TimestampR\tcreatedAt\x129\n" +
+	"created_at\x18\t \x01(\v2\x1a.google.protobuf.TimestampR\tcreatedAt\x129\n" +
 	"\n" +
-	"updated_at\x18\t \x01(\v2\x1a.google.protobuf.TimestampR\tupdatedAt\"\x91\x02\n" +
+	"updated_at\x18\n" +
+	" \x01(\v2\x1a.google.protobuf.TimestampR\tupdatedAt\"\x91\x02\n" +
 	"\x11GeneratedContract\x12\x0e\n" +
 	"\x02id\x18\x01 \x01(\tR\x02id\x12'\n" +
 	"\x0forganization_id\x18\x02 \x01(\tR\x0eorganizationId\x12\x1f\n" +

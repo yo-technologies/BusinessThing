@@ -2,7 +2,9 @@ package template
 
 import (
 	"context"
+	"core-service/internal/db"
 	"core-service/internal/domain"
+	"fmt"
 	"strings"
 
 	"github.com/opentracing/opentracing-go"
@@ -16,16 +18,26 @@ type repository interface {
 	DeleteTemplate(ctx context.Context, id domain.ID) error
 }
 
-type Service struct {
-	repo repository
+type queuePublisher interface {
+	PublishMessage(ctx context.Context, message interface{}) error
 }
 
-func New(repo repository) *Service {
-	return &Service{repo: repo}
+type Service struct {
+	repo  repository
+	queue queuePublisher
+	tx    *db.ContextManager
+}
+
+func New(repo repository, queue queuePublisher, tx *db.ContextManager) *Service {
+	return &Service{
+		repo:  repo,
+		queue: queue,
+		tx:    tx,
+	}
 }
 
 // CreateTemplate creates a new contract template
-func (s *Service) CreateTemplate(ctx context.Context, organizationID domain.ID, name, description, templateType, fieldsSchema, contentTemplate string) (domain.ContractTemplate, error) {
+func (s *Service) CreateTemplate(ctx context.Context, organizationID domain.ID, name, description, templateType, fieldsSchema, contentTemplate, s3TemplateKey string) (domain.ContractTemplate, error) {
 	span, ctx := opentracing.StartSpanFromContext(ctx, "service.template.CreateTemplate")
 	defer span.Finish()
 
@@ -33,13 +45,32 @@ func (s *Service) CreateTemplate(ctx context.Context, organizationID domain.ID, 
 	if name == "" {
 		return domain.ContractTemplate{}, domain.NewInvalidArgumentError("template name is required")
 	}
-	if contentTemplate == "" {
-		return domain.ContractTemplate{}, domain.NewInvalidArgumentError("template content is required")
+	if contentTemplate == "" && s3TemplateKey == "" {
+		return domain.ContractTemplate{}, domain.NewInvalidArgumentError("either content_template or s3_template_key is required")
 	}
 
-	template := domain.NewContractTemplate(organizationID, name, description, templateType, fieldsSchema, contentTemplate)
+	template := domain.NewContractTemplate(organizationID, name, description, templateType, fieldsSchema, contentTemplate, s3TemplateKey)
 
-	created, err := s.repo.CreateTemplate(ctx, template)
+	var created domain.ContractTemplate
+	err := s.tx.Do(ctx, func(txCtx context.Context) error {
+		var err error
+		created, err = s.repo.CreateTemplate(ctx, template)
+		if err != nil {
+			return fmt.Errorf("failed to create template: %w", err)
+		}
+
+		// Подсчитать количество полей из fieldsSchema
+		fieldsCount := countFieldsInSchema(fieldsSchema)
+
+		// Отправить задачу на индексацию
+		indexJob := domain.NewTemplateIndexJob(created.ID, created.OrganizationID, created.Name, created.Description, created.TemplateType, fieldsCount)
+		err = s.queue.PublishMessage(ctx, indexJob)
+		if err != nil {
+			return fmt.Errorf("failed to publish template index job: %w", err)
+		}
+
+		return nil
+	})
 	if err != nil {
 		return domain.ContractTemplate{}, err
 	}
@@ -82,7 +113,7 @@ func (s *Service) ListTemplatesByOrganization(ctx context.Context, organizationI
 }
 
 // UpdateTemplate updates an existing template
-func (s *Service) UpdateTemplate(ctx context.Context, id domain.ID, name, description, fieldsSchema, contentTemplate *string) (domain.ContractTemplate, error) {
+func (s *Service) UpdateTemplate(ctx context.Context, id domain.ID, name, description, fieldsSchema, contentTemplate, s3TemplateKey *string) (domain.ContractTemplate, error) {
 	span, ctx := opentracing.StartSpanFromContext(ctx, "service.template.UpdateTemplate")
 	defer span.Finish()
 
@@ -93,7 +124,7 @@ func (s *Service) UpdateTemplate(ctx context.Context, id domain.ID, name, descri
 	}
 
 	// Update template
-	template.Update(name, description, fieldsSchema, contentTemplate)
+	template.Update(name, description, fieldsSchema, contentTemplate, s3TemplateKey)
 
 	updated, err := s.repo.UpdateTemplate(ctx, template)
 	if err != nil {
@@ -108,5 +139,34 @@ func (s *Service) DeleteTemplate(ctx context.Context, id domain.ID) error {
 	span, ctx := opentracing.StartSpanFromContext(ctx, "service.template.DeleteTemplate")
 	defer span.Finish()
 
-	return s.repo.DeleteTemplate(ctx, id)
+	err := s.tx.Do(ctx, func(txCtx context.Context) error {
+		err := s.repo.DeleteTemplate(ctx, id)
+		if err != nil {
+			return fmt.Errorf("failed to delete template: %w", err)
+		}
+
+		// Отправить задачу на удаление из индекса
+		deleteJob := domain.NewTemplateDeleteJob(id)
+		if err := s.queue.PublishMessage(ctx, deleteJob); err != nil {
+			return fmt.Errorf("failed to publish template delete job: %w", err)
+		}
+
+		return nil
+	})
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
+// countFieldsInSchema подсчитывает количество полей в JSON схеме
+func countFieldsInSchema(fieldsSchema string) int {
+	// Простой подсчет через поиск "name": в JSON
+	// Для более точного подсчета можно распарсить JSON
+	if fieldsSchema == "" {
+		return 0
+	}
+	// Примерная оценка - можно улучшить
+	return strings.Count(fieldsSchema, `"name"`)
 }

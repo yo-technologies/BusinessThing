@@ -18,9 +18,9 @@ func (r *PGXRepository) CreateTemplate(ctx context.Context, template domain.Cont
 
 	engine := r.engineFactory.Get(ctx)
 	query := `
-        INSERT INTO contract_templates (id, organization_id, name, description, template_type, fields_schema, content_template, created_at, updated_at)
-        VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9)
-        RETURNING id, organization_id, name, description, template_type, fields_schema, content_template, created_at, updated_at
+        INSERT INTO contract_templates (id, organization_id, name, description, template_type, fields_schema, content_template, s3_template_key, created_at, updated_at)
+        VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10)
+        RETURNING id, organization_id, name, description, template_type, fields_schema, content_template, s3_template_key, created_at, updated_at
     `
 
 	var created domain.ContractTemplate
@@ -32,6 +32,7 @@ func (r *PGXRepository) CreateTemplate(ctx context.Context, template domain.Cont
 		template.TemplateType,
 		template.FieldsSchema,
 		template.ContentTemplate,
+		template.S3TemplateKey,
 		template.CreatedAt,
 		template.UpdatedAt,
 	)
@@ -50,7 +51,7 @@ func (r *PGXRepository) GetTemplate(ctx context.Context, id domain.ID) (domain.C
 
 	engine := r.engineFactory.Get(ctx)
 	query := `
-        SELECT id, organization_id, name, description, template_type, fields_schema, content_template, created_at, updated_at
+        SELECT id, organization_id, name, description, template_type, fields_schema, content_template, s3_template_key, created_at, updated_at
         FROM contract_templates
         WHERE id = $1
     `
@@ -86,7 +87,7 @@ func (r *PGXRepository) ListTemplates(ctx context.Context, organizationID domain
 
 	// Get templates
 	query := `
-        SELECT id, organization_id, name, description, template_type, fields_schema, content_template, created_at, updated_at
+        SELECT id, organization_id, name, description, template_type, fields_schema, content_template, s3_template_key, created_at, updated_at
         FROM contract_templates
         WHERE organization_id = $1
         ORDER BY created_at DESC
@@ -111,9 +112,9 @@ func (r *PGXRepository) UpdateTemplate(ctx context.Context, template domain.Cont
 	engine := r.engineFactory.Get(ctx)
 	query := `
         UPDATE contract_templates
-        SET name = $2, description = $3, fields_schema = $4, content_template = $5, updated_at = $6
+        SET name = $2, description = $3, fields_schema = $4, content_template = $5, s3_template_key = $6, updated_at = $7
         WHERE id = $1
-        RETURNING id, organization_id, name, description, template_type, fields_schema, content_template, created_at, updated_at
+        RETURNING id, organization_id, name, description, template_type, fields_schema, content_template, s3_template_key, created_at, updated_at
     `
 
 	var updated domain.ContractTemplate
@@ -123,6 +124,7 @@ func (r *PGXRepository) UpdateTemplate(ctx context.Context, template domain.Cont
 		template.Description,
 		template.FieldsSchema,
 		template.ContentTemplate,
+		template.S3TemplateKey,
 		template.UpdatedAt,
 	)
 	if err != nil {

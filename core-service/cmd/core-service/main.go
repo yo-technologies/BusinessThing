@@ -8,6 +8,7 @@ import (
 	"core-service/internal/db"
 	"core-service/internal/jwt"
 	"core-service/internal/logger"
+	"core-service/internal/queue"
 	"core-service/internal/repository"
 	"core-service/internal/service/auth"
 	"core-service/internal/service/contract"
@@ -71,6 +72,7 @@ func main() {
 
 	// Initialize RabbitMQ
 	var amqpChannel *amqp.Channel
+	var queueClient *queue.RabbitMQClient
 	if rabbitURL := cfg.GetRabbitMQURL(); rabbitURL != "" {
 		conn, err := amqp.Dial(rabbitURL)
 		if err != nil {
@@ -84,6 +86,14 @@ func main() {
 				defer amqpChannel.Close()
 				logger.Info(ctx, "RabbitMQ connection established")
 			}
+
+			// Create queue client for template indexing
+			queueClient, err = queue.NewRabbitMQClient(rabbitURL, cfg.GetRabbitMQQueueName())
+			if err != nil {
+				logger.Warnf(ctx, "Failed to create RabbitMQ queue client: %v", err)
+			} else {
+				defer queueClient.Close()
+			}
 		}
 	}
 
@@ -92,7 +102,7 @@ func main() {
 	userService := user.New(repo)
 	docService := document.New(repo, amqpChannel, "document_processing")
 	noteService := note.New(repo)
-	templateService := template.New(repo)
+	templateService := template.New(repo, queueClient, contextManager)
 	contractService := contract.New(repo)
 
 	// Initialize JWT provider

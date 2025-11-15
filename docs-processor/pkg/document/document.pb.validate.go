@@ -394,3 +394,361 @@ var _ interface {
 	Cause() error
 	ErrorName() string
 } = DocumentChunkValidationError{}
+
+// Validate checks the field values on SearchTemplatesRequest with the rules
+// defined in the proto definition for this message. If any rules are
+// violated, the first error encountered is returned, or nil if there are no violations.
+func (m *SearchTemplatesRequest) Validate() error {
+	return m.validate(false)
+}
+
+// ValidateAll checks the field values on SearchTemplatesRequest with the rules
+// defined in the proto definition for this message. If any rules are
+// violated, the result is a list of violation errors wrapped in
+// SearchTemplatesRequestMultiError, or nil if none found.
+func (m *SearchTemplatesRequest) ValidateAll() error {
+	return m.validate(true)
+}
+
+func (m *SearchTemplatesRequest) validate(all bool) error {
+	if m == nil {
+		return nil
+	}
+
+	var errors []error
+
+	// no validation rules for Query
+
+	// no validation rules for OrganizationId
+
+	// no validation rules for Limit
+
+	if len(errors) > 0 {
+		return SearchTemplatesRequestMultiError(errors)
+	}
+
+	return nil
+}
+
+// SearchTemplatesRequestMultiError is an error wrapping multiple validation
+// errors returned by SearchTemplatesRequest.ValidateAll() if the designated
+// constraints aren't met.
+type SearchTemplatesRequestMultiError []error
+
+// Error returns a concatenation of all the error messages it wraps.
+func (m SearchTemplatesRequestMultiError) Error() string {
+	msgs := make([]string, 0, len(m))
+	for _, err := range m {
+		msgs = append(msgs, err.Error())
+	}
+	return strings.Join(msgs, "; ")
+}
+
+// AllErrors returns a list of validation violation errors.
+func (m SearchTemplatesRequestMultiError) AllErrors() []error { return m }
+
+// SearchTemplatesRequestValidationError is the validation error returned by
+// SearchTemplatesRequest.Validate if the designated constraints aren't met.
+type SearchTemplatesRequestValidationError struct {
+	field  string
+	reason string
+	cause  error
+	key    bool
+}
+
+// Field function returns field value.
+func (e SearchTemplatesRequestValidationError) Field() string { return e.field }
+
+// Reason function returns reason value.
+func (e SearchTemplatesRequestValidationError) Reason() string { return e.reason }
+
+// Cause function returns cause value.
+func (e SearchTemplatesRequestValidationError) Cause() error { return e.cause }
+
+// Key function returns key value.
+func (e SearchTemplatesRequestValidationError) Key() bool { return e.key }
+
+// ErrorName returns error name.
+func (e SearchTemplatesRequestValidationError) ErrorName() string {
+	return "SearchTemplatesRequestValidationError"
+}
+
+// Error satisfies the builtin error interface
+func (e SearchTemplatesRequestValidationError) Error() string {
+	cause := ""
+	if e.cause != nil {
+		cause = fmt.Sprintf(" | caused by: %v", e.cause)
+	}
+
+	key := ""
+	if e.key {
+		key = "key for "
+	}
+
+	return fmt.Sprintf(
+		"invalid %sSearchTemplatesRequest.%s: %s%s",
+		key,
+		e.field,
+		e.reason,
+		cause)
+}
+
+var _ error = SearchTemplatesRequestValidationError{}
+
+var _ interface {
+	Field() string
+	Reason() string
+	Key() bool
+	Cause() error
+	ErrorName() string
+} = SearchTemplatesRequestValidationError{}
+
+// Validate checks the field values on SearchTemplatesResponse with the rules
+// defined in the proto definition for this message. If any rules are
+// violated, the first error encountered is returned, or nil if there are no violations.
+func (m *SearchTemplatesResponse) Validate() error {
+	return m.validate(false)
+}
+
+// ValidateAll checks the field values on SearchTemplatesResponse with the
+// rules defined in the proto definition for this message. If any rules are
+// violated, the result is a list of violation errors wrapped in
+// SearchTemplatesResponseMultiError, or nil if none found.
+func (m *SearchTemplatesResponse) ValidateAll() error {
+	return m.validate(true)
+}
+
+func (m *SearchTemplatesResponse) validate(all bool) error {
+	if m == nil {
+		return nil
+	}
+
+	var errors []error
+
+	for idx, item := range m.GetTemplates() {
+		_, _ = idx, item
+
+		if all {
+			switch v := interface{}(item).(type) {
+			case interface{ ValidateAll() error }:
+				if err := v.ValidateAll(); err != nil {
+					errors = append(errors, SearchTemplatesResponseValidationError{
+						field:  fmt.Sprintf("Templates[%v]", idx),
+						reason: "embedded message failed validation",
+						cause:  err,
+					})
+				}
+			case interface{ Validate() error }:
+				if err := v.Validate(); err != nil {
+					errors = append(errors, SearchTemplatesResponseValidationError{
+						field:  fmt.Sprintf("Templates[%v]", idx),
+						reason: "embedded message failed validation",
+						cause:  err,
+					})
+				}
+			}
+		} else if v, ok := interface{}(item).(interface{ Validate() error }); ok {
+			if err := v.Validate(); err != nil {
+				return SearchTemplatesResponseValidationError{
+					field:  fmt.Sprintf("Templates[%v]", idx),
+					reason: "embedded message failed validation",
+					cause:  err,
+				}
+			}
+		}
+
+	}
+
+	if len(errors) > 0 {
+		return SearchTemplatesResponseMultiError(errors)
+	}
+
+	return nil
+}
+
+// SearchTemplatesResponseMultiError is an error wrapping multiple validation
+// errors returned by SearchTemplatesResponse.ValidateAll() if the designated
+// constraints aren't met.
+type SearchTemplatesResponseMultiError []error
+
+// Error returns a concatenation of all the error messages it wraps.
+func (m SearchTemplatesResponseMultiError) Error() string {
+	msgs := make([]string, 0, len(m))
+	for _, err := range m {
+		msgs = append(msgs, err.Error())
+	}
+	return strings.Join(msgs, "; ")
+}
+
+// AllErrors returns a list of validation violation errors.
+func (m SearchTemplatesResponseMultiError) AllErrors() []error { return m }
+
+// SearchTemplatesResponseValidationError is the validation error returned by
+// SearchTemplatesResponse.Validate if the designated constraints aren't met.
+type SearchTemplatesResponseValidationError struct {
+	field  string
+	reason string
+	cause  error
+	key    bool
+}
+
+// Field function returns field value.
+func (e SearchTemplatesResponseValidationError) Field() string { return e.field }
+
+// Reason function returns reason value.
+func (e SearchTemplatesResponseValidationError) Reason() string { return e.reason }
+
+// Cause function returns cause value.
+func (e SearchTemplatesResponseValidationError) Cause() error { return e.cause }
+
+// Key function returns key value.
+func (e SearchTemplatesResponseValidationError) Key() bool { return e.key }
+
+// ErrorName returns error name.
+func (e SearchTemplatesResponseValidationError) ErrorName() string {
+	return "SearchTemplatesResponseValidationError"
+}
+
+// Error satisfies the builtin error interface
+func (e SearchTemplatesResponseValidationError) Error() string {
+	cause := ""
+	if e.cause != nil {
+		cause = fmt.Sprintf(" | caused by: %v", e.cause)
+	}
+
+	key := ""
+	if e.key {
+		key = "key for "
+	}
+
+	return fmt.Sprintf(
+		"invalid %sSearchTemplatesResponse.%s: %s%s",
+		key,
+		e.field,
+		e.reason,
+		cause)
+}
+
+var _ error = SearchTemplatesResponseValidationError{}
+
+var _ interface {
+	Field() string
+	Reason() string
+	Key() bool
+	Cause() error
+	ErrorName() string
+} = SearchTemplatesResponseValidationError{}
+
+// Validate checks the field values on TemplateSearchResult with the rules
+// defined in the proto definition for this message. If any rules are
+// violated, the first error encountered is returned, or nil if there are no violations.
+func (m *TemplateSearchResult) Validate() error {
+	return m.validate(false)
+}
+
+// ValidateAll checks the field values on TemplateSearchResult with the rules
+// defined in the proto definition for this message. If any rules are
+// violated, the result is a list of violation errors wrapped in
+// TemplateSearchResultMultiError, or nil if none found.
+func (m *TemplateSearchResult) ValidateAll() error {
+	return m.validate(true)
+}
+
+func (m *TemplateSearchResult) validate(all bool) error {
+	if m == nil {
+		return nil
+	}
+
+	var errors []error
+
+	// no validation rules for TemplateId
+
+	// no validation rules for Name
+
+	// no validation rules for Description
+
+	// no validation rules for TemplateType
+
+	// no validation rules for FieldsCount
+
+	// no validation rules for Score
+
+	if len(errors) > 0 {
+		return TemplateSearchResultMultiError(errors)
+	}
+
+	return nil
+}
+
+// TemplateSearchResultMultiError is an error wrapping multiple validation
+// errors returned by TemplateSearchResult.ValidateAll() if the designated
+// constraints aren't met.
+type TemplateSearchResultMultiError []error
+
+// Error returns a concatenation of all the error messages it wraps.
+func (m TemplateSearchResultMultiError) Error() string {
+	msgs := make([]string, 0, len(m))
+	for _, err := range m {
+		msgs = append(msgs, err.Error())
+	}
+	return strings.Join(msgs, "; ")
+}
+
+// AllErrors returns a list of validation violation errors.
+func (m TemplateSearchResultMultiError) AllErrors() []error { return m }
+
+// TemplateSearchResultValidationError is the validation error returned by
+// TemplateSearchResult.Validate if the designated constraints aren't met.
+type TemplateSearchResultValidationError struct {
+	field  string
+	reason string
+	cause  error
+	key    bool
+}
+
+// Field function returns field value.
+func (e TemplateSearchResultValidationError) Field() string { return e.field }
+
+// Reason function returns reason value.
+func (e TemplateSearchResultValidationError) Reason() string { return e.reason }
+
+// Cause function returns cause value.
+func (e TemplateSearchResultValidationError) Cause() error { return e.cause }
+
+// Key function returns key value.
+func (e TemplateSearchResultValidationError) Key() bool { return e.key }
+
+// ErrorName returns error name.
+func (e TemplateSearchResultValidationError) ErrorName() string {
+	return "TemplateSearchResultValidationError"
+}
+
+// Error satisfies the builtin error interface
+func (e TemplateSearchResultValidationError) Error() string {
+	cause := ""
+	if e.cause != nil {
+		cause = fmt.Sprintf(" | caused by: %v", e.cause)
+	}
+
+	key := ""
+	if e.key {
+		key = "key for "
+	}
+
+	return fmt.Sprintf(
+		"invalid %sTemplateSearchResult.%s: %s%s",
+		key,
+		e.field,
+		e.reason,
+		cause)
+}
+
+var _ error = TemplateSearchResultValidationError{}
+
+var _ interface {
+	Field() string
+	Reason() string
+	Key() bool
+	Cause() error
+	ErrorName() string
+} = TemplateSearchResultValidationError{}

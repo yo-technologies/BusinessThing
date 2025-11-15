@@ -1169,6 +1169,9 @@
         },
         "contentTemplate": {
           "type": "string"
+        },
+        "s3TemplateKey": {
+          "type": "string"
         }
       }
     },
@@ -1185,6 +1188,9 @@
           "type": "string"
         },
         "contentTemplate": {
+          "type": "string"
+        },
+        "s3TemplateKey": {
           "type": "string"
         }
       }
@@ -1364,6 +1370,9 @@
           "type": "string"
         },
         "contentTemplate": {
+          "type": "string"
+        },
+        "s3TemplateKey": {
           "type": "string"
         },
         "createdAt": {

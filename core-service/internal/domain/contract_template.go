@@ -11,12 +11,13 @@ type ContractTemplate struct {
 	TemplateType    string    `db:"template_type"`
 	FieldsSchema    string    `db:"fields_schema"`    // JSON схема полей
 	ContentTemplate string    `db:"content_template"` // Шаблон содержимого
+	S3TemplateKey   string    `db:"s3_template_key"`  // Ключ DOCX шаблона в S3
 	CreatedAt       time.Time `db:"created_at"`
 	UpdatedAt       time.Time `db:"updated_at"`
 }
 
 // NewContractTemplate создает новый шаблон договора
-func NewContractTemplate(organizationID ID, name, description, templateType, fieldsSchema, contentTemplate string) ContractTemplate {
+func NewContractTemplate(organizationID ID, name, description, templateType, fieldsSchema, contentTemplate, s3TemplateKey string) ContractTemplate {
 	now := time.Now()
 	return ContractTemplate{
 		ID:              NewID(),
@@ -26,13 +27,14 @@ func NewContractTemplate(organizationID ID, name, description, templateType, fie
 		TemplateType:    templateType,
 		FieldsSchema:    fieldsSchema,
 		ContentTemplate: contentTemplate,
+		S3TemplateKey:   s3TemplateKey,
 		CreatedAt:       now,
 		UpdatedAt:       now,
 	}
 }
 
 // Update обновляет шаблон
-func (t *ContractTemplate) Update(name, description, fieldsSchema, contentTemplate *string) {
+func (t *ContractTemplate) Update(name, description, fieldsSchema, contentTemplate, s3TemplateKey *string) {
 	if name != nil {
 		t.Name = *name
 	}
@@ -44,6 +46,9 @@ func (t *ContractTemplate) Update(name, description, fieldsSchema, contentTempla
 	}
 	if contentTemplate != nil {
 		t.ContentTemplate = *contentTemplate
+	}
+	if s3TemplateKey != nil {
+		t.S3TemplateKey = *s3TemplateKey
 	}
 	t.UpdatedAt = time.Now()
 }

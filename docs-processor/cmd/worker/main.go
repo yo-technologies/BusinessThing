@@ -73,6 +73,16 @@ func main() {
 		logger.Fatal(ctx, "Failed to create OpenSearch client", "error", err)
 	}
 
+	templatesDB, err := vectordb.NewTemplatesClient(
+		cfg.GetOpenSearchAddresses(),
+		cfg.GetOpenSearchUsername(),
+		cfg.GetOpenSearchPassword(),
+		cfg.GetOpenSearchTemplatesIndex(),
+	)
+	if err != nil {
+		logger.Fatal(ctx, "Failed to create templates OpenSearch client", "error", err)
+	}
+
 	embeddingsCli := embeddings.NewClient(
 		cfg.GetEmbeddingsBaseURL(),
 		cfg.GetEmbeddingsAPIKey(),
@@ -101,6 +111,16 @@ func main() {
 		cfg.GetEmbeddingsBatchSize(),
 	)
 
+	templateProcessor := service.NewTemplateProcessor(
+		embeddingsCli,
+		templatesDB,
+	)
+
+	jobProcessor := service.NewJobProcessor(
+		documentProcessor,
+		templateProcessor,
+	)
+
 	rabbitMQ, err := queue.NewRabbitMQClient(
 		cfg.GetRabbitMQURL(),
 		cfg.GetRabbitMQQueueName(),
@@ -125,7 +145,7 @@ func main() {
 		ctx,
 		cfg.GetRabbitMQConsumerTag(),
 		cfg.GetRabbitMQPrefetchCount(),
-		documentProcessor.ProcessDocument,
+		jobProcessor.ProcessJob,
 	); err != nil {
 		logger.Fatal(ctx, "Worker error", "error", err)
 	}
