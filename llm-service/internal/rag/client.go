@@ -47,6 +47,12 @@ func (c *Client) Close() error {
 	return nil
 }
 
+// TODO: избавиться от прямого использования protobuf-структур за пределами этого пакета
+// GetClient возвращает gRPC клиент DocumentService
+func (c *Client) GetClient() desc.DocumentServiceClient {
+	return c.client
+}
+
 // SearchRelevantChunks ищет релевантные фрагменты документов
 func (c *Client) SearchRelevantChunks(
 	ctx context.Context,

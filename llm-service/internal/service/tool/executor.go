@@ -12,11 +12,13 @@ import (
 
 // Executor - исполнитель инструментов
 type Executor struct {
-	agentManager     service.AgentManager
-	subagentManager  service.SubagentManager
-	websearchClient  service.WebSearchClient
-	orgMemoryService service.OrganizationMemoryService
-	mcpClient        service.MCPClient
+	agentManager             service.AgentManager
+	subagentManager          service.SubagentManager
+	websearchClient          service.WebSearchClient
+	orgMemoryService         service.OrganizationMemoryService
+	mcpClient                service.MCPClient
+	contractSearchService    service.ContractSearchService
+	contractGeneratorService service.ContractGeneratorService
 }
 
 // NewExecutor создает новый executor для инструментов
@@ -26,13 +28,17 @@ func NewExecutor(
 	websearchClient service.WebSearchClient,
 	orgMemoryService service.OrganizationMemoryService,
 	mcpClient service.MCPClient,
+	contractSearchService service.ContractSearchService,
+	contractGeneratorService service.ContractGeneratorService,
 ) *Executor {
 	return &Executor{
-		agentManager:     agentManager,
-		subagentManager:  subagentManager,
-		websearchClient:  websearchClient,
-		orgMemoryService: orgMemoryService,
-		mcpClient:        mcpClient,
+		agentManager:             agentManager,
+		subagentManager:          subagentManager,
+		websearchClient:          websearchClient,
+		orgMemoryService:         orgMemoryService,
+		mcpClient:                mcpClient,
+		contractSearchService:    contractSearchService,
+		contractGeneratorService: contractGeneratorService,
 	}
 }
 
@@ -69,6 +75,12 @@ func (e *Executor) Execute(
 		return e.executeSwitchToSubagent(ctx, arguments, execCtx, toolCallID)
 	case domain.ToolNameFinishSubagent:
 		return e.executeFinishSubagent(ctx, arguments, execCtx)
+	case domain.ToolNameSearchContractTemplates:
+		return e.executeSearchContractTemplates(ctx, arguments, execCtx)
+	case domain.ToolNameGenerateContract:
+		return e.executeGenerateContract(ctx, arguments, execCtx)
+	case domain.ToolNameListGeneratedContracts:
+		return e.executeListGeneratedContracts(ctx, arguments, execCtx)
 	default:
 		return nil, domain.NewInvalidArgumentError(fmt.Sprintf("unknown tool: %s", toolName))
 	}
@@ -248,4 +260,108 @@ func (e *Executor) executeMCPTool(
 	}
 
 	return result, nil
+}
+
+// executeSearchContractTemplates выполняет поиск шаблонов контрактов
+func (e *Executor) executeSearchContractTemplates(
+	ctx context.Context,
+	arguments map[string]interface{},
+	execCtx *domain.ExecutionContext,
+) (interface{}, error) {
+	span, ctx := opentracing.StartSpanFromContext(ctx, "tool.Executor.executeSearchContractTemplates")
+	defer span.Finish()
+
+	// Парсим аргументы
+	query, ok := arguments["query"].(string)
+	if !ok || query == "" {
+		return nil, domain.NewInvalidArgumentError("query is required and must be a non-empty string")
+	}
+
+	limit := 5
+	if limitArg, ok := arguments["limit"].(float64); ok {
+		limit = int(limitArg)
+	}
+
+	// Выполняем поиск
+	result, err := e.contractSearchService.SearchTemplates(ctx, execCtx.OrganizationID.String(), query, limit)
+	if err != nil {
+		return nil, err
+	}
+
+	return result, nil
+}
+
+// executeGenerateContract выполняет генерацию контракта из шаблона
+func (e *Executor) executeGenerateContract(
+	ctx context.Context,
+	arguments map[string]interface{},
+	execCtx *domain.ExecutionContext,
+) (interface{}, error) {
+	span, ctx := opentracing.StartSpanFromContext(ctx, "tool.Executor.executeGenerateContract")
+	defer span.Finish()
+
+	// Парсим аргументы
+	templateID, ok := arguments["template_id"].(string)
+	if !ok || templateID == "" {
+		return nil, domain.NewInvalidArgumentError("template_id is required")
+	}
+
+	contractName, ok := arguments["contract_name"].(string)
+	if !ok || contractName == "" {
+		return nil, domain.NewInvalidArgumentError("contract_name is required")
+	}
+
+	filledData, ok := arguments["filled_data"].(map[string]interface{})
+	if !ok {
+		return nil, domain.NewInvalidArgumentError("filled_data is required and must be an object")
+	}
+
+	// Генерируем контракт
+	result, err := e.contractGeneratorService.GenerateContract(
+		ctx,
+		execCtx.OrganizationID.String(),
+		templateID,
+		contractName,
+		filledData,
+	)
+	if err != nil {
+		return nil, err
+	}
+
+	return result, nil
+}
+
+// executeListGeneratedContracts получает список сгенерированных контрактов
+func (e *Executor) executeListGeneratedContracts(
+	ctx context.Context,
+	arguments map[string]interface{},
+	execCtx *domain.ExecutionContext,
+) (interface{}, error) {
+	span, ctx := opentracing.StartSpanFromContext(ctx, "tool.Executor.executeListGeneratedContracts")
+	defer span.Finish()
+
+	// Парсим аргументы
+	limit := 20
+	if limitArg, ok := arguments["limit"].(float64); ok {
+		limit = int(limitArg)
+	}
+
+	offset := 0
+	if offsetArg, ok := arguments["offset"].(float64); ok {
+		offset = int(offsetArg)
+	}
+
+	// Получаем список контрактов
+	contracts, total, err := e.contractGeneratorService.ListContracts(ctx, execCtx.OrganizationID.String(), limit, offset)
+	if err != nil {
+		return nil, err
+	}
+
+	// Возвращаем в виде map для удобства использования в tools
+	return map[string]interface{}{
+		"contracts": contracts,
+		"total":     total,
+		"limit":     limit,
+		"offset":    offset,
+	}, nil
 }

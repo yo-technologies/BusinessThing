@@ -16,9 +16,9 @@ type Service struct {
 }
 
 type TemplateService interface {
-	CreateTemplate(ctx context.Context, organizationID domain.ID, name, description, templateType, fieldsSchema, contentTemplate string) (domain.ContractTemplate, error)
+	CreateTemplate(ctx context.Context, organizationID domain.ID, name, description, templateType, fieldsSchema, s3TemplateKey string) (domain.ContractTemplate, error)
 	GetTemplate(ctx context.Context, id domain.ID) (domain.ContractTemplate, error)
-	UpdateTemplate(ctx context.Context, id domain.ID, name, description, fieldsSchema, contentTemplate *string) (domain.ContractTemplate, error)
+	UpdateTemplate(ctx context.Context, id domain.ID, name, description, fieldsSchema, s3TemplateKey *string) (domain.ContractTemplate, error)
 	DeleteTemplate(ctx context.Context, id domain.ID) error
 	ListTemplatesByOrganization(ctx context.Context, organizationID domain.ID) ([]domain.ContractTemplate, error)
 }
@@ -31,15 +31,15 @@ func NewService(templateService TemplateService) *Service {
 
 func templateToProto(template domain.ContractTemplate) *pb.ContractTemplate {
 	return &pb.ContractTemplate{
-		Id:              template.ID.String(),
-		OrganizationId:  template.OrganizationID.String(),
-		Name:            template.Name,
-		Description:     template.Description,
-		TemplateType:    template.TemplateType,
-		FieldsSchema:    template.FieldsSchema,
-		ContentTemplate: template.ContentTemplate,
-		CreatedAt:       timestamppb.New(template.CreatedAt),
-		UpdatedAt:       timestamppb.New(template.UpdatedAt),
+		Id:             template.ID.String(),
+		OrganizationId: template.OrganizationID.String(),
+		Name:           template.Name,
+		Description:    template.Description,
+		TemplateType:   template.TemplateType,
+		FieldsSchema:   template.FieldsSchema,
+		S3TemplateKey:  template.S3TemplateKey,
+		CreatedAt:      timestamppb.New(template.CreatedAt),
+		UpdatedAt:      timestamppb.New(template.UpdatedAt),
 	}
 }
 
@@ -52,7 +52,7 @@ func (s *Service) CreateContractTemplate(ctx context.Context, req *pb.CreateTemp
 		return nil, domain.ErrInvalidArgument
 	}
 
-	template, err := s.templateService.CreateTemplate(ctx, orgID, req.Name, req.Description, req.TemplateType, req.FieldsSchema, req.ContentTemplate)
+	template, err := s.templateService.CreateTemplate(ctx, orgID, req.Name, req.Description, req.TemplateType, req.FieldsSchema, req.S3TemplateKey)
 	if err != nil {
 		return nil, err
 	}
@@ -90,7 +90,7 @@ func (s *Service) UpdateContractTemplate(ctx context.Context, req *pb.UpdateTemp
 		return nil, domain.ErrInvalidArgument
 	}
 
-	template, err := s.templateService.UpdateTemplate(ctx, id, req.Name, req.Description, req.FieldsSchema, req.ContentTemplate)
+	template, err := s.templateService.UpdateTemplate(ctx, id, req.Name, req.Description, req.FieldsSchema, req.S3TemplateKey)
 	if err != nil {
 		return nil, err
 	}

@@ -15,7 +15,10 @@ import (
 	agentapi "llm-service/internal/app/llm-agent/api/agent"
 	memoryapi "llm-service/internal/app/llm-agent/api/memory"
 	"llm-service/internal/config"
+	"llm-service/internal/contracts"
+	"llm-service/internal/coreservice"
 	"llm-service/internal/db"
+	"llm-service/internal/docx"
 	"llm-service/internal/domain"
 	"llm-service/internal/jwt"
 	openai_llm "llm-service/internal/llm/openai"
@@ -31,6 +34,7 @@ import (
 	"llm-service/internal/service/quota"
 	"llm-service/internal/service/subagent"
 	"llm-service/internal/service/tool"
+	"llm-service/internal/storage"
 	"llm-service/internal/tracer"
 	"llm-service/internal/websearch"
 
@@ -119,6 +123,32 @@ func Run() error {
 	}
 	defer ragClient.Close()
 
+	// Initialize core-service client for contracts
+	coreServiceClient, err := coreservice.NewClient(cfg.GetCoreServiceAddress())
+	if err != nil {
+		return fmt.Errorf("failed to create core-service client: %w", err)
+	}
+
+	// Initialize S3 client
+	s3Client, err := storage.NewS3Client(
+		cfg.GetS3Endpoint(),
+		cfg.GetS3AccessKey(),
+		cfg.GetS3SecretKey(),
+		cfg.GetS3Region(),
+		cfg.GetS3BucketName(),
+		cfg.GetS3UseSSL(),
+	)
+	if err != nil {
+		return fmt.Errorf("failed to create S3 client: %w", err)
+	}
+
+	// Initialize DOCX processor
+	docxProcessor := docx.New()
+
+	// Initialize contract services
+	contractSearchService := contracts.NewSearchService(ragClient.GetClient(), coreServiceClient)
+	contractGeneratorService := contracts.NewGeneratorService(coreServiceClient, s3Client, docxProcessor)
+
 	// Initialize context builder
 	ctxBuilder := contextbuilder.NewBuilder(ragClient, orgMemoryService)
 
@@ -151,7 +181,7 @@ func Run() error {
 	logger.Info(ctx, "AmoCRM MCP tools synced successfully")
 
 	// Initialize tool executor
-	toolExecutor := tool.NewExecutor(agentManager, subagentManager, tavilyClient, orgMemoryService, mcpClient)
+	toolExecutor := tool.NewExecutor(agentManager, subagentManager, tavilyClient, orgMemoryService, mcpClient, contractSearchService, contractGeneratorService)
 
 	// Initialize agent executor
 	agentExecutor := executor.NewExecutor(

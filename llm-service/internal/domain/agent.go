@@ -15,7 +15,10 @@ const (
 	ToolNameWebSearch ToolName = "web_search"
 	// Инструменты памяти
 	ToolNameSaveOrganizationNote ToolName = "save_organization_note"
-	// MCP инструменты (префикс для динамических инструментов)
+	// Инструменты работы с контрактами
+	ToolNameSearchContractTemplates ToolName = "search_contract_templates"
+	ToolNameGenerateContract        ToolName = "generate_contract"
+	ToolNameListGeneratedContracts  ToolName = "list_generated_contracts"
 )
 
 const AmoCRMMCPToolPrefix = "ammo-crm-"

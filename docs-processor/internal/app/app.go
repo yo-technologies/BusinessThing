@@ -90,6 +90,7 @@ type App struct {
 
 func New(
 	searchService *service.SearchService,
+	templateProcessor *service.TemplateProcessor,
 	options ...OptionsFunc,
 ) *App {
 	opts := defaultOptions
@@ -97,7 +98,7 @@ func New(
 		o(opts)
 	}
 	return &App{
-		documentService: document.NewService(searchService),
+		documentService: document.NewService(searchService, templateProcessor),
 		options:         opts,
 	}
 }

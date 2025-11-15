@@ -38,10 +38,11 @@ type S3 struct {
 }
 
 type OpenSearch struct {
-	Addresses []string `mapstructure:"addresses"`
-	Username  string   `mapstructure:"username"`
-	Password  string   `mapstructure:"password"`
-	IndexName string   `mapstructure:"index_name"`
+	Addresses      []string `mapstructure:"addresses"`
+	Username       string   `mapstructure:"username"`
+	Password       string   `mapstructure:"password"`
+	IndexName      string   `mapstructure:"index_name"`
+	TemplatesIndex string   `mapstructure:"templates_index"`
 }
 
 type Embeddings struct {
@@ -257,6 +258,12 @@ func (c *Config) GetOpenSearchIndexName() string {
 	c.mu.RLock()
 	defer c.mu.RUnlock()
 	return c.OpenSearch.IndexName
+}
+
+func (c *Config) GetOpenSearchTemplatesIndex() string {
+	c.mu.RLock()
+	defer c.mu.RUnlock()
+	return c.OpenSearch.TemplatesIndex
 }
 
 func (c *Config) GetEmbeddingsBaseURL() string {

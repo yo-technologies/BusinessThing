@@ -61,5 +61,55 @@ func GetToolsRegistry() map[domain.ToolName]*domain.ToolDefinition {
 			},
 			Required: []string{"summary"},
 		},
+		// Инструменты работы с контрактами
+		domain.ToolNameSearchContractTemplates: {
+			Name:        string(domain.ToolNameSearchContractTemplates),
+			Description: "Найти подходящие шаблоны договоров и контрактов на основе описания. Используй для поиска нужного типа договора (например, 'договор аренды', 'трудовой договор', 'договор купли-продажи').",
+			Parameters: map[string]interface{}{
+				"query": map[string]interface{}{
+					"type":        "string",
+					"description": "Описание типа договора или ключевые слова для поиска (например, 'договор оказания услуг по разработке ПО')",
+				},
+				"limit": map[string]interface{}{
+					"type":        "integer",
+					"description": "Максимальное количество результатов (по умолчанию 5)",
+				},
+			},
+			Required: []string{"query"},
+		},
+		domain.ToolNameGenerateContract: {
+			Name:        string(domain.ToolNameGenerateContract),
+			Description: "Сгенерировать договор из выбранного шаблона, заполнив его данными. Перед вызовом обязательно используй search_contract_templates для получения информации о полях шаблона. Затем запроси у пользователя значения для всех обязательных полей. ВАЖНО: Шаблоны используют плейсхолдеры вида {field_name} (одинарные фигурные скобки).",
+			Parameters: map[string]interface{}{
+				"template_id": map[string]interface{}{
+					"type":        "string",
+					"description": "ID шаблона договора из результатов поиска",
+				},
+				"contract_name": map[string]interface{}{
+					"type":        "string",
+					"description": "Название для создаваемого договора",
+				},
+				"filled_data": map[string]interface{}{
+					"type":        "object",
+					"description": "Объект с заполненными данными для всех полей шаблона (ключи - имена полей из fields_schema БЕЗ фигурных скобок, значения - введенные пользователем данные)",
+				},
+			},
+			Required: []string{"template_id", "contract_name", "filled_data"},
+		},
+		domain.ToolNameListGeneratedContracts: {
+			Name:        string(domain.ToolNameListGeneratedContracts),
+			Description: "Получить список ранее сгенерированных договоров организации",
+			Parameters: map[string]interface{}{
+				"limit": map[string]interface{}{
+					"type":        "integer",
+					"description": "Максимальное количество результатов (по умолчанию 20)",
+				},
+				"offset": map[string]interface{}{
+					"type":        "integer",
+					"description": "Смещение для пагинации (по умолчанию 0)",
+				},
+			},
+			Required: []string{},
+		},
 	}
 }

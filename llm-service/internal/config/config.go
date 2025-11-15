@@ -85,6 +85,15 @@ type AmoCRMMCP struct {
 	Address string `mapstructure:"address"`
 }
 
+type S3 struct {
+	Endpoint  string `mapstructure:"endpoint"`
+	AccessKey string `mapstructure:"access_key"`
+	SecretKey string `mapstructure:"secret_key"`
+	Region    string `mapstructure:"region"`
+	Bucket    string `mapstructure:"bucket"`
+	UseSSL    bool   `mapstructure:"use_ssl"`
+}
+
 // Config holds all runtime-configurable settings
 type Config struct {
 	mu sync.RWMutex
@@ -101,6 +110,7 @@ type Config struct {
 	DocsProcessor DocsProcessor `mapstructure:"docs_processor"`
 	Tavily        Tavily        `mapstructure:"tavily"`
 	AmoCRMMCP     AmoCRMMCP     `mapstructure:"amocrm_mcp"`
+	S3            S3            `mapstructure:"s3"`
 }
 
 var (
@@ -337,4 +347,46 @@ func (c *Config) GetAmoCRMMCPAddress() string {
 	c.mu.RLock()
 	defer c.mu.RUnlock()
 	return c.AmoCRMMCP.Address
+}
+
+// GetS3Endpoint returns the S3 endpoint from config
+func (c *Config) GetS3Endpoint() string {
+	c.mu.RLock()
+	defer c.mu.RUnlock()
+	return c.S3.Endpoint
+}
+
+// GetS3AccessKey returns the S3 access key from config
+func (c *Config) GetS3AccessKey() string {
+	c.mu.RLock()
+	defer c.mu.RUnlock()
+	return c.S3.AccessKey
+}
+
+// GetS3SecretKey returns the S3 secret key from config
+func (c *Config) GetS3SecretKey() string {
+	c.mu.RLock()
+	defer c.mu.RUnlock()
+	return c.S3.SecretKey
+}
+
+// GetS3Region returns the S3 region from config
+func (c *Config) GetS3Region() string {
+	c.mu.RLock()
+	defer c.mu.RUnlock()
+	return c.S3.Region
+}
+
+// GetS3BucketName returns the S3 bucket name from config
+func (c *Config) GetS3BucketName() string {
+	c.mu.RLock()
+	defer c.mu.RUnlock()
+	return c.S3.Bucket
+}
+
+// GetS3UseSSL returns whether to use SSL for S3 from config
+func (c *Config) GetS3UseSSL() bool {
+	c.mu.RLock()
+	defer c.mu.RUnlock()
+	return c.S3.UseSSL
 }

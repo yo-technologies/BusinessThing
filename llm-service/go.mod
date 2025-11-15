@@ -4,6 +4,7 @@ go 1.24.4
 
 require (
 	github.com/Masterminds/squirrel v1.5.4
+	github.com/aws/aws-sdk-go v1.55.8
 	github.com/envoyproxy/protoc-gen-validate v1.2.1
 	github.com/fsnotify/fsnotify v1.9.0
 	github.com/georgysavva/scany/v2 v2.1.4
@@ -14,6 +15,7 @@ require (
 	github.com/jackc/pgx/v5 v5.7.6
 	github.com/joho/godotenv v1.5.1
 	github.com/lib/pq v1.10.0
+	github.com/lukasjarosch/go-docx v0.5.0
 	github.com/mark3labs/mcp-go v0.43.0
 	github.com/opentracing/opentracing-go v1.2.0
 	github.com/pressly/goose/v3 v3.26.0
@@ -33,6 +35,7 @@ require (
 	github.com/bahlo/generic-list-go v0.2.0 // indirect
 	github.com/buger/jsonparser v1.1.1 // indirect
 	github.com/invopop/jsonschema v0.13.0 // indirect
+	github.com/jmespath/go-jmespath v0.4.0 // indirect
 	github.com/lann/builder v0.0.0-20180802200727-47ae307949d0 // indirect
 	github.com/lann/ps v0.0.0-20150810152359-62de8c46ede0 // indirect
 	github.com/mailru/easyjson v0.7.7 // indirect

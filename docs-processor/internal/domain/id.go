@@ -1,17 +1,29 @@
 package domain
 
-import "github.com/google/uuid"
+import (
+	"fmt"
 
-type ID string
+	"github.com/google/uuid"
+)
+
+type ID uuid.UUID
 
 func NewID() ID {
-	return ID(uuid.New().String())
+	return ID(uuid.New())
 }
 
 func (id ID) String() string {
-	return string(id)
+	return uuid.UUID(id).String()
 }
 
 func (id ID) IsEmpty() bool {
-	return id == ""
+	return uuid.UUID(id) == uuid.Nil
+}
+
+func ParseID(s string) (ID, error) {
+	id, err := uuid.Parse(s)
+	if err != nil {
+		return ID{}, fmt.Errorf("%w: %w", err, ErrInvalidArgument)
+	}
+	return ID(id), nil
 }

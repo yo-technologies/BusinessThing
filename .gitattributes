@@ -1,6 +1,21 @@
-# Exclude generated protobuf files from diffs and language statistics
-*.pb.go linguist-generated=true
-*.pb.gw.go linguist-generated=true
-*.pb.validate.go linguist-generated=true
-*.swagger.go linguist-generated=true
-*.swagger.json linguist-generated=true
+*.pb.go -diff
+*.pb.*.go -diff
+*.swagger.json -diff
+*.sum -diff
+*.pb.go -diff -text
+**/*.pb.go -diff -text
+**/*.pb.gw.go -diff -text
+**/*.pb.scratch.go -diff -text
+**/*.pb.validate.go -diff -text
+**/*.pb.sensitivity.go -diff -text
+**/*_grpc.pb.go -diff -text
+**/*_grpc_hr.pb.go -diff -text
+**/*_vtproto.pb.go -diff -text
+*mock.go -diff -text
+*mocks.go -diff -text
+**/*mock.go -diff -text
+**/*mocks.go -diff -text
+**/*_mock_test.go -diff -text
+/pkg/**/*.scratch.go
+/pkg/**/*.swagger.json
+/pkg/**/swagger.go

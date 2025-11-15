@@ -237,9 +237,11 @@ func (c *OpenSearchClient) SearchChunks(ctx context.Context, organizationID doma
 
 	results := make([]*domain.SearchResult, 0, len(searchResp.Hits.Hits))
 	for _, hit := range searchResp.Hits.Hits {
+		chunkID, _ := domain.ParseID(hit.Source.ChunkID)
+		documentID, _ := domain.ParseID(hit.Source.DocumentID)
 		results = append(results, &domain.SearchResult{
-			ChunkID:      domain.ID(hit.Source.ChunkID),
-			DocumentID:   domain.ID(hit.Source.DocumentID),
+			ChunkID:      chunkID,
+			DocumentID:   documentID,
 			DocumentName: hit.Source.DocumentName,
 			Content:      hit.Source.Content,
 			Position:     hit.Source.Position,

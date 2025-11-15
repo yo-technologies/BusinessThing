@@ -1,6 +1,7 @@
 OUT_PATH:=$(CURDIR)/pkg
 LOCAL_BIN:=$(CURDIR)/bin
 DOCS_PROCCESSOR_PATH:=$(CURDIR)/../docs-processor
+CORE_SERVICE_PATH:=$(CURDIR)/../core-service
 
 build:
 	go build -o bin/llm-service cmd/llm-service/main.go
@@ -30,7 +31,7 @@ generate:
 	make .generate
 	go mod tidy
 
-.generate: .generate-inner .generate-docs-processor
+.generate: .generate-inner .generate-docs-processor .generate-core-service
 
 .generate-inner:
 	protoc --proto_path api --proto_path vendor.protogen \
@@ -48,7 +49,10 @@ generate:
 		${DOCS_PROCCESSOR_PATH}/api/**/*.proto
 
 .generate-core-service:
-	echo "Generating core service statikc.."
+	protoc --proto_path ${CORE_SERVICE_PATH}/api --proto_path vendor.protogen \
+		--plugin=protoc-gen-go=$(LOCAL_BIN)/protoc-gen-go --go_out=${OUT_PATH} --go_opt=paths=source_relative \
+		--plugin=protoc-gen-go-grpc=$(LOCAL_BIN)/protoc-gen-go-grpc --go-grpc_out=${OUT_PATH} --go-grpc_opt=paths=source_relative \
+		${CORE_SERVICE_PATH}/api/**/*.proto
 
 .vendor-proto: .vendor-proto/google/protobuf .vendor-proto/google/api .vendor-proto/protoc-gen-openapiv2/options .vendor-proto/validate
 
