@@ -7,8 +7,8 @@ CREATE TABLE IF NOT EXISTS organization_members (
     organization_id UUID NOT NULL REFERENCES organizations(id) ON DELETE CASCADE,
     user_id UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE,
     email VARCHAR(255) NOT NULL,
-    role user_role NOT NULL DEFAULT 'employee',
-    status user_status NOT NULL DEFAULT 'active',
+    role TEXT NOT NULL DEFAULT 'employee',
+    status TEXT NOT NULL DEFAULT 'active',
     joined_at TIMESTAMP NOT NULL DEFAULT NOW(),
     updated_at TIMESTAMP NOT NULL DEFAULT NOW(),
     UNIQUE(organization_id, user_id)
@@ -44,8 +44,8 @@ ALTER TABLE users ADD COLUMN is_active BOOLEAN NOT NULL DEFAULT true;
 -- Возвращаем колонки в users
 ALTER TABLE users ADD COLUMN organization_id UUID;
 ALTER TABLE users ADD COLUMN email VARCHAR(255);
-ALTER TABLE users ADD COLUMN role user_role DEFAULT 'employee';
-ALTER TABLE users ADD COLUMN status user_status DEFAULT 'active';
+ALTER TABLE users ADD COLUMN role TEXT DEFAULT 'employee';
+ALTER TABLE users ADD COLUMN status TEXT DEFAULT 'active';
 
 -- Восстанавливаем данные из organization_members (берем первую запись для каждого пользователя)
 UPDATE users u

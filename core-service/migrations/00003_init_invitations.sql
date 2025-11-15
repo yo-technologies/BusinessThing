@@ -5,7 +5,7 @@ CREATE TABLE IF NOT EXISTS invitations (
     organization_id UUID NOT NULL REFERENCES organizations(id) ON DELETE CASCADE,
     email VARCHAR(255) NOT NULL,
     token VARCHAR(255) NOT NULL UNIQUE,
-    role user_role NOT NULL,
+    role TEXT NOT NULL,
     expires_at TIMESTAMP NOT NULL,
     used_at TIMESTAMP,
     created_at TIMESTAMP NOT NULL DEFAULT NOW()
