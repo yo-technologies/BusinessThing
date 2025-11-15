@@ -18,16 +18,15 @@ type Client interface {
 }
 
 type Template struct {
-	ID              string
-	OrganizationID  string
-	Name            string
-	Description     string
-	TemplateType    string
-	FieldsSchema    string
-	S3TemplateKey   string
-	ContentTemplate string
-	CreatedAt       time.Time
-	UpdatedAt       time.Time
+	ID             string
+	OrganizationID string
+	Name           string
+	Description    string
+	TemplateType   string
+	FieldsSchema   string
+	S3TemplateKey  string
+	CreatedAt      time.Time
+	UpdatedAt      time.Time
 }
 
 type Contract struct {
@@ -73,16 +72,15 @@ func (c *grpcClient) GetTemplate(ctx context.Context, templateID string) (*Templ
 	}
 
 	return &Template{
-		ID:              resp.Template.Id,
-		OrganizationID:  resp.Template.OrganizationId,
-		Name:            resp.Template.Name,
-		Description:     resp.Template.Description,
-		TemplateType:    resp.Template.TemplateType,
-		FieldsSchema:    resp.Template.FieldsSchema,
-		S3TemplateKey:   resp.Template.S3TemplateKey,
-		ContentTemplate: resp.Template.ContentTemplate,
-		CreatedAt:       resp.Template.CreatedAt.AsTime(),
-		UpdatedAt:       resp.Template.UpdatedAt.AsTime(),
+		ID:             resp.Template.Id,
+		OrganizationID: resp.Template.OrganizationId,
+		Name:           resp.Template.Name,
+		Description:    resp.Template.Description,
+		TemplateType:   resp.Template.TemplateType,
+		FieldsSchema:   resp.Template.FieldsSchema,
+		S3TemplateKey:  resp.Template.S3TemplateKey,
+		CreatedAt:      resp.Template.CreatedAt.AsTime(),
+		UpdatedAt:      resp.Template.UpdatedAt.AsTime(),
 	}, nil
 }
 

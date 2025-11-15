@@ -502,8 +502,7 @@ message CreateTemplateRequest {
     string template_type = 4;
     // JSON с полями шаблона
     string fields_schema = 5;
-    string content_template = 6;
-    string s3_template_key = 7;
+    string s3_template_key = 6;
 }
 
 message CreateTemplateResponse {
@@ -536,8 +535,7 @@ message UpdateTemplateRequest {
     optional string name = 2;
     optional string description = 3;
     optional string fields_schema = 4;
-    optional string content_template = 5;
-    optional string s3_template_key = 6;
+    optional string s3_template_key = 5;
 }
 
 message UpdateTemplateResponse {
@@ -664,10 +662,9 @@ message ContractTemplate {
     string description = 4;
     string template_type = 5;
     string fields_schema = 6;
-    string content_template = 7;
-    string s3_template_key = 8;
-    google.protobuf.Timestamp created_at = 9;
-    google.protobuf.Timestamp updated_at = 10;
+    string s3_template_key = 7;
+    google.protobuf.Timestamp created_at = 8;
+    google.protobuf.Timestamp updated_at = 9;
 }
 
 message GeneratedContract {

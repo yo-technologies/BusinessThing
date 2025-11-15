@@ -5039,8 +5039,6 @@ func (m *CreateTemplateRequest) validate(all bool) error {
 
 	// no validation rules for FieldsSchema
 
-	// no validation rules for ContentTemplate
-
 	// no validation rules for S3TemplateKey
 
 	if len(errors) > 0 {
@@ -5809,10 +5807,6 @@ func (m *UpdateTemplateRequest) validate(all bool) error {
 
 	if m.FieldsSchema != nil {
 		// no validation rules for FieldsSchema
-	}
-
-	if m.ContentTemplate != nil {
-		// no validation rules for ContentTemplate
 	}
 
 	if m.S3TemplateKey != nil {
@@ -7758,8 +7752,6 @@ func (m *ContractTemplate) validate(all bool) error {
 	// no validation rules for TemplateType
 
 	// no validation rules for FieldsSchema
-
-	// no validation rules for ContentTemplate
 
 	// no validation rules for S3TemplateKey
 

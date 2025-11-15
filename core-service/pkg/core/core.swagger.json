@@ -1167,9 +1167,6 @@
           "type": "string",
           "title": "JSON с полями шаблона"
         },
-        "contentTemplate": {
-          "type": "string"
-        },
         "s3TemplateKey": {
           "type": "string"
         }
@@ -1185,9 +1182,6 @@
           "type": "string"
         },
         "fieldsSchema": {
-          "type": "string"
-        },
-        "contentTemplate": {
           "type": "string"
         },
         "s3TemplateKey": {
@@ -1367,9 +1361,6 @@
           "type": "string"
         },
         "fieldsSchema": {
-          "type": "string"
-        },
-        "contentTemplate": {
           "type": "string"
         },
         "s3TemplateKey": {

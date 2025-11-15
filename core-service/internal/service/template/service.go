@@ -37,7 +37,7 @@ func New(repo repository, queue queuePublisher, tx *db.ContextManager) *Service 
 }
 
 // CreateTemplate creates a new contract template
-func (s *Service) CreateTemplate(ctx context.Context, organizationID domain.ID, name, description, templateType, fieldsSchema, contentTemplate, s3TemplateKey string) (domain.ContractTemplate, error) {
+func (s *Service) CreateTemplate(ctx context.Context, organizationID domain.ID, name, description, templateType, fieldsSchema, s3TemplateKey string) (domain.ContractTemplate, error) {
 	span, ctx := opentracing.StartSpanFromContext(ctx, "service.template.CreateTemplate")
 	defer span.Finish()
 
@@ -45,11 +45,11 @@ func (s *Service) CreateTemplate(ctx context.Context, organizationID domain.ID, 
 	if name == "" {
 		return domain.ContractTemplate{}, domain.NewInvalidArgumentError("template name is required")
 	}
-	if contentTemplate == "" && s3TemplateKey == "" {
-		return domain.ContractTemplate{}, domain.NewInvalidArgumentError("either content_template or s3_template_key is required")
+	if s3TemplateKey == "" {
+		return domain.ContractTemplate{}, domain.NewInvalidArgumentError("s3_template_key is required")
 	}
 
-	template := domain.NewContractTemplate(organizationID, name, description, templateType, fieldsSchema, contentTemplate, s3TemplateKey)
+	template := domain.NewContractTemplate(organizationID, name, description, templateType, fieldsSchema, "", s3TemplateKey)
 
 	var created domain.ContractTemplate
 	err := s.tx.Do(ctx, func(txCtx context.Context) error {
@@ -113,7 +113,7 @@ func (s *Service) ListTemplatesByOrganization(ctx context.Context, organizationI
 }
 
 // UpdateTemplate updates an existing template
-func (s *Service) UpdateTemplate(ctx context.Context, id domain.ID, name, description, fieldsSchema, contentTemplate, s3TemplateKey *string) (domain.ContractTemplate, error) {
+func (s *Service) UpdateTemplate(ctx context.Context, id domain.ID, name, description, fieldsSchema, s3TemplateKey *string) (domain.ContractTemplate, error) {
 	span, ctx := opentracing.StartSpanFromContext(ctx, "service.template.UpdateTemplate")
 	defer span.Finish()
 
@@ -124,7 +124,7 @@ func (s *Service) UpdateTemplate(ctx context.Context, id domain.ID, name, descri
 	}
 
 	// Update template
-	template.Update(name, description, fieldsSchema, contentTemplate, s3TemplateKey)
+	template.Update(name, description, fieldsSchema, nil, s3TemplateKey)
 
 	updated, err := s.repo.UpdateTemplate(ctx, template)
 	if err != nil {
