@@ -23,7 +23,7 @@ services:
         condition: service_completed_successfully
     labels:
       - "traefik.enable=true"
-      - "traefik.http.routers.core.rule=Host(`core.6036484-cd72267.twc1.net`)"
+      - "traefik.http.routers.core.rule=Host(`core.businessthing.ru`)"
       - "traefik.http.routers.core.entrypoints=websecure"
       - "traefik.http.routers.core.tls.certresolver=letsencrypt"
       - "traefik.http.services.core.loadbalancer.server.port=8085"
