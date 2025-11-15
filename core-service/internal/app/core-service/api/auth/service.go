@@ -65,8 +65,6 @@ func (s *Service) CompleteRegistration(ctx context.Context, req *pb.CompleteRegi
 func userToProto(user *domain.User) *pb.User {
 	return &pb.User{
 		Id:             user.ID.String(),
-		OrganizationId: "", // User больше не хранит organization_id
-		Email:          "", // User больше не хранит email
 		TelegramId:     user.TelegramID,
 		FirstName:      user.FirstName,
 		LastName:       user.LastName,
