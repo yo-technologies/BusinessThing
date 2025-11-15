@@ -239,14 +239,16 @@ func (a *App) startHTTPGateway(ctx context.Context) error {
 
 	httpMux.Mount("/", http.StripPrefix(a.options.httpPathPrefix, gatewayMuxWithCORS))
 
+	baseMux := chi.NewRouter()
 	prefix := a.options.httpPathPrefix
 	if prefix == "" {
 		prefix = "/"
 	}
+	baseMux.Mount(prefix, httpMux)
 
 	a.httpServer = &http.Server{
 		Addr:    httpAddr,
-		Handler: httpMux,
+		Handler: baseMux,
 	}
 
 	logger.Infof(ctx, "Starting HTTP gateway on %s with prefix '%s'", httpAddr, prefix)

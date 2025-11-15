@@ -1,6 +1,7 @@
 package telegram
 
 import (
+	"context"
 	"crypto/hmac"
 	"crypto/sha256"
 	"encoding/hex"
@@ -13,6 +14,7 @@ import (
 	"time"
 
 	"core-service/internal/domain"
+	"core-service/internal/logger"
 )
 
 // UserPayload describes trimmed Telegram user object.
@@ -42,17 +44,22 @@ func NewValidator(botToken string, maxAge time.Duration) *Validator {
 
 // Validate parses and validates init data. Returns ErrUnauthorized if invalid.
 func (v *Validator) Validate(initData string) (*InitData, error) {
+	ctx := context.Background()
+	
 	if initData == "" {
+		logger.Warn(ctx, "telegram validator: empty init data")
 		return nil, domain.ErrUnauthorized
 	}
 
 	values, err := url.ParseQuery(initData)
 	if err != nil {
+		logger.Warnf(ctx, "telegram validator: failed to parse query: %v", err)
 		return nil, domain.ErrUnauthorized
 	}
 
 	hash := values.Get("hash")
 	if hash == "" {
+		logger.Warn(ctx, "telegram validator: hash not found in init data")
 		return nil, domain.ErrUnauthorized
 	}
 
@@ -60,20 +67,24 @@ func (v *Validator) Validate(initData string) (*InitData, error) {
 
 	dataCheckString := buildDataCheckString(values)
 	if !v.verifyHash(dataCheckString, hash) {
+		logger.Warn(ctx, "telegram validator: hash verification failed")
 		return nil, domain.ErrUnauthorized
 	}
 
 	authDateUnix, err := strconv.ParseInt(values.Get("auth_date"), 10, 64)
 	if err != nil {
+		logger.Warnf(ctx, "telegram validator: failed to parse auth_date: %v", err)
 		return nil, domain.ErrUnauthorized
 	}
 	authDate := time.Unix(authDateUnix, 0)
 	if v.maxAge > 0 && time.Since(authDate) > v.maxAge {
+		logger.Warnf(ctx, "telegram validator: init data expired (age: %v, max: %v)", time.Since(authDate), v.maxAge)
 		return nil, domain.ErrUnauthorized
 	}
 
 	var userPayload UserPayload
 	if err := json.Unmarshal([]byte(values.Get("user")), &userPayload); err != nil {
+		logger.Warnf(ctx, "telegram validator: failed to unmarshal user payload: %v", err)
 		return nil, domain.ErrUnauthorized
 	}
 
