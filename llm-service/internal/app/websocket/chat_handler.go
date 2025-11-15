@@ -54,7 +54,7 @@ func (h *ChatHandler) HandleChatStream(w http.ResponseWriter, r *http.Request) {
 	}
 
 	if token == "" {
-		logger.Error(ctx, "No access token provided")
+		logger.Error(ctx, "websocket: no access token provided (checked header and query params)")
 		http.Error(w, "Unauthorized", http.StatusUnauthorized)
 		return
 	}

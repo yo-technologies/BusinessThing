@@ -40,6 +40,7 @@ func New(users userRepository, jwtProvider *jwt.Provider, validator *telegram.Va
 func (s *Service) AuthenticateWithTelegram(ctx context.Context, initData string) (string, *domain.User, bool, error) {
 	data, err := s.validator.Validate(initData)
 	if err != nil {
+		logger.Warnf(ctx, "telegram init data validation failed: %v", err)
 		return "", nil, false, domain.ErrUnauthorized
 	}
 
@@ -48,6 +49,7 @@ func (s *Service) AuthenticateWithTelegram(ctx context.Context, initData string)
 	if err != nil {
 		if errors.Is(err, domain.ErrNotFound) {
 			// Создаем нового пользователя
+			logger.Infof(ctx, "creating new user with telegram ID: %s", telegramID)
 			newUser := domain.NewUser(telegramID)
 			created, err := s.users.CreateUser(ctx, newUser)
 			if err != nil {
@@ -56,8 +58,10 @@ func (s *Service) AuthenticateWithTelegram(ctx context.Context, initData string)
 			}
 
 			// Для нового пользователя не генерируем токен - он должен принять приглашение
+			logger.Infof(ctx, "new user created, waiting for invitation acceptance: %s", created.ID)
 			return "", &created, true, nil
 		}
+		logger.Errorf(ctx, "failed to get user by telegram ID: %v", err)
 		return "", nil, false, err
 	}
 
@@ -70,6 +74,7 @@ func (s *Service) AuthenticateWithTelegram(ctx context.Context, initData string)
 
 	if len(memberships) == 0 {
 		// Пользователь существует но не состоит ни в одной организации
+		logger.Warnf(ctx, "user %s has no organization memberships", user.ID)
 		return "", &user, false, nil
 	}
 
@@ -84,6 +89,7 @@ func (s *Service) AuthenticateWithTelegram(ctx context.Context, initData string)
 
 	if activeMembership == nil {
 		// Нет активных membership
+		logger.Warnf(ctx, "user %s has no active memberships", user.ID)
 		return "", &user, false, nil
 	}
 
@@ -93,6 +99,7 @@ func (s *Service) AuthenticateWithTelegram(ctx context.Context, initData string)
 		return "", nil, false, err
 	}
 
+	logger.Infof(ctx, "user %s authenticated successfully for organization %s", user.ID, activeMembership.OrganizationID)
 	return token, &user, false, nil
 }
 
