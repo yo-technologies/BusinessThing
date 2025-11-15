@@ -28,6 +28,22 @@ import (
 	"google.golang.org/grpc/reflection"
 )
 
+type Options struct {
+	httpPathPrefix string
+}
+
+var defaultOptions = &Options{
+	httpPathPrefix: "",
+}
+
+type OptionsFunc func(*Options)
+
+func WithHTTPPathPrefix(httpPathPrefix string) OptionsFunc {
+	return func(o *Options) {
+		o.httpPathPrefix = httpPathPrefix
+	}
+}
+
 type App struct {
 	cfg             *config.Config
 	jwtProvider     *jwt.Provider
@@ -40,6 +56,7 @@ type App struct {
 	authService     *auth.Service
 	grpcServer      *grpc.Server
 	httpServer      *http.Server
+	options         *Options
 }
 
 type Services struct {
@@ -51,7 +68,12 @@ type Services struct {
 	ContractService     contract.ContractService
 }
 
-func New(cfg *config.Config, jwtProvider *jwt.Provider, services Services, authSvc *auth.Service) *App {
+func New(cfg *config.Config, jwtProvider *jwt.Provider, services Services, authSvc *auth.Service, opts ...OptionsFunc) *App {
+	options := defaultOptions
+	for _, opt := range opts {
+		opt(options)
+	}
+
 	app := &App{
 		cfg:             cfg,
 		jwtProvider:     jwtProvider,
@@ -62,6 +84,7 @@ func New(cfg *config.Config, jwtProvider *jwt.Provider, services Services, authS
 		templateService: template.NewService(services.TemplateService),
 		contractService: contract.NewService(services.ContractService),
 		authService:     authSvc,
+		options:         options,
 	}
 
 	app.setupGRPC()
@@ -204,8 +227,8 @@ func (a *App) startHTTPGateway(ctx context.Context) error {
 	})
 	httpMux.Mount("/docs/", v5emb.NewHandler(
 		"Core Service",
-		"/swagger",
-		"/docs/",
+		fmt.Sprintf("%s/swagger", a.options.httpPathPrefix),
+		fmt.Sprintf("%s/docs/", a.options.httpPathPrefix),
 	))
 
 	httpMux.Handle("/metrics", promhttp.Handler())
@@ -214,14 +237,19 @@ func (a *App) startHTTPGateway(ctx context.Context) error {
 		w.Write([]byte("OK"))
 	})
 
-	httpMux.Mount("/", gatewayMuxWithCORS)
+	httpMux.Mount("/", http.StripPrefix(a.options.httpPathPrefix, gatewayMuxWithCORS))
+
+	prefix := a.options.httpPathPrefix
+	if prefix == "" {
+		prefix = "/"
+	}
 
 	a.httpServer = &http.Server{
 		Addr:    httpAddr,
 		Handler: httpMux,
 	}
 
-	logger.Infof(ctx, "Starting HTTP gateway on %s", httpAddr)
+	logger.Infof(ctx, "Starting HTTP gateway on %s with prefix '%s'", httpAddr, prefix)
 
 	go func() {
 		if err := a.httpServer.ListenAndServe(); err != nil && err != http.ErrServerClosed {

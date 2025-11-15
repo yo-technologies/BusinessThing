@@ -116,7 +116,9 @@ func main() {
 		NoteService:         noteService,
 		TemplateService:     templateService,
 		ContractService:     contractService,
-	}, authAPIService)
+	}, authAPIService,
+		app.WithHTTPPathPrefix(cfg.GetHTTPPathPrefix()),
+	)
 
 	// Setup graceful shutdown
 	ctx, cancel := context.WithCancel(ctx)
