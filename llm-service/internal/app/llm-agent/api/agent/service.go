@@ -2,15 +2,15 @@ package agent
 
 import (
 	"context"
+	"fmt"
 
+	"llm-service/internal/app/interceptors"
 	"llm-service/internal/domain"
 	"llm-service/internal/logger"
 	"llm-service/internal/service"
 	pb "llm-service/pkg/agent"
 
 	"github.com/opentracing/opentracing-go"
-	"google.golang.org/grpc/codes"
-	"google.golang.org/grpc/status"
 	"google.golang.org/protobuf/types/known/emptypb"
 )
 
@@ -42,15 +42,16 @@ func (s *Service) GetLLMLimits(ctx context.Context, _ *emptypb.Empty) (*pb.GetLL
 	span, ctx := opentracing.StartSpanFromContext(ctx, "api.agent.GetLLMLimits")
 	defer span.Finish()
 
-	userID, ok := ctx.Value("user_id").(domain.ID)
-	if !ok {
-		return nil, status.Error(codes.Unauthenticated, "user not authenticated")
+	userID, err := interceptors.UserIDFromContext(ctx)
+	if err != nil {
+		logger.Warnf(ctx, "unauthorized access to GetLLMLimits: %v", err)
+		return nil, domain.ErrUnauthorized
 	}
 
 	limits, err := s.quotaService.GetLimits(ctx, userID)
 	if err != nil {
 		logger.Error(ctx, "failed to get limits", "error", err)
-		return nil, status.Error(codes.Internal, "internal error")
+		return nil, fmt.Errorf("failed to get limits: %w", err)
 	}
 
 	return &pb.GetLLMLimitsResponse{

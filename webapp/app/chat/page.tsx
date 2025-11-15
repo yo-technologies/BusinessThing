@@ -62,11 +62,13 @@ export default function ChatPage() {
   }, []);
 
   const loadChatAndLimits = useCallback(async () => {
+    if (!currentOrg?.id) return;
+    
     setInitialLoading(true);
     setError(null);
     try {
       const [chatsResp, limitsResp] = await Promise.all([
-        agent.v1.agentServiceListChats({ page: 1, pageSize: 1 }),
+        agent.v1.agentServiceListChats({ orgId: currentOrg.id, page: 1, pageSize: 1 }),
         agent.v1.agentServiceGetLlmLimits(),
       ]);
 
@@ -87,7 +89,7 @@ export default function ChatPage() {
       setInitialLoading(false);
       setTimeout(scrollToBottom, 0);
     }
-  }, [agent.v1, scrollToBottom]);
+  }, [agent.v1, scrollToBottom, currentOrg?.id]);
 
   useEffect(() => {
     if (!isAuthenticated || loading || isNewUser || !currentOrg?.id) return;
