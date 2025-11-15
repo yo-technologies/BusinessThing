@@ -2,6 +2,7 @@ package auth
 
 import (
 	"context"
+	"core-service/internal/app/interceptors"
 	"core-service/internal/domain"
 	pb "core-service/pkg/core"
 
@@ -17,6 +18,7 @@ type Service struct {
 type AuthService interface {
 	AuthenticateWithTelegram(ctx context.Context, initData string) (string, *domain.User, bool, error)
 	CompleteRegistration(ctx context.Context, userID domain.ID, firstName, lastName string) (*domain.User, error)
+	RefreshToken(ctx context.Context, userID domain.ID) (string, error)
 }
 
 func NewService(authService AuthService) *Service {
@@ -57,6 +59,26 @@ func (s *Service) CompleteRegistration(ctx context.Context, req *pb.CompleteRegi
 
 	return &pb.CompleteRegistrationResponse{
 		User: userToProto(user),
+	}, nil
+}
+
+func (s *Service) RefreshToken(ctx context.Context, req *pb.RefreshTokenRequest) (*pb.RefreshTokenResponse, error) {
+	span, ctx := opentracing.StartSpanFromContext(ctx, "api.auth.RefreshToken")
+	defer span.Finish()
+
+	// Получаем userID из контекста (из JWT токена)
+	userID, err := interceptors.UserIDFromContext(ctx)
+	if err != nil {
+		return nil, err
+	}
+
+	token, err := s.authService.RefreshToken(ctx, userID)
+	if err != nil {
+		return nil, err
+	}
+
+	return &pb.RefreshTokenResponse{
+		AccessToken: token,
 	}, nil
 }
 
