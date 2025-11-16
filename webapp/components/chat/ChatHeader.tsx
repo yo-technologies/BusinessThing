@@ -8,21 +8,23 @@ import { AgentGetLLMLimitsResponse } from "@/api/api.agent.generated";
 interface ChatHeaderProps {
   chatName?: string | null;
   limits?: AgentGetLLMLimitsResponse | null;
+  usageTokens?: number | null;
   onShowChatList?: () => void;
 }
 
 export function ChatHeader({
   chatName,
   limits,
+  usageTokens,
   onShowChatList,
 }: ChatHeaderProps) {
   // Вычисляем процент использования токенов
   const usagePercent = limits && limits.dailyLimit
-    ? Math.min(((limits.used ?? 0) / limits.dailyLimit) * 100, 100)
+    ? Math.min((((limits.used ?? 0) + (usageTokens ?? 0)) / limits.dailyLimit) * 100, 100)
     : 0;
 
   return (
-    <Card className="relative border-none bg-default-50/60 shadow-sm overflow-visible">
+    <Card className="relative border-none bg-default-50/60 shadow-sm overflow-visible rounded-b-none px-1">
       <CardHeader className="flex items-center gap-2 pb-2">
         <div className="flex flex-1 flex-col items-start gap-0.5">
           <span className="text-tiny font-medium uppercase text-default-400">Чат с агентом</span>
@@ -39,11 +41,11 @@ export function ChatHeader({
       
       {/* Индикатор использования токенов */}
       {limits && limits.dailyLimit && (
-        <div className="absolute bottom-0 left-0 right-0 h-1 bg-default-200">
-          <div 
-            className="h-full bg-primary transition-all duration-300"
-            style={{ width: `${usagePercent}%` }}
-          />
+          <div className="mt-1 h-1 bg-default-200 rounded-full overflow-hidden">
+            <div 
+              className="h-full bg-primary transition-all duration-300"
+              style={{ width: `${usagePercent}%` }}
+            />
         </div>
       )}
     </Card>

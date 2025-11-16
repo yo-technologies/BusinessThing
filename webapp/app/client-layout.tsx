@@ -35,8 +35,8 @@ export function ClientLayout({
             <main className="flex-1 overflow-hidden">
               <div 
                 className={clsx(
-                  "mx-auto flex h-full max-w-4xl flex-col px-4 pb-23",
-                  isFullscreen && "pt-25"
+                  "mx-auto flex h-full max-w-4xl flex-col px-4 pb-22",
+                  isFullscreen && "pt-22"
                 )}
               >
                 {children}

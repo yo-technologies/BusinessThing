@@ -22,7 +22,7 @@ export function ChatInput({ value, onChange, onSend, disabled, isStreaming }: Ch
   };
 
   return (
-    <div className="flex items-center gap-2 justify-between">
+    <div className="flex items-center gap-2 justify-between p-1.5">
       <Input
         size="md"
         radius="full"

@@ -36,6 +36,16 @@ export function useChatWebSocket({ chatId, organizationId, onMessageReceived, on
 
   useEffect(() => {
     setCurrentChatId(chatId);
+    // Сбрасываем состояние при смене chatId
+    setState({
+      messages: [],
+      streamingMessage: "",
+      streamingToolCalls: new Map(),
+      isStreaming: false,
+      error: null,
+      usageTokens: null,
+      chatName: null,
+    });
   }, [chatId]);
 
   useEffect(() => {

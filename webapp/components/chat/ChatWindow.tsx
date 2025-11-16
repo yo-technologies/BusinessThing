@@ -28,7 +28,7 @@ export function ChatWindow({ messages, streamingMessage, streamingToolCalls, isS
   };
 
   return (
-    <Card className="flex flex-1 flex-col border-none bg-content1/70 shadow-sm rounded-2xl">
+    <Card className="flex flex-1 flex-col border-none bg-content1/70 shadow-none">
       <CardBody className="flex flex-1 flex-col gap-3 overflow-y-auto pb-4">
         {loadingMessages ? (
           <div className="flex flex-1 flex-row h-full justify-center items-center">
@@ -36,7 +36,7 @@ export function ChatWindow({ messages, streamingMessage, streamingToolCalls, isS
           </div>
         ) : messages.length === 0 && !streamingMessage && (!streamingToolCalls || streamingToolCalls.size === 0) ? (
             <div className="flex flex-1 flex-row h-full justify-center items-center">
-                <span className="text-center text-small text-default-400 h-fit">
+                <span className="text-center text-small text-default-400 h-fit p-4">
                 Пока сообщений нет. Напиши что-нибудь, чтобы начать диалог.
                 </span>
             </div>

@@ -12,6 +12,7 @@ import { useChatWebSocket } from "@/hooks/useChatWebSocket";
 import { useApiClients } from "@/api/client";
 import { ChatWindow, ChatInput, ChatHeader, ChatListModal } from "@/components/chat";
 import { AgentGetLLMLimitsResponse } from "@/api/api.agent.generated";
+import { Card } from "@heroui/card";
 
 export default function ChatPage() {
   const router = useRouter();
@@ -152,10 +153,11 @@ export default function ChatPage() {
 
   return (
     <>
-      <div className="flex flex-1 flex-col gap-3">
+      <Card className="flex flex-1 flex-col rounded-3xl shadow-none">
         <ChatHeader
           chatName={chatName}
           limits={limits}
+          usageTokens={usageTokens}
           onShowChatList={() => setShowChatListModal(true)}
         />
 
@@ -174,7 +176,7 @@ export default function ChatPage() {
           disabled={false}
           isStreaming={isStreaming}
         />
-      </div>
+      </Card>
 
       <ChatListModal
         isOpen={showChatListModal}
