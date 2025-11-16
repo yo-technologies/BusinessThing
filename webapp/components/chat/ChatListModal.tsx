@@ -12,6 +12,7 @@ interface ChatListModalProps {
   selectedChatId: string | null;
   onSelectChat: (chatId: string) => void;
   onCreateChat: () => void;
+  onDeleteChat: (chatId: string) => Promise<void>;
   loading?: boolean;
 }
 
@@ -22,6 +23,7 @@ export function ChatListModal({
   selectedChatId,
   onSelectChat,
   onCreateChat,
+  onDeleteChat,
   loading,
 }: ChatListModalProps) {
   const handleSelectChat = (chatId: string) => {
@@ -47,9 +49,8 @@ export function ChatListModal({
       }}
     >
       <DrawerContent>
-        <DrawerHeader className="flex flex-col gap-1 px-4 pt-safe">
+        <DrawerHeader className="flex flex-col gap-1 px-4 pt-4 pb-2 border-b border-default-200">
           <h2 className="text-lg font-semibold">Ваши чаты</h2>
-          <Divider />
         </DrawerHeader>
         <DrawerBody>
           <ChatList
@@ -57,6 +58,7 @@ export function ChatListModal({
             selectedChatId={selectedChatId}
             onSelectChat={handleSelectChat}
             onCreateChat={handleCreateChat}
+            onDeleteChat={onDeleteChat}
             loading={loading}
           />
         </DrawerBody>

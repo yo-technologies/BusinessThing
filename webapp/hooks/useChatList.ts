@@ -37,6 +37,20 @@ export function useChatList({ organizationId, enabled = true }: UseChatListParam
     }
   }, [agent.v1, organizationId, enabled]);
 
+  const deleteChat = useCallback(async (chatId: string) => {
+    if (!organizationId) return;
+
+    try {
+      await agent.v1.agentServiceDeleteChat(chatId, { orgId: organizationId });
+      
+      setChats((prevChats) => prevChats.filter((chat) => chat.id !== chatId));
+    } catch (e) {
+      console.error("Failed to delete chat", e);
+      setError("Не удалось удалить чат");
+      throw e;
+    }
+  }, [agent.v1, organizationId]);
+
   useEffect(() => {
     void loadChats();
   }, [loadChats]);
@@ -46,5 +60,6 @@ export function useChatList({ organizationId, enabled = true }: UseChatListParam
     loading,
     error,
     reload: loadChats,
+    deleteChat,
   };
 }
