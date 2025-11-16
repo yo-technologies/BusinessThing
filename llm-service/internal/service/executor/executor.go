@@ -454,6 +454,11 @@ func (e *Executor) runAgentLoopStream(
 
 			// Выполняем tool
 			toolCall.MarkExecuting()
+			// Сохраняем статус executing в БД
+			if err := e.chatManager.UpdateToolCall(ctx, toolCall); err != nil {
+				logger.Errorf(ctx, "Failed to update tool call status to executing: %v", err)
+			}
+
 			result, err := e.toolExecutor.Execute(ctx, toolCall.Name, arguments, currentExecCtx, &toolCall.ID)
 
 			var resultJSON []byte
@@ -465,6 +470,11 @@ func (e *Executor) runAgentLoopStream(
 			} else {
 				resultJSON, _ = json.Marshal(result)
 				toolCall.Complete(resultJSON)
+			}
+
+			// Сохраняем финальный статус (completed/failed) в БД
+			if err := e.chatManager.UpdateToolCall(ctx, toolCall); err != nil {
+				logger.Errorf(ctx, "Failed to update tool call final status: %v", err)
 			}
 
 			// Специальная обработка для switch_to_subagent

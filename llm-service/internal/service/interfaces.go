@@ -30,6 +30,9 @@ type ChatManager interface {
 	// SaveMessage сохраняет сообщение
 	SaveMessage(ctx context.Context, message *domain.Message) error
 
+	// UpdateToolCall обновляет статус tool call
+	UpdateToolCall(ctx context.Context, toolCall *domain.ToolCall) error
+
 	// GetChatWithMessages получает чат со всеми сообщениями
 	GetChatWithMessages(ctx context.Context, chatID domain.ID) (*domain.Chat, []*domain.Message, error)
 

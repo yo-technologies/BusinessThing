@@ -139,6 +139,17 @@ func (m *Manager) SaveMessage(ctx context.Context, message *domain.Message) erro
 	return nil
 }
 
+// UpdateToolCall обновляет статус tool call
+func (m *Manager) UpdateToolCall(ctx context.Context, toolCall *domain.ToolCall) error {
+	span, ctx := opentracing.StartSpanFromContext(ctx, "service.chat.UpdateToolCall")
+	defer span.Finish()
+
+	if err := m.toolRepo.UpdateToolCall(ctx, toolCall); err != nil {
+		return domain.NewInternalError("failed to update tool call", err)
+	}
+	return nil
+}
+
 // GetChatWithMessages получает чат со всеми сообщениями
 func (m *Manager) GetChatWithMessages(ctx context.Context, chatID domain.ID) (*domain.Chat, []*domain.Message, error) {
 	span, ctx := opentracing.StartSpanFromContext(ctx, "service.chat.GetChatWithMessages")
