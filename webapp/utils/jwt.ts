@@ -39,3 +39,10 @@ export function getOrganizationsFromToken(token: string | null): Organization[] 
   const payload = decodeJWT(token);
   return payload?.orgs || [];
 }
+
+export function getUserIdFromToken(token: string | null): string | null {
+  if (!token) return null;
+
+  const payload = decodeJWT(token);
+  return payload?.sub || null;
+}

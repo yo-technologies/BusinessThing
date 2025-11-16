@@ -6,7 +6,7 @@ import { useRawInitData } from "@telegram-apps/sdk-react";
 
 import { CoreAuthenticateWithTelegramRequest } from "@/api/api.core.generated";
 import { setAuthToken, useApiClients, onTokenUpdate, getAuthToken } from "@/api/client";
-import { getOrganizationsFromToken, Organization } from "@/utils/jwt";
+import { getOrganizationsFromToken, getUserIdFromToken, Organization } from "@/utils/jwt"; // Import getUserIdFromToken
 
 interface AuthUser {
   id?: string;
@@ -63,11 +63,20 @@ export const useAuth = (): AuthState => {
         if (accessToken) {
           setAuthToken(accessToken);
           const organizations = getOrganizationsFromToken(accessToken);
+          const userId = getUserIdFromToken(accessToken);
+          let user = null;
+
+          if (userId) {
+            const userResponse = await core.v1.userServiceGetUser(userId);
+            user = userResponse.data.user ?? null;
+          }
+
           setState((prev) => ({
             ...prev,
             isAuthenticated: true,
             loading: false,
             organizations,
+            user,
           }));
         }
         return;
