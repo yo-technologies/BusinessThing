@@ -100,6 +100,8 @@ func (a *App) setupGRPC() {
 	unprotected := []string{
 		"/core.api.core.AuthService/AuthenticateWithTelegram",
 		"/core.api.core.AuthService/CompleteRegistration",
+		"/core.api.core.ContractTemplateService/GetTemplate",
+		"/core.api.core.DocumentService/UpdateDocumentStatus",
 	}
 
 	// Setup interceptors
