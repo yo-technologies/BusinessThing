@@ -138,8 +138,10 @@ func (r *PGXRepository) GetOrganizationsByUserID(ctx context.Context, userID dom
 	query := `
         SELECT DISTINCT o.id, o.name, o.industry, o.region, o.description, o.profile_data, o.created_at, o.updated_at, o.deleted_at
         FROM organizations o
-        INNER JOIN users u ON o.id = u.organization_id
-        WHERE u.id = $1 AND o.deleted_at IS NULL
+        INNER JOIN organization_members om ON o.id = om.organization_id
+        WHERE om.user_id = $1
+          AND om.status = 'active'
+          AND o.deleted_at IS NULL
         ORDER BY o.created_at DESC
     `
 
