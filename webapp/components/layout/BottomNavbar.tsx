@@ -50,7 +50,7 @@ export const BottomNavbar = () => {
   return (
     <nav className="fixed bottom-0 left-0 right-0 z-50 pt-3">
       <div className="mx-auto max-w-lg px-4 pb-4">
-        <div className="bg-black/10 backdrop-blur-xs rounded-full px-1 py-1 grid grid-cols-4 gap-0 border border-white/10">
+        <div className="bg-black/5 backdrop-blur-xs rounded-full px-1 py-1 grid grid-cols-4 gap-0 border border-white/15">
           {navigationItems.map(({ href, label, Icon, SolidIcon }) => {
             const isActive = pathname.startsWith(href);
             const CurrentIcon = isActive ? SolidIcon : Icon;
@@ -67,8 +67,8 @@ export const BottomNavbar = () => {
                   },
                 )}
               >
-                <CurrentIcon className="h-6 w-6" />
-                <span className="text-[9px] whitespace-nowrap font-medium">{label}</span>
+                <CurrentIcon className="h-7 w-7" />
+                <span className="text-[9px] whitespace-nowrap font-semibold">{label}</span>
               </Link>
             );
           })}

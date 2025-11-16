@@ -23,20 +23,20 @@ export function ClientLayout({
       <head />
       <body
         className={clsx(
-          "h-screen bg-background font-sans antialiased text-foreground overflow-hidden",
+          "h-screen bg-background font-sans antialiased text-foreground",
           fontSans.variable,
         )}
       >
         <Providers themeProps={{ attribute: "class", defaultTheme: "dark" }}>
-          <div className="flex h-screen flex-col ">
+          <div className="flex h-screen flex-col">
             <header className="shrink-0 px-3 py-2">
               <OrganizationSwitcher />
             </header>
-            <main className="flex-1 overflow-y-auto">
+            <main className="flex-1 overflow-hidden">
               <div 
                 className={clsx(
-                  "mx-auto flex h-full max-w-4xl flex-col px-4 mb-23",
-                  isFullscreen && "mt-25"
+                  "mx-auto flex h-full max-w-4xl flex-col px-4 pb-23",
+                  isFullscreen && "pt-25"
                 )}
               >
                 {children}

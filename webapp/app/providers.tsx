@@ -6,7 +6,7 @@ import * as React from "react";
 import { HeroUIProvider } from "@heroui/system";
 import { useRouter } from "next/navigation";
 import { ThemeProvider as NextThemesProvider } from "next-themes";
-import { init, swipeBehavior } from "@telegram-apps/sdk-react";
+import { init, swipeBehavior, miniApp } from "@telegram-apps/sdk-react";
 
 export interface ProvidersProps {
   children: React.ReactNode;
@@ -27,7 +27,7 @@ function TelegramMiniAppProvider({ children }: ProvidersProps) {
       init();
       swipeBehavior.mount();
       swipeBehavior.disableVertical.ifAvailable();
-      
+      miniApp.ready();
     } catch (e) {
       console.log("Error while initializing Telegram Mini App SDK");
       console.log(e);
