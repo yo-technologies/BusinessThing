@@ -22,9 +22,22 @@ interface ChatWebSocketState {
   chatName: string | null;
 }
 
-export function useChatWebSocket({ chatId, organizationId, onMessageReceived, onChatCreated, onFinalReceived }: UseChatWebSocketParams) {
+export function useChatWebSocket({ 
+  chatId, 
+  organizationId, 
+  onMessageReceived, 
+  onChatCreated, 
+  onFinalReceived 
+}: UseChatWebSocketParams) {
   const wsRef = useRef<WebSocket | null>(null);
-  const [currentChatId, setCurrentChatId] = useState<string | null>(chatId);
+  const activeChatIdRef = useRef<string | null>(chatId);
+  
+  const callbacksRef = useRef({ onMessageReceived, onChatCreated, onFinalReceived });
+  
+  useEffect(() => {
+    callbacksRef.current = { onMessageReceived, onChatCreated, onFinalReceived };
+  });
+  
   const [state, setState] = useState<ChatWebSocketState>({
     messages: [],
     streamingMessage: "",
@@ -35,9 +48,30 @@ export function useChatWebSocket({ chatId, organizationId, onMessageReceived, on
     chatName: null,
   });
 
+  // Сбрасываем состояние при смене чата
   useEffect(() => {
-    setCurrentChatId(chatId);
-    // Сбрасываем состояние при смене chatId
+    console.log('[useChatWebSocket] ChatId changed:', { 
+      from: activeChatIdRef.current, 
+      to: chatId 
+    });
+    
+    // Если chatId не изменился - ничего не делаем
+    if (activeChatIdRef.current === chatId) {
+      console.log('[useChatWebSocket] ChatId unchanged, skipping');
+      return;
+    }
+    
+    console.log('[useChatWebSocket] Resetting state for new chatId');
+    
+    // Закрываем WebSocket при смене чата
+    if (wsRef.current) {
+      console.log('[useChatWebSocket] Closing WebSocket due to chatId change');
+      wsRef.current.close();
+      wsRef.current = null;
+    }
+    
+    activeChatIdRef.current = chatId;
+    
     setState({
       messages: [],
       streamingMessage: "",
@@ -49,28 +83,35 @@ export function useChatWebSocket({ chatId, organizationId, onMessageReceived, on
     });
   }, [chatId]);
 
-  useEffect(() => {
-    wsRef.current?.close();
+  // Функция для создания WebSocket соединения
+  const createWebSocketConnection = useCallback(() => {
+    if (!organizationId) {
+      console.error('[useChatWebSocket] Cannot create WebSocket: no organizationId');
+      return null;
+    }
 
-    console.log('[useChatWebSocket] Establishing WebSocket connection:', {
-      currentChatId,
+    if (wsRef.current) {
+      console.log('[useChatWebSocket] WebSocket already exists');
+      return wsRef.current;
+    }
+
+    console.log('[useChatWebSocket] Creating WebSocket connection:', {
+      chatId: activeChatIdRef.current,
       organizationId,
     });
 
-    wsRef.current = createChatWebSocket(currentChatId, organizationId, {
+    const ws = createChatWebSocket(activeChatIdRef.current, organizationId, {
       onMessage: (event: ChatWsEvent) => {
-        console.log('[useChatWebSocket] Received event:', event);
-
+        // Обработка usage
         if (event.usage?.usage?.totalTokens) {
-          console.log('[useChatWebSocket] Usage update:', event.usage.usage.totalTokens);
           setState((prev) => ({
             ...prev,
             usageTokens: event.usage?.usage?.totalTokens ?? null,
           }));
         }
 
+        // Обработка стриминга контента
         if (event.chunk?.content) {
-          console.log('[useChatWebSocket] Received chunk:', event.chunk.content.substring(0, 20) + '...');
           setState((prev) => ({
             ...prev,
             isStreaming: true,
@@ -78,8 +119,8 @@ export function useChatWebSocket({ chatId, organizationId, onMessageReceived, on
           }));
         }
 
+        // Обработка tool calls
         if (event.toolCall) {
-          console.log('[useChatWebSocket] Received tool call event:', event.toolCall);
           setState((prev) => {
             const newToolCalls = new Map(prev.streamingToolCalls);
             const toolCallId = event.toolCall?.toolCallId ?? "";
@@ -95,12 +136,8 @@ export function useChatWebSocket({ chatId, organizationId, onMessageReceived, on
           });
         }
 
+        // Обработка полного сообщения
         if (event.message) {
-          console.log('[useChatWebSocket] Received complete message:', {
-            messageId: event.message.id,
-            role: event.message.role,
-            chatId: event.message.chatId,
-          });
           setState((prev) => ({
             ...prev,
             messages: [...prev.messages, event.message!],
@@ -108,25 +145,28 @@ export function useChatWebSocket({ chatId, organizationId, onMessageReceived, on
             streamingToolCalls: new Map(),
             isStreaming: false,
           }));
-          onMessageReceived?.(event.message);
           
-          // Если получили сообщение с chatId, а текущий chatId null - значит чат создан
-          if (!currentChatId && event.message.chatId) {
+          callbacksRef.current.onMessageReceived?.(event.message);
+          
+          // Если это новый чат - обновляем активный chatId
+          if (activeChatIdRef.current === null && event.message.chatId) {
             console.log('[useChatWebSocket] New chat created:', event.message.chatId);
-            setCurrentChatId(event.message.chatId);
-            onChatCreated?.(event.message.chatId);
+            activeChatIdRef.current = event.message.chatId;
+            callbacksRef.current.onChatCreated?.(event.message.chatId);
           }
         }
 
+        // Обработка события чата
         if (event.chat) {
-          console.log('[useChatWebSocket] Received chat event:', event.chat);
-          if (event.chat.chatId && event.chat.chatId !== currentChatId) {
-            console.log('[useChatWebSocket] Updating chat ID:', event.chat.chatId);
-            setCurrentChatId(event.chat.chatId);
-            onChatCreated?.(event.chat.chatId);
+          // Обновляем активный chatId если это новый чат
+          if (activeChatIdRef.current === null && event.chat.chatId) {
+            console.log('[useChatWebSocket] New chat created from chat event:', event.chat.chatId);
+            activeChatIdRef.current = event.chat.chatId;
+            callbacksRef.current.onChatCreated?.(event.chat.chatId);
           }
+          
+          // Обновляем название чата
           if (event.chat.chatName) {
-            console.log('[useChatWebSocket] Updating chat name:', event.chat.chatName);
             setState((prev) => ({
               ...prev,
               chatName: event.chat?.chatName ?? null,
@@ -134,6 +174,7 @@ export function useChatWebSocket({ chatId, organizationId, onMessageReceived, on
           }
         }
 
+        // Обработка ошибок
         if (event.error) {
           console.error('[useChatWebSocket] Received error:', event.error);
           setState((prev) => ({
@@ -143,28 +184,19 @@ export function useChatWebSocket({ chatId, organizationId, onMessageReceived, on
           }));
         }
 
+        // Обработка финального события
         if (event.final) {
-          console.log('[useChatWebSocket] Received final event:', event.final);
-          // Final событие содержит полное финальное состояние чата - используем его как источник правды
           setState((prev) => ({
             ...prev,
             messages: event.final?.messages ?? prev.messages,
             streamingMessage: "",
             streamingToolCalls: new Map(),
             isStreaming: false,
-            usageTokens: 0, // Сбрасываем usage токены для следующего сообщения
+            usageTokens: 0,
+            chatName: event.final?.chat?.title ?? prev.chatName,
           }));
           
-          // Обновляем chatName если он есть в final.chat
-          if (event.final.chat?.title) {
-            setState((prev) => ({
-              ...prev,
-              chatName: event.final?.chat?.title ?? prev.chatName,
-            }));
-          }
-          
-          // Уведомляем о завершении стрима для перезагрузки лимитов
-          onFinalReceived?.();
+          callbacksRef.current.onFinalReceived?.();
         }
       },
       onError: (error) => {
@@ -180,77 +212,95 @@ export function useChatWebSocket({ chatId, organizationId, onMessageReceived, on
           ...prev,
           isStreaming: false,
         }));
+        wsRef.current = null;
       },
     });
 
-    return () => {
-      console.log('[useChatWebSocket] Cleaning up WebSocket connection');
-      wsRef.current?.close();
-      wsRef.current = null;
-    };
-  }, [currentChatId, organizationId, onMessageReceived, onChatCreated, onFinalReceived]);
+    wsRef.current = ws;
+    return ws;
+  }, [organizationId]);
 
   const sendMessage = useCallback(
     (content: string) => {
-      if (!wsRef.current) {
-        console.error('[useChatWebSocket] Cannot send message: WebSocket not connected');
-        return;
-      }
-
-      console.log('[useChatWebSocket] Preparing to send message:', {
-        content: content.substring(0, 50) + '...',
-        currentChatId,
-        organizationId,
-        wsReadyState: wsRef.current.readyState,
-      });
-
-      const optimisticMessage: AgentMessage = {
-        id: `${Date.now()}`,
-        chatId: currentChatId || "",
-        role: AgentMessageRole.MESSAGE_ROLE_USER,
-        content,
-        createdAt: new Date().toISOString(),
-      };
-
-        setState((prev) => ({
-          ...prev,
-          messages: [...prev.messages, optimisticMessage],
-          error: null,
-          streamingToolCalls: new Map(),
-        }));      // Формируем payload в соответствии с protobuf контрактом StreamMessageRequest
-      const payload: any = {
-        newMessage: {
-          content,
-          orgId: organizationId,
-        },
-      };
+      // Создаем WebSocket при отправке сообщения, если его еще нет
+      let ws = wsRef.current;
       
-      // Добавляем chatId только если он есть
-      if (currentChatId) {
-        payload.newMessage.chatId = currentChatId;
+      if (!ws) {
+        console.log('[useChatWebSocket] Creating WebSocket for message send');
+        ws = createWebSocketConnection();
+        
+        if (!ws) {
+          setState((prev) => ({
+            ...prev,
+            error: "Не удалось установить соединение",
+          }));
+          return;
+        }
       }
 
-      console.log('[useChatWebSocket] Sending payload:', JSON.stringify(payload));
-
-      try {
-        wsRef.current.send(JSON.stringify(payload));
-        console.log('[useChatWebSocket] Message sent successfully');
+      // Ждем открытия соединения если оно еще не открыто
+      if (ws.readyState === WebSocket.CONNECTING) {
+        console.log('[useChatWebSocket] Waiting for WebSocket to open...');
+        ws.addEventListener('open', () => {
+          sendMessageInternal(ws!, content);
+        }, { once: true });
+      } else if (ws.readyState === WebSocket.OPEN) {
+        sendMessageInternal(ws, content);
+      } else {
+        console.error('[useChatWebSocket] WebSocket is not in a valid state:', ws.readyState);
         setState((prev) => ({
           ...prev,
-          isStreaming: true,
-          streamingMessage: "",
-        }));
-      } catch (e) {
-        console.error('[useChatWebSocket] Failed to send message:', e);
-        setState((prev) => ({
-          ...prev,
-          error: "Не удалось отправить сообщение",
-          isStreaming: false,
+          error: "Соединение не установлено",
         }));
       }
     },
-    [currentChatId, organizationId]
+    [organizationId]
   );
+
+  const sendMessageInternal = useCallback((ws: WebSocket, content: string) => {
+    const optimisticMessage: AgentMessage = {
+      id: `temp-${Date.now()}`,
+      chatId: activeChatIdRef.current || "",
+      role: AgentMessageRole.MESSAGE_ROLE_USER,
+      content,
+      createdAt: new Date().toISOString(),
+    };
+
+    setState((prev) => ({
+      ...prev,
+      messages: [...prev.messages, optimisticMessage],
+      error: null,
+      streamingToolCalls: new Map(),
+    }));
+
+    const payload: any = {
+      newMessage: {
+        content,
+        orgId: organizationId,
+      },
+    };
+    
+    // Добавляем chatId только если он есть
+    if (activeChatIdRef.current) {
+      payload.newMessage.chatId = activeChatIdRef.current;
+    }
+
+    try {
+      ws.send(JSON.stringify(payload));
+      setState((prev) => ({
+        ...prev,
+        isStreaming: true,
+        streamingMessage: "",
+      }));
+    } catch (e) {
+      console.error('[useChatWebSocket] Failed to send message:', e);
+      setState((prev) => ({
+        ...prev,
+        error: "Не удалось отправить сообщение",
+        isStreaming: false,
+      }));
+    }
+  }, [organizationId]);
 
   const setMessages = useCallback((messages: AgentMessage[]) => {
     setState((prev) => ({ ...prev, messages, streamingToolCalls: new Map() }));
@@ -264,9 +314,18 @@ export function useChatWebSocket({ chatId, organizationId, onMessageReceived, on
     setState((prev) => ({ ...prev, error: null }));
   }, []);
 
+  // Cleanup при размонтировании
+  useEffect(() => {
+    return () => {
+      console.log('[useChatWebSocket] Component unmounting, closing WebSocket');
+      wsRef.current?.close();
+      wsRef.current = null;
+    };
+  }, []);
+
   return {
     ...state,
-    currentChatId,
+    currentChatId: activeChatIdRef.current,
     sendMessage,
     setMessages,
     setChatName,

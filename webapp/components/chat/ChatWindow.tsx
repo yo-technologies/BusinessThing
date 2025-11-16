@@ -92,8 +92,8 @@ export function ChatWindow({ messages, streamingMessage, streamingToolCalls, isS
                 <div key={message.id} className="flex flex-col gap-2">
                   {/* Заголовок агента (только для первого сообщения в последовательности от этого агента) */}
                   {showAssistantHeader && (
-                    <div className="text-small font-bold text-default-600">
-                      {getAgentName(message.sender)}
+                    <div className="text-sm font-medium text-default-400">
+                      {getAgentName(message.sender)} 
                     </div>
                   )}
                   
@@ -161,7 +161,7 @@ export function ChatWindow({ messages, streamingMessage, streamingToolCalls, isS
                     </div>
                   );
                 })()}
-                <div className="w-full rounded-xl bg-default-100 px-3 py-2 text-small">
+                <div className="w-full text-small">
                   <MarkdownWrapper content={streamingMessage} />
                   {isStreaming && <span className="ml-1 animate-pulse">▍</span>}
                 </div>

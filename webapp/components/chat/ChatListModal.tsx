@@ -3,6 +3,7 @@
 import { Drawer, DrawerContent, DrawerHeader, DrawerBody } from "@heroui/drawer";
 import { ChatList } from "./ChatList";
 import { AgentChat } from "@/api/api.agent.generated";
+import { Divider } from "@heroui/divider";
 
 interface ChatListModalProps {
   isOpen: boolean;
@@ -39,7 +40,7 @@ export function ChatListModal({
       onClose={onClose}
       placement="bottom"
       backdrop="blur"
-      size="4xl"
+      size="2xl"
       classNames={{
         base: "pb-safe",
         body: "px-4 pb-6 overflow-y-auto",
@@ -48,6 +49,7 @@ export function ChatListModal({
       <DrawerContent>
         <DrawerHeader className="flex flex-col gap-1 px-4 pt-safe">
           <h2 className="text-lg font-semibold">Ваши чаты</h2>
+          <Divider />
         </DrawerHeader>
         <DrawerBody>
           <ChatList
