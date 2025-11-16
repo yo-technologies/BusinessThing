@@ -22,6 +22,7 @@ const _ = grpc.SupportPackageIsVersion9
 const (
 	AuthService_AuthenticateWithTelegram_FullMethodName = "/core.api.core.AuthService/AuthenticateWithTelegram"
 	AuthService_CompleteRegistration_FullMethodName     = "/core.api.core.AuthService/CompleteRegistration"
+	AuthService_RefreshToken_FullMethodName             = "/core.api.core.AuthService/RefreshToken"
 )
 
 // AuthServiceClient is the client API for AuthService service.
@@ -33,7 +34,10 @@ type AuthServiceClient interface {
 	// Авторизация через Telegram WebApp initData
 	AuthenticateWithTelegram(ctx context.Context, in *AuthenticateWithTelegramRequest, opts ...grpc.CallOption) (*AuthenticateWithTelegramResponse, error)
 	// Завершение регистрации нового пользователя (заполнение ФИО)
+	// Не требует JWT токена, так как новый пользователь его еще не получил
 	CompleteRegistration(ctx context.Context, in *CompleteRegistrationRequest, opts ...grpc.CallOption) (*CompleteRegistrationResponse, error)
+	// Обновить токен (получить новый токен с актуальным списком организаций)
+	RefreshToken(ctx context.Context, in *RefreshTokenRequest, opts ...grpc.CallOption) (*RefreshTokenResponse, error)
 }
 
 type authServiceClient struct {
@@ -64,6 +68,16 @@ func (c *authServiceClient) CompleteRegistration(ctx context.Context, in *Comple
 	return out, nil
 }
 
+func (c *authServiceClient) RefreshToken(ctx context.Context, in *RefreshTokenRequest, opts ...grpc.CallOption) (*RefreshTokenResponse, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(RefreshTokenResponse)
+	err := c.cc.Invoke(ctx, AuthService_RefreshToken_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 // AuthServiceServer is the server API for AuthService service.
 // All implementations must embed UnimplementedAuthServiceServer
 // for forward compatibility.
@@ -73,7 +87,10 @@ type AuthServiceServer interface {
 	// Авторизация через Telegram WebApp initData
 	AuthenticateWithTelegram(context.Context, *AuthenticateWithTelegramRequest) (*AuthenticateWithTelegramResponse, error)
 	// Завершение регистрации нового пользователя (заполнение ФИО)
+	// Не требует JWT токена, так как новый пользователь его еще не получил
 	CompleteRegistration(context.Context, *CompleteRegistrationRequest) (*CompleteRegistrationResponse, error)
+	// Обновить токен (получить новый токен с актуальным списком организаций)
+	RefreshToken(context.Context, *RefreshTokenRequest) (*RefreshTokenResponse, error)
 	mustEmbedUnimplementedAuthServiceServer()
 }
 
@@ -89,6 +106,9 @@ func (UnimplementedAuthServiceServer) AuthenticateWithTelegram(context.Context, 
 }
 func (UnimplementedAuthServiceServer) CompleteRegistration(context.Context, *CompleteRegistrationRequest) (*CompleteRegistrationResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method CompleteRegistration not implemented")
+}
+func (UnimplementedAuthServiceServer) RefreshToken(context.Context, *RefreshTokenRequest) (*RefreshTokenResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method RefreshToken not implemented")
 }
 func (UnimplementedAuthServiceServer) mustEmbedUnimplementedAuthServiceServer() {}
 func (UnimplementedAuthServiceServer) testEmbeddedByValue()                     {}
@@ -147,6 +167,24 @@ func _AuthService_CompleteRegistration_Handler(srv interface{}, ctx context.Cont
 	return interceptor(ctx, in, info, handler)
 }
 
+func _AuthService_RefreshToken_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(RefreshTokenRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(AuthServiceServer).RefreshToken(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: AuthService_RefreshToken_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(AuthServiceServer).RefreshToken(ctx, req.(*RefreshTokenRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 // AuthService_ServiceDesc is the grpc.ServiceDesc for AuthService service.
 // It's only intended for direct use with grpc.RegisterService,
 // and not to be introspected or modified (even as a copy)
@@ -161,6 +199,10 @@ var AuthService_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "CompleteRegistration",
 			Handler:    _AuthService_CompleteRegistration_Handler,
+		},
+		{
+			MethodName: "RefreshToken",
+			Handler:    _AuthService_RefreshToken_Handler,
 		},
 	},
 	Streams:  []grpc.StreamDesc{},
@@ -452,7 +494,8 @@ const (
 type UserServiceClient interface {
 	// Пригласить пользователя (создать одноразовую ссылку)
 	InviteUser(ctx context.Context, in *InviteUserRequest, opts ...grpc.CallOption) (*InviteUserResponse, error)
-	// Принять приглашение (активация пользователя)
+	// Принять приглашение (добавление пользователя в организацию)
+	// Требует JWT токен пользователя, завершившего регистрацию
 	AcceptInvitation(ctx context.Context, in *AcceptInvitationRequest, opts ...grpc.CallOption) (*AcceptInvitationResponse, error)
 	// Список пользователей организации
 	ListUsers(ctx context.Context, in *ListUsersRequest, opts ...grpc.CallOption) (*ListUsersResponse, error)
@@ -540,7 +583,8 @@ func (c *userServiceClient) DeactivateUser(ctx context.Context, in *DeactivateUs
 type UserServiceServer interface {
 	// Пригласить пользователя (создать одноразовую ссылку)
 	InviteUser(context.Context, *InviteUserRequest) (*InviteUserResponse, error)
-	// Принять приглашение (активация пользователя)
+	// Принять приглашение (добавление пользователя в организацию)
+	// Требует JWT токен пользователя, завершившего регистрацию
 	AcceptInvitation(context.Context, *AcceptInvitationRequest) (*AcceptInvitationResponse, error)
 	// Список пользователей организации
 	ListUsers(context.Context, *ListUsersRequest) (*ListUsersResponse, error)
@@ -1731,6 +1775,154 @@ var GeneratedContractService_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "DeleteContract",
 			Handler:    _GeneratedContractService_DeleteContract_Handler,
+		},
+	},
+	Streams:  []grpc.StreamDesc{},
+	Metadata: "core/core.proto",
+}
+
+const (
+	StorageService_GenerateUploadURL_FullMethodName   = "/core.api.core.StorageService/GenerateUploadURL"
+	StorageService_GenerateDownloadURL_FullMethodName = "/core.api.core.StorageService/GenerateDownloadURL"
+)
+
+// StorageServiceClient is the client API for StorageService service.
+//
+// For semantics around ctx use and closing/ending streaming RPCs, please refer to https://pkg.go.dev/google.golang.org/grpc/?tab=doc#ClientConn.NewStream.
+//
+// ===== Storage Service =====
+type StorageServiceClient interface {
+	// Получить presigned URL для загрузки документа
+	GenerateUploadURL(ctx context.Context, in *GenerateUploadURLRequest, opts ...grpc.CallOption) (*GenerateUploadURLResponse, error)
+	// Получить presigned URL для скачивания документа
+	GenerateDownloadURL(ctx context.Context, in *GenerateDownloadURLRequest, opts ...grpc.CallOption) (*GenerateDownloadURLResponse, error)
+}
+
+type storageServiceClient struct {
+	cc grpc.ClientConnInterface
+}
+
+func NewStorageServiceClient(cc grpc.ClientConnInterface) StorageServiceClient {
+	return &storageServiceClient{cc}
+}
+
+func (c *storageServiceClient) GenerateUploadURL(ctx context.Context, in *GenerateUploadURLRequest, opts ...grpc.CallOption) (*GenerateUploadURLResponse, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(GenerateUploadURLResponse)
+	err := c.cc.Invoke(ctx, StorageService_GenerateUploadURL_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *storageServiceClient) GenerateDownloadURL(ctx context.Context, in *GenerateDownloadURLRequest, opts ...grpc.CallOption) (*GenerateDownloadURLResponse, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(GenerateDownloadURLResponse)
+	err := c.cc.Invoke(ctx, StorageService_GenerateDownloadURL_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+// StorageServiceServer is the server API for StorageService service.
+// All implementations must embed UnimplementedStorageServiceServer
+// for forward compatibility.
+//
+// ===== Storage Service =====
+type StorageServiceServer interface {
+	// Получить presigned URL для загрузки документа
+	GenerateUploadURL(context.Context, *GenerateUploadURLRequest) (*GenerateUploadURLResponse, error)
+	// Получить presigned URL для скачивания документа
+	GenerateDownloadURL(context.Context, *GenerateDownloadURLRequest) (*GenerateDownloadURLResponse, error)
+	mustEmbedUnimplementedStorageServiceServer()
+}
+
+// UnimplementedStorageServiceServer must be embedded to have
+// forward compatible implementations.
+//
+// NOTE: this should be embedded by value instead of pointer to avoid a nil
+// pointer dereference when methods are called.
+type UnimplementedStorageServiceServer struct{}
+
+func (UnimplementedStorageServiceServer) GenerateUploadURL(context.Context, *GenerateUploadURLRequest) (*GenerateUploadURLResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method GenerateUploadURL not implemented")
+}
+func (UnimplementedStorageServiceServer) GenerateDownloadURL(context.Context, *GenerateDownloadURLRequest) (*GenerateDownloadURLResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method GenerateDownloadURL not implemented")
+}
+func (UnimplementedStorageServiceServer) mustEmbedUnimplementedStorageServiceServer() {}
+func (UnimplementedStorageServiceServer) testEmbeddedByValue()                        {}
+
+// UnsafeStorageServiceServer may be embedded to opt out of forward compatibility for this service.
+// Use of this interface is not recommended, as added methods to StorageServiceServer will
+// result in compilation errors.
+type UnsafeStorageServiceServer interface {
+	mustEmbedUnimplementedStorageServiceServer()
+}
+
+func RegisterStorageServiceServer(s grpc.ServiceRegistrar, srv StorageServiceServer) {
+	// If the following call pancis, it indicates UnimplementedStorageServiceServer was
+	// embedded by pointer and is nil.  This will cause panics if an
+	// unimplemented method is ever invoked, so we test this at initialization
+	// time to prevent it from happening at runtime later due to I/O.
+	if t, ok := srv.(interface{ testEmbeddedByValue() }); ok {
+		t.testEmbeddedByValue()
+	}
+	s.RegisterService(&StorageService_ServiceDesc, srv)
+}
+
+func _StorageService_GenerateUploadURL_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(GenerateUploadURLRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(StorageServiceServer).GenerateUploadURL(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: StorageService_GenerateUploadURL_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(StorageServiceServer).GenerateUploadURL(ctx, req.(*GenerateUploadURLRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _StorageService_GenerateDownloadURL_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(GenerateDownloadURLRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(StorageServiceServer).GenerateDownloadURL(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: StorageService_GenerateDownloadURL_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(StorageServiceServer).GenerateDownloadURL(ctx, req.(*GenerateDownloadURLRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+// StorageService_ServiceDesc is the grpc.ServiceDesc for StorageService service.
+// It's only intended for direct use with grpc.RegisterService,
+// and not to be introspected or modified (even as a copy)
+var StorageService_ServiceDesc = grpc.ServiceDesc{
+	ServiceName: "core.api.core.StorageService",
+	HandlerType: (*StorageServiceServer)(nil),
+	Methods: []grpc.MethodDesc{
+		{
+			MethodName: "GenerateUploadURL",
+			Handler:    _StorageService_GenerateUploadURL_Handler,
+		},
+		{
+			MethodName: "GenerateDownloadURL",
+			Handler:    _StorageService_GenerateDownloadURL_Handler,
 		},
 	},
 	Streams:  []grpc.StreamDesc{},

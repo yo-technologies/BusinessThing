@@ -258,9 +258,10 @@ message MessageChunk {
 }
 
 message ToolCallEvent {
-    string tool_name = 1;
-    string arguments = 2;
-    string status = 3;
+    string tool_call_id = 1;
+    string tool_name = 2;
+    string arguments = 3;
+    string status = 4;
 }
 
 message UsageEvent {

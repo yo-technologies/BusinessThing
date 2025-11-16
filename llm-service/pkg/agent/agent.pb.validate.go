@@ -2375,6 +2375,8 @@ func (m *ToolCallEvent) validate(all bool) error {
 
 	var errors []error
 
+	// no validation rules for ToolCallId
+
 	// no validation rules for ToolName
 
 	// no validation rules for Arguments

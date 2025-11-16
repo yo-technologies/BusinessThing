@@ -749,6 +749,9 @@
     "agentToolCallEvent": {
       "type": "object",
       "properties": {
+        "toolCallId": {
+          "type": "string"
+        },
         "toolName": {
           "type": "string"
         },

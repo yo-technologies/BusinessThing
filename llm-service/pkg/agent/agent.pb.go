@@ -1290,9 +1290,10 @@ func (x *MessageChunk) GetContent() string {
 
 type ToolCallEvent struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
-	ToolName      string                 `protobuf:"bytes,1,opt,name=tool_name,json=toolName,proto3" json:"tool_name,omitempty"`
-	Arguments     string                 `protobuf:"bytes,2,opt,name=arguments,proto3" json:"arguments,omitempty"`
-	Status        string                 `protobuf:"bytes,3,opt,name=status,proto3" json:"status,omitempty"`
+	ToolCallId    string                 `protobuf:"bytes,1,opt,name=tool_call_id,json=toolCallId,proto3" json:"tool_call_id,omitempty"`
+	ToolName      string                 `protobuf:"bytes,2,opt,name=tool_name,json=toolName,proto3" json:"tool_name,omitempty"`
+	Arguments     string                 `protobuf:"bytes,3,opt,name=arguments,proto3" json:"arguments,omitempty"`
+	Status        string                 `protobuf:"bytes,4,opt,name=status,proto3" json:"status,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -1325,6 +1326,13 @@ func (x *ToolCallEvent) ProtoReflect() protoreflect.Message {
 // Deprecated: Use ToolCallEvent.ProtoReflect.Descriptor instead.
 func (*ToolCallEvent) Descriptor() ([]byte, []int) {
 	return file_agent_agent_proto_rawDescGZIP(), []int{15}
+}
+
+func (x *ToolCallEvent) GetToolCallId() string {
+	if x != nil {
+		return x.ToolCallId
+	}
+	return ""
 }
 
 func (x *ToolCallEvent) GetToolName() string {
@@ -2157,11 +2165,13 @@ const file_agent_agent_proto_rawDesc = "" +
 	"created_at\x18\x06 \x01(\v2\x1a.google.protobuf.TimestampR\tcreatedAt\x12=\n" +
 	"\fcompleted_at\x18\a \x01(\v2\x1a.google.protobuf.TimestampR\vcompletedAt\"(\n" +
 	"\fMessageChunk\x12\x18\n" +
-	"\acontent\x18\x01 \x01(\tR\acontent\"b\n" +
-	"\rToolCallEvent\x12\x1b\n" +
-	"\ttool_name\x18\x01 \x01(\tR\btoolName\x12\x1c\n" +
-	"\targuments\x18\x02 \x01(\tR\targuments\x12\x16\n" +
-	"\x06status\x18\x03 \x01(\tR\x06status\"B\n" +
+	"\acontent\x18\x01 \x01(\tR\acontent\"\x84\x01\n" +
+	"\rToolCallEvent\x12 \n" +
+	"\ftool_call_id\x18\x01 \x01(\tR\n" +
+	"toolCallId\x12\x1b\n" +
+	"\ttool_name\x18\x02 \x01(\tR\btoolName\x12\x1c\n" +
+	"\targuments\x18\x03 \x01(\tR\targuments\x12\x16\n" +
+	"\x06status\x18\x04 \x01(\tR\x06status\"B\n" +
 	"\n" +
 	"UsageEvent\x124\n" +
 	"\x05usage\x18\x01 \x01(\v2\x1e.llm_agent.api.agent.ChatUsageR\x05usage\":\n" +
