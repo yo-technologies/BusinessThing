@@ -194,7 +194,7 @@ func (r *PGXRepository) ListMessagesWithSubchatsWithToolCalls(ctx context.Contex
 	countQb := sq.Select("COUNT(*) AS count").From("messages").PlaceholderFormat(sq.Dollar)
 	countQb = countQb.Where(sq.Or{
 		sq.Eq{"chat_id": parentChatID.String()},
-		sq.Expr("chat_id IN (?)", subchatsSubquery),
+		sq.Eq{"chat_id": subchatsSubquery},
 	})
 
 	countQuery, countArgs, err := countQb.ToSql()
@@ -221,7 +221,7 @@ func (r *PGXRepository) ListMessagesWithSubchatsWithToolCalls(ctx context.Contex
 
 	qb = qb.Where(sq.Or{
 		sq.Eq{"chat_id": parentChatID.String()},
-		sq.Expr("chat_id IN (?)", subchatsSubquery),
+		sq.Eq{"chat_id": subchatsSubquery},
 	})
 
 	qb = qb.OrderBy("created_at ASC").Limit(uint64(limit)).Offset(uint64(offset))
