@@ -126,7 +126,7 @@ export function ChatWindow({ messages, streamingMessage, streamingToolCalls, isS
                         <div
                         className={
                             isUser
-                            ? "ml-auto max-w-[80%] rounded-xl bg-primary text-primary-foreground px-3 py-2 text-small"
+                            ? "ml-auto max-w-[80%] rounded-xl bg-secondary text-secondary-foreground px-3 py-2 text-small"
                             : "w-full text-small"
                         }
                         >
@@ -166,7 +166,7 @@ export function ChatWindow({ messages, streamingMessage, streamingToolCalls, isS
                     </div>
                     <div className="flex items-center gap-2">
                     <Spinner classNames={{wrapper:"w-4 h-4"}} size="sm" color="primary" />
-                    <span className="text-xs text-default-500">Думаю...</span>
+                    <span className="text-xs text-default-400">Думаю...</span>
                     </div>
                 </div>
                 )}

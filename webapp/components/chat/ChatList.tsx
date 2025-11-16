@@ -83,7 +83,7 @@ export function ChatList({
                 isHoverable
                 className={`border-none transition-all cursor-pointer ${
                   selectedChatId === chat.id
-                    ? "bg-primary/20 shadow-md"
+                    ? "bg-secondary/20 shadow-md"
                     : "bg-default-50/50"
                 }`}
               >

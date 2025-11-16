@@ -46,7 +46,7 @@ type OrganizationMember struct {
 // UserWithMembership объединяет пользователя с его членством в организации (для API)
 type UserWithMembership struct {
 	User
-	OrganizationMember
+	OrganizationMember `db:"organization_member"`
 }
 
 // NewUser создает нового пользователя с Telegram ID (при первой авторизации)

@@ -5,6 +5,7 @@ import { Button } from "@heroui/button";
 import { Card, CardBody, CardHeader } from "@heroui/card";
 import { Spinner } from "@heroui/spinner";
 import { Input, Textarea } from "@heroui/input";
+import { Cog6ToothIcon } from "@heroicons/react/24/outline";
 import { useRouter } from "next/navigation";
 
 import { CoreOrganization } from "@/api/api.core.generated";
@@ -132,22 +133,15 @@ export default function GeneralSettingsPage() {
 
   return (
     <div className="flex flex-col gap-4 flex-1">
-      <Card className="rounded-4xl shadow-none ">
-        <CardHeader className="flex flex-col gap-2 px-5 py-4 sm:flex-row sm:items-center sm:justify-between">
-          <div>
-            <h1 className="text-xl font-semibold">Настройки организации</h1>
-            <p className="text-sm text-default-400">Основная информация</p>
+      <Card className="rounded-4xl shadow-none">
+        <CardHeader className="flex flex-col gap-1 px-5 py-4">
+          <div className="flex items-start gap-2 w-full">
+            <Cog6ToothIcon className="h-5 w-5 flex-shrink-0 text-default mt-1" />
+            <p className="text-xl font-semibold">Настройки</p>
           </div>
-          {isAdmin && hasChanges && (
-            <Button
-              color="primary"
-              size="sm"
-              isLoading={saving}
-              onPress={handleSave}
-            >
-              Сохранить
-            </Button>
-          )}
+          <p className="text-xs text-default-300 text-left w-full">
+            Основная информация об организации
+          </p>
         </CardHeader>
       </Card>
 

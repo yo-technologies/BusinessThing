@@ -59,7 +59,7 @@ export const BottomNavbar = () => {
                 className={clsx(
                   "flex flex-col items-center justify-center gap-1 px-3 py-1 rounded-4xl text-xs font-medium transition-all duration-300",
                   {
-                    "bg-zinc-800/70 text-primary-500 shadow-lg": isActive,
+                    "bg-zinc-800/70 text-primary-400 shadow-lg": isActive,
                     "text-zinc-400 hover:text-zinc-200 hover:bg-white/5": !isActive,
                   },
                 )}

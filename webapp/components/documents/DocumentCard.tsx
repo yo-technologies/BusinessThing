@@ -64,7 +64,7 @@ export const DocumentCard = ({ documentInfo, onDelete, isAdmin }: DocumentCardPr
 
       <CardHeader className="absolute top-0 left-0 right-0 pb-0 pt-2 px-4 flex-col items-start z-20">
         <div className="flex gap-1 mt-2">
-          <Chip size="sm" className="text-white bg-zinc-700">
+          <Chip size="sm" color="secondary" variant="flat">
             {new Date(documentInfo.uploadDate).toLocaleDateString()}
           </Chip>
           <Chip color={getStatusColor(documentInfo.status)} size="sm" className="text-white">

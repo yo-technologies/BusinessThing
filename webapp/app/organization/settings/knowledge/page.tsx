@@ -196,7 +196,7 @@ export default function KnowledgePage() {
       <Card className="rounded-4xl shadow-none">
         <CardHeader className="flex flex-col gap-1 px-5 py-4">
           <div className="flex items-center gap-2 w-full">
-            <BookOpenIcon className="h-6 w-6 flex-shrink-0 text-blue-500" />
+            <BookOpenIcon className="h-6 w-6 flex-shrink-0 text-primary" />
             <p className="text-xl font-semibold">База знаний</p>
           </div>
           <p className="text-xs text-default-300">
@@ -271,7 +271,7 @@ export default function KnowledgePage() {
 
       <Button
         isIconOnly
-        color="primary"
+        color="secondary"
         size="lg"
         radius="full"
         className="fixed right-6 bottom-24 z-50 shadow-lg"

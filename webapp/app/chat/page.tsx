@@ -201,7 +201,7 @@ export default function ChatPage() {
     return (
       <div className="flex h-full flex-col items-center justify-center gap-3">
         <h1 className="text-xl font-semibold">Не удалось авторизоваться</h1>
-        <p className="text-center text-small text-default-500">
+        <p className="text-center text-small text-default-400">
           Попробуй закрыть мини-приложение и открыть его заново из Telegram.
         </p>
       </div>

@@ -57,11 +57,11 @@ export default function CreateOrganizationPage() {
     <div className="flex h-full flex-col items-center justify-center px-2">
       <Card className="w-full max-w-md border-none bg-content1/80 shadow-md">
         <CardHeader className="flex flex-col items-start gap-1 pb-2">
-          <span className="text-tiny font-medium uppercase text-primary">Первый шаг</span>
+          <span className="text-tiny font-medium uppercase text-secondary">Первый шаг</span>
           <h1 className="text-xl font-semibold">Создай организацию</h1>
         </CardHeader>
         <CardBody className="space-y-4">
-          <p className="text-small text-default-500">
+          <p className="text-small text-default-400">
             Для работы с системой нужна организация. Укажи название компании и основную информацию.
           </p>
 
@@ -107,7 +107,7 @@ export default function CreateOrganizationPage() {
           />
 
           <Button
-            color="primary"
+            color="success"
             radius="lg"
             className="mt-2 w-full"
             isDisabled={!name.trim()}
