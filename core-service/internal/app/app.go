@@ -212,6 +212,9 @@ func (a *App) startHTTPGateway(ctx context.Context) error {
 	if err := pb.RegisterGeneratedContractServiceHandlerFromEndpoint(ctx, gatewayMux, grpcAddr, opts); err != nil {
 		return fmt.Errorf("failed to register contract handler: %w", err)
 	}
+	if err := pb.RegisterStorageServiceHandlerFromEndpoint(ctx, gatewayMux, grpcAddr, opts); err != nil {
+		return fmt.Errorf("failed to register storage handler: %w", err)
+	}
 
 	// Setup CORS
 	corsHandler := cors.New(cors.Options{
