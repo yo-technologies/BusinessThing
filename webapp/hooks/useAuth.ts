@@ -5,7 +5,7 @@ import { useEffect, useState } from "react";
 import { useRawInitData } from "@telegram-apps/sdk-react";
 
 import { CoreAuthenticateWithTelegramRequest } from "@/api/api.core.generated";
-import { setAuthToken, useApiClients } from "@/api/client";
+import { setAuthToken, useApiClients, onTokenUpdate, getAuthToken } from "@/api/client";
 import { getOrganizationsFromToken, Organization } from "@/utils/jwt";
 
 interface AuthUser {
@@ -20,25 +20,61 @@ interface AuthState {
   user: AuthUser | null;
   isNewUser: boolean;
   organizations: Organization[];
-  reAuthenticate: () => Promise<void>;
 }
 
 export const useAuth = (): AuthState => {
   const initData = typeof window !== "undefined" ? useRawInitData() : null;
   const { core } = useApiClients();
-  const [state, setState] = useState<AuthState>({
-    isAuthenticated: false,
-    loading: true,
-    user: null,
-    isNewUser: false,
-    organizations: [],
-    reAuthenticate: async () => {},
+  const [state, setState] = useState<AuthState>(() => {
+    // Проверяем наличие токена при инициализации
+    const existingToken = getAuthToken();
+    if (existingToken) {
+      const organizations = getOrganizationsFromToken(existingToken);
+      return {
+        isAuthenticated: true,
+        loading: true, // всё ещё нужно проверить через authenticate
+        user: null,
+        isNewUser: false,
+        organizations,
+      };
+    }
+    return {
+      isAuthenticated: false,
+      loading: true,
+      user: null,
+      isNewUser: false,
+      organizations: [],
+    };
   });
 
   const authenticate = async () => {
     if (typeof window === "undefined") {
       console.log("useAuth: SSR mode, skipping auth");
       return;
+    }
+    
+    // Если токен уже есть, попробуем его обновить без повторной аутентификации
+    const existingToken = getAuthToken();
+    if (existingToken) {
+      try {
+        const response = await core.v1.authServiceRefreshToken();
+        const { accessToken } = response.data;
+        
+        if (accessToken) {
+          setAuthToken(accessToken);
+          const organizations = getOrganizationsFromToken(accessToken);
+          setState((prev) => ({
+            ...prev,
+            isAuthenticated: true,
+            loading: false,
+            organizations,
+          }));
+        }
+        return;
+      } catch (error) {
+        console.warn("Token refresh failed, will try to authenticate with Telegram", error);
+        setAuthToken(null);
+      }
     }
     
     if (!initData) {
@@ -93,13 +129,24 @@ export const useAuth = (): AuthState => {
     };
   }, [initData]);
 
-  // Добавляем функцию reAuthenticate в state
+  // Подписываемся на обновления токена
   useEffect(() => {
-    setState((prev) => ({
-      ...prev,
-      reAuthenticate: authenticate,
-    }));
-  }, [initData]);
+    const unsubscribe = onTokenUpdate(() => {
+      const token = getAuthToken();
+      if (token) {
+        const organizations = getOrganizationsFromToken(token);
+        setState((prev) => ({
+          ...prev,
+          organizations,
+          isAuthenticated: true,
+        }));
+      }
+    });
+
+    return () => {
+      unsubscribe();
+    };
+  }, []);
 
   return state;
 };

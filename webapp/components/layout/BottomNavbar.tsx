@@ -48,29 +48,31 @@ export const BottomNavbar = () => {
   const pathname = usePathname();
 
   return (
-    <nav className="fixed bottom-0 left-0 right-0 z-50 border-t border-default-200 bg-background/80 backdrop-blur-md">
-      <div className="mx-auto flex max-w-lg justify-around px-2 py-1 mb-2">
-        {navigationItems.map(({ href, label, Icon, SolidIcon }) => {
-          const isActive = pathname.startsWith(href);
-          const CurrentIcon = isActive ? SolidIcon : Icon;
+    <nav className="fixed bottom-0 left-0 right-0 z-50 pt-3">
+      <div className="mx-auto max-w-lg px-4 pb-4">
+        <div className="bg-black/10 backdrop-blur-xs rounded-full px-1 py-1 grid grid-cols-4 gap-0 border border-white/10">
+          {navigationItems.map(({ href, label, Icon, SolidIcon }) => {
+            const isActive = pathname.startsWith(href);
+            const CurrentIcon = isActive ? SolidIcon : Icon;
 
-          return (
-            <Link
-              key={href}
-              href={href}
-              className={clsx(
-                "flex w-full flex-col items-center justify-center gap-0.5 rounded-full px-1 py-1 text-[11px] font-medium transition-colors",
-                {
-                  "text-primary bg-primary-50": isActive,
-                  "text-default-500 hover:text-default-700": !isActive,
-                },
-              )}
-            >
-              <CurrentIcon className="h-5 w-5" />
-              <span className="text-[11px]">{label}</span>
-            </Link>
-          );
-        })}
+            return (
+              <Link
+                key={href}
+                href={href}
+                className={clsx(
+                  "flex flex-col items-center justify-center gap-1 px-3 py-1 rounded-full text-xs font-medium transition-all duration-300",
+                  {
+                    "bg-zinc-800/70 text-primary-500 shadow-lg": isActive,
+                    "text-zinc-400 hover:text-zinc-200 hover:bg-white/5": !isActive,
+                  },
+                )}
+              >
+                <CurrentIcon className="h-6 w-6" />
+                <span className="text-[9px] whitespace-nowrap font-medium">{label}</span>
+              </Link>
+            );
+          })}
+        </div>
       </div>
     </nav>
   );
