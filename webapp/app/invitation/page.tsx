@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { Suspense, useEffect, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { Button } from "@heroui/button";
 import { Card, CardBody, CardHeader } from "@heroui/card";
@@ -9,7 +9,7 @@ import { Spinner } from "@heroui/spinner";
 import { refreshAuthToken, useApiClients } from "@/api/client";
 import { useAuth } from "@/hooks/useAuth";
 
-export default function InvitationPage() {
+function InvitationContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const token = searchParams.get("token");
@@ -114,5 +114,19 @@ export default function InvitationPage() {
         </CardBody>
       </Card>
     </div>
+  );
+}
+
+export default function InvitationPage() {
+  return (
+    <Suspense
+      fallback={
+        <div className="flex h-full items-center justify-center">
+          <Spinner size="lg" />
+        </div>
+      }
+    >
+      <InvitationContent />
+    </Suspense>
   );
 }
