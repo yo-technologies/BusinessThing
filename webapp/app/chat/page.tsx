@@ -52,6 +52,15 @@ export default function ChatPage() {
       setSelectedChatId(newChatId);
       reloadChats();
     }, [reloadChats]),
+    onFinalReceived: useCallback(async () => {
+      // Перезагружаем лимиты после завершения стрима
+      try {
+        const limitsResp = await agent.v1.agentServiceGetLlmLimits();
+        setLimits(limitsResp.data ?? null);
+      } catch (e) {
+        console.error("Failed to reload limits", e);
+      }
+    }, [agent.v1]),
   });
 
   useEffect(() => {

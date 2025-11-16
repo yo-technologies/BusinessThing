@@ -9,6 +9,7 @@ interface UseChatWebSocketParams {
   organizationId?: string;
   onMessageReceived?: (message: AgentMessage) => void;
   onChatCreated?: (chatId: string) => void;
+  onFinalReceived?: () => void;
 }
 
 interface ChatWebSocketState {
@@ -21,7 +22,7 @@ interface ChatWebSocketState {
   chatName: string | null;
 }
 
-export function useChatWebSocket({ chatId, organizationId, onMessageReceived, onChatCreated }: UseChatWebSocketParams) {
+export function useChatWebSocket({ chatId, organizationId, onMessageReceived, onChatCreated, onFinalReceived }: UseChatWebSocketParams) {
   const wsRef = useRef<WebSocket | null>(null);
   const [currentChatId, setCurrentChatId] = useState<string | null>(chatId);
   const [state, setState] = useState<ChatWebSocketState>({
@@ -141,6 +142,30 @@ export function useChatWebSocket({ chatId, organizationId, onMessageReceived, on
             isStreaming: false,
           }));
         }
+
+        if (event.final) {
+          console.log('[useChatWebSocket] Received final event:', event.final);
+          // Final событие содержит полное финальное состояние чата - используем его как источник правды
+          setState((prev) => ({
+            ...prev,
+            messages: event.final?.messages ?? prev.messages,
+            streamingMessage: "",
+            streamingToolCalls: new Map(),
+            isStreaming: false,
+            usageTokens: 0, // Сбрасываем usage токены для следующего сообщения
+          }));
+          
+          // Обновляем chatName если он есть в final.chat
+          if (event.final.chat?.title) {
+            setState((prev) => ({
+              ...prev,
+              chatName: event.final?.chat?.title ?? prev.chatName,
+            }));
+          }
+          
+          // Уведомляем о завершении стрима для перезагрузки лимитов
+          onFinalReceived?.();
+        }
       },
       onError: (error) => {
         console.error('[useChatWebSocket] WebSocket error:', error);
@@ -163,7 +188,7 @@ export function useChatWebSocket({ chatId, organizationId, onMessageReceived, on
       wsRef.current?.close();
       wsRef.current = null;
     };
-  }, [currentChatId, organizationId, onMessageReceived, onChatCreated]);
+  }, [currentChatId, organizationId, onMessageReceived, onChatCreated, onFinalReceived]);
 
   const sendMessage = useCallback(
     (content: string) => {
