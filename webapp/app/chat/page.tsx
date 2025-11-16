@@ -113,7 +113,8 @@ export default function ChatPage() {
           limit: 50, 
           offset: 0 
         });
-        setMessages(messagesResp.data.messages ?? []);
+        // Переворачиваем массив, т.к. backend отдаёт от новых к старым
+        setMessages([...(messagesResp.data.messages ?? [])].reverse());
         
         // Загружаем информацию о чате
         const chatResp = await agent.v1.agentServiceGetChat(chatId, { orgId: currentOrg?.id ?? "" });
