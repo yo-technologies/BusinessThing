@@ -165,8 +165,8 @@ export function ChatWindow({ messages, streamingMessage, streamingToolCalls, isS
                     Ассистент
                     </div>
                     <div className="flex items-center gap-2">
-                    <Spinner size="sm" color="primary" />
-                    <span className="text-small">Думаю...</span>
+                    <Spinner classNames={{wrapper:"w-4 h-4"}} size="sm" color="primary" />
+                    <span className="text-xs text-default-500">Думаю...</span>
                     </div>
                 </div>
                 )}

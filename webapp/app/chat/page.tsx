@@ -29,7 +29,7 @@ export default function ChatPage() {
   const [initialLoading, setInitialLoading] = useState(true);
   const [loadingMessages, setLoadingMessages] = useState(false);
 
-  const { chats, loading: chatsLoading, reload: reloadChats } = useChatList({
+  const { chats, loading: chatsLoading, reload: reloadChats, deleteChat } = useChatList({
     organizationId: currentOrg?.id,
     enabled: isAuthenticated && !isNewUser && !needsOrganization,
   });
@@ -169,6 +169,19 @@ export default function ChatPage() {
     console.log('[ChatPage] Cleared chatId from sessionStorage');
   }, [setMessages, setChatName, clearError]);
 
+  const handleDeleteChat = useCallback(async (chatId: string) => {
+    await deleteChat(chatId);
+    
+    // Если удалили активный чат - очищаем состояние
+    if (selectedChatId === chatId) {
+      setSelectedChatId(null);
+      setMessages([]);
+      setChatName(null);
+      sessionStorage.removeItem(CHAT_SESSION_KEY);
+      console.log('[ChatPage] Deleted active chat, cleared state');
+    }
+  }, [deleteChat, selectedChatId, setMessages, setChatName]);
+
   const handleSend = useCallback(() => {
     if (!input.trim()) return;
 
@@ -203,6 +216,7 @@ export default function ChatPage() {
           limits={limits}
           usageTokens={usageTokens}
           onShowChatList={() => setShowChatListModal(true)}
+          onCreateChat={handleCreateChat}
         />
 
         <ChatWindow 
@@ -230,6 +244,7 @@ export default function ChatPage() {
         selectedChatId={selectedChatId}
         onSelectChat={handleSelectChat}
         onCreateChat={handleCreateChat}
+        onDeleteChat={handleDeleteChat}
         loading={chatsLoading}
       />
     </>

@@ -2,7 +2,7 @@
 
 import { Card, CardHeader } from "@heroui/card";
 import { Button } from "@heroui/button";
-import { Bars3Icon } from "@heroicons/react/24/outline";
+import { Bars3Icon, PlusIcon } from "@heroicons/react/24/outline";
 import { AgentGetLLMLimitsResponse } from "@/api/api.agent.generated";
 
 interface ChatHeaderProps {
@@ -10,6 +10,7 @@ interface ChatHeaderProps {
   limits?: AgentGetLLMLimitsResponse | null;
   usageTokens?: number | null;
   onShowChatList?: () => void;
+  onCreateChat?: () => void;
 }
 
 export function ChatHeader({
@@ -17,6 +18,7 @@ export function ChatHeader({
   limits,
   usageTokens,
   onShowChatList,
+  onCreateChat,
 }: ChatHeaderProps) {
   // Вычисляем процент использования токенов
   const usagePercent = limits && limits.dailyLimit
@@ -32,11 +34,18 @@ export function ChatHeader({
             {chatName || "Новый чат"}
           </h1>
         </div>
-        {onShowChatList && (
-          <Button isIconOnly size="sm" variant="flat" onPress={onShowChatList}>
-            <Bars3Icon className="h-5 w-5" />
-          </Button>
-        )}
+        <div className="flex items-center gap-2">
+          {onCreateChat && (
+            <Button isIconOnly size="sm" variant="flat" color="primary" onPress={onCreateChat}>
+              <PlusIcon className="h-5 w-5" />
+            </Button>
+          )}
+          {onShowChatList && (
+            <Button isIconOnly size="sm" variant="flat" onPress={onShowChatList}>
+              <Bars3Icon className="h-5 w-5" />
+            </Button>
+          )}
+        </div>
       </CardHeader>
       
       {/* Индикатор использования токенов */}
