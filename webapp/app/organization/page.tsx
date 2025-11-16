@@ -66,7 +66,7 @@ const sections = [
 export default function OrganizationPage() {
   const router = useRouter();
   const { loading: authLoading, isAuthenticated, isNewUser, organizations } = useAuth();
-  const { currentOrg, loading: orgLoading, needsOrganization } = useOrganization({ organizations });
+  const { currentOrg, loading: orgLoading, needsOrganization } = useOrganization({ organizations, authLoading });
   const { core } = useApiClients();
 
   const [organization, setOrganization] = useState<CoreOrganization | null>(null);

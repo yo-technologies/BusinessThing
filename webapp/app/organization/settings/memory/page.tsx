@@ -18,7 +18,7 @@ type FactWithLoading = AgentMemoryFact & { deleting?: boolean };
 export default function MemoryPage() {
   const router = useRouter();
   const { loading: authLoading, isAuthenticated, isNewUser, organizations } = useAuth();
-  const { currentOrg, loading: orgLoading, needsOrganization } = useOrganization({ organizations });
+  const { currentOrg, loading: orgLoading, needsOrganization } = useOrganization({ organizations, authLoading });
   const { agent } = useApiClients();
 
   const [facts, setFacts] = useState<FactWithLoading[]>([]);
