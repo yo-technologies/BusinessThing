@@ -64,7 +64,6 @@ export type UserServiceAcceptInvitationBody = object;
 export type UserServiceDeactivateUserBody = object;
 
 export interface UserServiceInviteUserBody {
-  email?: string;
   role?: CoreUserRole;
 }
 
@@ -157,6 +156,29 @@ export enum CoreDocumentStatus {
   DOCUMENT_STATUS_FAILED = "DOCUMENT_STATUS_FAILED",
 }
 
+export interface CoreGenerateDownloadURLRequest {
+  s3Key?: string;
+}
+
+export interface CoreGenerateDownloadURLResponse {
+  downloadUrl?: string;
+  /** @format int64 */
+  expiresInSeconds?: string;
+}
+
+export interface CoreGenerateUploadURLRequest {
+  organizationId?: string;
+  fileName?: string;
+  contentType?: string;
+}
+
+export interface CoreGenerateUploadURLResponse {
+  uploadUrl?: string;
+  s3Key?: string;
+  /** @format int64 */
+  expiresInSeconds?: string;
+}
+
 export interface CoreGeneratedContract {
   id?: string;
   organizationId?: string;
@@ -193,6 +215,19 @@ export interface CoreGetUserResponse {
   user?: CoreUser;
 }
 
+export interface CoreInvitation {
+  id?: string;
+  organizationId?: string;
+  token?: string;
+  role?: CoreUserRole;
+  /** @format date-time */
+  expiresAt?: string;
+  /** @format date-time */
+  usedAt?: string;
+  /** @format date-time */
+  createdAt?: string;
+}
+
 export interface CoreInviteUserResponse {
   invitationToken?: string;
   invitationUrl?: string;
@@ -218,6 +253,14 @@ export interface CoreListDocumentsResponse {
   page?: number;
   /** @format int32 */
   pageSize?: number;
+}
+
+export interface CoreListInvitationsResponse {
+  invitations?: CoreInvitation[];
+  /** @format int32 */
+  total?: number;
+  /** @format int32 */
+  page?: number;
 }
 
 export interface CoreListMyOrganizationsResponse {
@@ -900,6 +943,34 @@ export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDa
     /**
      * No description
      *
+     * @tags UserService
+     * @name UserServiceListInvitations
+     * @summary Список приглашений организации
+     * @request GET:/v1/organizations/{organizationId}/invitations
+     * @secure
+     */
+    userServiceListInvitations: (
+      organizationId: string,
+      query?: {
+        /** @format int32 */
+        page?: number;
+        /** @format int32 */
+        pageSize?: number;
+      },
+      params: RequestParams = {},
+    ) =>
+      this.request<CoreListInvitationsResponse, RpcStatus>({
+        path: `/v1/organizations/${organizationId}/invitations`,
+        method: "GET",
+        query: query,
+        secure: true,
+        format: "json",
+        ...params,
+      }),
+
+    /**
+     * No description
+     *
      * @tags NoteService
      * @name NoteServiceListNotes
      * @summary Список заметок организации
@@ -1035,6 +1106,46 @@ export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDa
     userServiceInviteUser: (organizationId: string, body: UserServiceInviteUserBody, params: RequestParams = {}) =>
       this.request<CoreInviteUserResponse, RpcStatus>({
         path: `/v1/organizations/${organizationId}/users/invite`,
+        method: "POST",
+        body: body,
+        secure: true,
+        type: ContentType.Json,
+        format: "json",
+        ...params,
+      }),
+
+    /**
+     * No description
+     *
+     * @tags StorageService
+     * @name StorageServiceGenerateDownloadUrl
+     * @summary Получить presigned URL для скачивания документа
+     * @request POST:/v1/storage/download-url
+     * @secure
+     */
+    storageServiceGenerateDownloadUrl: (body: CoreGenerateDownloadURLRequest, params: RequestParams = {}) =>
+      this.request<CoreGenerateDownloadURLResponse, RpcStatus>({
+        path: `/v1/storage/download-url`,
+        method: "POST",
+        body: body,
+        secure: true,
+        type: ContentType.Json,
+        format: "json",
+        ...params,
+      }),
+
+    /**
+     * No description
+     *
+     * @tags StorageService
+     * @name StorageServiceGenerateUploadUrl
+     * @summary Получить presigned URL для загрузки документа
+     * @request POST:/v1/storage/upload-url
+     * @secure
+     */
+    storageServiceGenerateUploadUrl: (body: CoreGenerateUploadURLRequest, params: RequestParams = {}) =>
+      this.request<CoreGenerateUploadURLResponse, RpcStatus>({
+        path: `/v1/storage/upload-url`,
         method: "POST",
         body: body,
         secure: true,

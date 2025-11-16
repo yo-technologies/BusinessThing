@@ -27,7 +27,7 @@ export function ChatHeader({
 
   return (
     <Card className="relative border-none bg-default-50/60 shadow-sm overflow-visible rounded-b-none px-1">
-      <CardHeader className="flex items-center gap-2 pb-2">
+      <CardHeader className="flex items-center gap-2 pb-1">
         <div className="flex flex-1 flex-col items-start gap-0.5">
           <span className="text-tiny font-medium uppercase text-default-400">Чат с агентом</span>
           <h1 className="text-base font-semibold">

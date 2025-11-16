@@ -210,7 +210,7 @@ export default function ChatPage() {
 
   return (
     <>
-      <Card className="flex flex-1 flex-col rounded-3xl shadow-none py-0">
+      <Card className="flex flex-1 flex-col rounded-4xl shadow-none py-0">
         <ChatHeader
           chatName={chatName}
           limits={limits}
