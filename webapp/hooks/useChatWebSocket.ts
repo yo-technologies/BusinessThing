@@ -81,10 +81,10 @@ export function useChatWebSocket({ chatId, organizationId, onMessageReceived, on
           console.log('[useChatWebSocket] Received tool call event:', event.toolCall);
           setState((prev) => {
             const newToolCalls = new Map(prev.streamingToolCalls);
-            const toolName = event.toolCall?.toolName ?? "";
+            const toolCallId = event.toolCall?.toolCallId ?? "";
             
-            if (toolName) {
-              newToolCalls.set(toolName, event.toolCall!);
+            if (toolCallId) {
+              newToolCalls.set(toolCallId, event.toolCall!);
             }
             
             return {
