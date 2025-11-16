@@ -214,16 +214,15 @@ func (r *PGXRepository) CreateInvitation(ctx context.Context, invitation domain.
 
 	engine := r.engineFactory.Get(ctx)
 	query := `
-        INSERT INTO invitations (id, organization_id, email, token, role, expires_at, created_at)
-        VALUES ($1, $2, $3, $4, $5, $6, $7)
-        RETURNING id, organization_id, email, token, role, expires_at, used_at, created_at
+        INSERT INTO invitations (id, organization_id, token, role, expires_at, created_at)
+        VALUES ($1, $2, $3, $4, $5, $6)
+        RETURNING id, organization_id, token, role, expires_at, used_at, created_at
     `
 
 	var created domain.Invitation
 	err := pgxscan.Get(ctx, engine, &created, query,
 		uuidToPgtype(invitation.ID),
 		uuidToPgtype(invitation.OrganizationID),
-		invitation.Email,
 		invitation.Token,
 		invitation.Role,
 		invitation.ExpiresAt,
@@ -244,7 +243,7 @@ func (r *PGXRepository) GetInvitationByToken(ctx context.Context, token string) 
 
 	engine := r.engineFactory.Get(ctx)
 	query := `
-        SELECT id, organization_id, email, token, role, expires_at, used_at, created_at
+        SELECT id, organization_id, token, role, expires_at, used_at, created_at
         FROM invitations
         WHERE token = $1
     `
@@ -260,6 +259,53 @@ func (r *PGXRepository) GetInvitationByToken(ctx context.Context, token string) 
 	}
 
 	return invitation, nil
+}
+
+// ListInvitations retrieves invitations for an organization
+func (r *PGXRepository) ListInvitations(ctx context.Context, organizationID domain.ID, limit, offset int) ([]domain.Invitation, int, error) {
+	span, ctx := opentracing.StartSpanFromContext(ctx, "repository.ListInvitations")
+	defer span.Finish()
+
+	engine := r.engineFactory.Get(ctx)
+	
+	// Get total count
+	var total int
+	countQuery := `
+		SELECT COUNT(*)
+		FROM invitations
+		WHERE organization_id = $1
+	`
+	err := pgxscan.Get(ctx, engine, &total, countQuery, uuidToPgtype(organizationID))
+	if err != nil {
+		logger.Errorf(ctx, "failed to count invitations: %v", err)
+		return nil, 0, err
+	}
+
+	// Get invitations
+	query := `
+		SELECT id, organization_id, token, role, expires_at, used_at, created_at
+		FROM invitations
+		WHERE organization_id = $1
+		ORDER BY created_at DESC
+		LIMIT $2 OFFSET $3
+	`
+
+	var invitations []domain.Invitation
+	err = pgxscan.Select(ctx, engine, &invitations, query, 
+		uuidToPgtype(organizationID), 
+		limit, 
+		offset,
+	)
+	if err != nil {
+		logger.Errorf(ctx, "failed to list invitations: %v", err)
+		return nil, 0, err
+	}
+
+	if invitations == nil {
+		invitations = []domain.Invitation{}
+	}
+
+	return invitations, total, nil
 }
 
 // MarkInvitationAsUsed marks an invitation as used

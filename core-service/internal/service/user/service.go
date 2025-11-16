@@ -6,7 +6,6 @@ import (
 	"crypto/rand"
 	"encoding/base64"
 	"fmt"
-	"strings"
 	"time"
 
 	"github.com/opentracing/opentracing-go"
@@ -22,6 +21,7 @@ type repository interface {
 	DeactivateUser(ctx context.Context, id domain.ID) error
 	CreateInvitation(ctx context.Context, invitation domain.Invitation) (domain.Invitation, error)
 	GetInvitationByToken(ctx context.Context, token string) (domain.Invitation, error)
+	ListInvitations(ctx context.Context, organizationID domain.ID, limit, offset int) ([]domain.Invitation, int, error)
 	MarkInvitationAsUsed(ctx context.Context, id domain.ID) error
 	CreateOrganizationMember(ctx context.Context, member domain.OrganizationMember) (domain.OrganizationMember, error)
 	GetOrganizationMember(ctx context.Context, userID, organizationID domain.ID) (*domain.OrganizationMember, error)
@@ -37,14 +37,9 @@ func New(repo repository) *Service {
 }
 
 // InviteUser creates a new invitation for a user
-func (s *Service) InviteUser(ctx context.Context, organizationID domain.ID, email string, role domain.UserRole, invitedBy domain.ID) (*domain.Invitation, error) {
+func (s *Service) InviteUser(ctx context.Context, organizationID domain.ID, role domain.UserRole, invitedBy domain.ID) (*domain.Invitation, error) {
 	span, ctx := opentracing.StartSpanFromContext(ctx, "service.user.InviteUser")
 	defer span.Finish()
-
-	email = strings.ToLower(strings.TrimSpace(email))
-	if email == "" {
-		return nil, domain.NewInvalidArgumentError("email is required")
-	}
 
 	// Generate secure token
 	token, err := generateToken()
@@ -55,7 +50,7 @@ func (s *Service) InviteUser(ctx context.Context, organizationID domain.ID, emai
 	// Invitation expires in 7 days
 	expiresAt := time.Now().Add(7 * 24 * time.Hour)
 
-	invitation := domain.NewInvitation(organizationID, email, role, token, expiresAt)
+	invitation := domain.NewInvitation(organizationID, role, token, expiresAt)
 
 	created, err := s.repo.CreateInvitation(ctx, invitation)
 	if err != nil {
@@ -102,7 +97,7 @@ func (s *Service) AcceptInvitation(ctx context.Context, userID domain.ID, token 
 	}
 
 	// Create organization membership
-	member := domain.NewOrganizationMember(invitation.OrganizationID, userID, invitation.Email, invitation.Role)
+	member := domain.NewOrganizationMember(invitation.OrganizationID, userID, "", invitation.Role)
 	_, err = s.repo.CreateOrganizationMember(ctx, member)
 	if err != nil {
 		return nil, err
@@ -200,6 +195,14 @@ func (s *Service) DeactivateUser(ctx context.Context, id domain.ID) error {
 	return s.repo.DeactivateUser(ctx, id)
 }
 
+// ListInvitations retrieves invitations for an organization
+func (s *Service) ListInvitations(ctx context.Context, organizationID domain.ID, limit, offset int) ([]domain.Invitation, int, error) {
+	span, ctx := opentracing.StartSpanFromContext(ctx, "service.user.ListInvitations")
+	defer span.Finish()
+
+	return s.repo.ListInvitations(ctx, organizationID, limit, offset)
+}
+
 // generateToken generates a secure random token
 func generateToken() (string, error) {
 	b := make([]byte, 32)
@@ -210,7 +213,7 @@ func generateToken() (string, error) {
 	return base64.URLEncoding.EncodeToString(b), nil
 }
 
-// GetInvitationURL generates invitation URL
-func GetInvitationURL(token string, baseURL string) string {
-	return fmt.Sprintf("%s/invite/%s", baseURL, token)
+// GenerateInvitationURL generates Telegram Mini App invitation URL with token
+func GenerateInvitationURL(token string, miniAppURL string) string {
+	return fmt.Sprintf("%s?startapp=invitation_%s", miniAppURL, token)
 }

@@ -20,9 +20,17 @@ var MainAgent = &domain.AgentDefinition{
 	AllowedTools: []domain.ToolName{
 		domain.ToolNameWebSearch,
 		domain.ToolNameSaveOrganizationNote,
+		// Быстрый просмотр данных
 		"ammo-crm-entity_get",
-		"ammo-crm-leads_pipelines_get",
+		"ammo-crm-entity_id_get",
 		"ammo-crm-users_get",
+		"ammo-crm-leads_pipelines_get",
+		// Быстрое создание базовых сущностей
+		"ammo-crm-entity_notes_post",
+		"ammo-crm-contacts_post",
+		"ammo-crm-tasks_post",
+		// Утилиты
+		"ammo-crm-timestamp_shift_get",
 	},
 	CanCallSubagents: true,
 	IsSubagent:       false,
@@ -54,6 +62,26 @@ var MarketingAgent = &domain.AgentDefinition{
 	AllowedTools: []domain.ToolName{
 		domain.ToolNameWebSearch,
 		domain.ToolNameSaveOrganizationNote,
+		// Чтение данных для маркетинговых кампаний
+		"ammo-crm-entity_get",
+		"ammo-crm-entity_id_get",
+		"ammo-crm-entity_links_get",
+		"ammo-crm-entity_custom_fields_get",
+		"ammo-crm-leads_pipelines_get",
+		"ammo-crm-users_get",
+		// Создание лидов, контактов и задач
+		"ammo-crm-leads_post",
+		"ammo-crm-contacts_post",
+		"ammo-crm-companies_post",
+		"ammo-crm-tasks_post",
+		"ammo-crm-entity_notes_post",
+		"ammo-crm-entity_links_post",
+		// Редактирование для управления кампаниями
+		"ammo-crm-leads_patch",
+		"ammo-crm-contacts_patch",
+		"ammo-crm-tasks_patch",
+		// Утилиты
+		"ammo-crm-timestamp_shift_get",
 	},
 	CanCallSubagents: false,
 	IsSubagent:       true,
@@ -139,7 +167,23 @@ var BusinessAnalystAgent = &domain.AgentDefinition{
 	AllowedTools: []domain.ToolName{
 		domain.ToolNameWebSearch,
 		domain.ToolNameSaveOrganizationNote,
-		"ammo-crm-*",
+		// Полный доступ к чтению для аналитики
+		"ammo-crm-entity_get",
+		"ammo-crm-entity_id_get",
+		"ammo-crm-entity_notes_get",
+		"ammo-crm-entity_custom_fields_get",
+		"ammo-crm-entity_custom_fields_id_get",
+		"ammo-crm-entity_links_get",
+		"ammo-crm-leads_pipelines_get",
+		"ammo-crm-leads_pipelines_id_get",
+		"ammo-crm-leads_pipelines_id_statuses_get",
+		"ammo-crm-leads_pipelines_id_statuses_status_id_get",
+		"ammo-crm-users_get",
+		"ammo-crm-tasks_types_get",
+		// Создание заметок для фиксации инсайтов
+		"ammo-crm-entity_notes_post",
+		// Утилиты для работы с временными метками
+		"ammo-crm-timestamp_shift_get",
 	},
 	CanCallSubagents: false,
 	IsSubagent:       true,

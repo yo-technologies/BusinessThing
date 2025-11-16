@@ -1918,18 +1918,6 @@ func (m *InviteUserRequest) validate(all bool) error {
 		errors = append(errors, err)
 	}
 
-	if err := m._validateEmail(m.GetEmail()); err != nil {
-		err = InviteUserRequestValidationError{
-			field:  "Email",
-			reason: "value must be a valid email address",
-			cause:  err,
-		}
-		if !all {
-			return err
-		}
-		errors = append(errors, err)
-	}
-
 	if _, ok := UserRole_name[int32(m.GetRole())]; !ok {
 		err := InviteUserRequestValidationError{
 			field:  "Role",
@@ -1946,56 +1934,6 @@ func (m *InviteUserRequest) validate(all bool) error {
 	}
 
 	return nil
-}
-
-func (m *InviteUserRequest) _validateHostname(host string) error {
-	s := strings.ToLower(strings.TrimSuffix(host, "."))
-
-	if len(host) > 253 {
-		return errors.New("hostname cannot exceed 253 characters")
-	}
-
-	for _, part := range strings.Split(s, ".") {
-		if l := len(part); l == 0 || l > 63 {
-			return errors.New("hostname part must be non-empty and cannot exceed 63 characters")
-		}
-
-		if part[0] == '-' {
-			return errors.New("hostname parts cannot begin with hyphens")
-		}
-
-		if part[len(part)-1] == '-' {
-			return errors.New("hostname parts cannot end with hyphens")
-		}
-
-		for _, r := range part {
-			if (r < 'a' || r > 'z') && (r < '0' || r > '9') && r != '-' {
-				return fmt.Errorf("hostname parts can only contain alphanumeric characters or hyphens, got %q", string(r))
-			}
-		}
-	}
-
-	return nil
-}
-
-func (m *InviteUserRequest) _validateEmail(addr string) error {
-	a, err := mail.ParseAddress(addr)
-	if err != nil {
-		return err
-	}
-	addr = a.Address
-
-	if len(addr) > 254 {
-		return errors.New("email addresses cannot exceed 254 characters")
-	}
-
-	parts := strings.SplitN(addr, "@", 2)
-
-	if len(parts[0]) > 64 {
-		return errors.New("email address local phrase cannot exceed 64 characters")
-	}
-
-	return m._validateHostname(parts[1])
 }
 
 // InviteUserRequestMultiError is an error wrapping multiple validation errors
@@ -3233,10 +3171,11 @@ func (m *DeactivateUserRequest) validate(all bool) error {
 
 	var errors []error
 
-	if utf8.RuneCountInString(m.GetId()) < 1 {
-		err := DeactivateUserRequestValidationError{
+	if err := m._validateUuid(m.GetId()); err != nil {
+		err = DeactivateUserRequestValidationError{
 			field:  "Id",
-			reason: "value length must be at least 1 runes",
+			reason: "value must be a valid UUID",
+			cause:  err,
 		}
 		if !all {
 			return err
@@ -3246,6 +3185,14 @@ func (m *DeactivateUserRequest) validate(all bool) error {
 
 	if len(errors) > 0 {
 		return DeactivateUserRequestMultiError(errors)
+	}
+
+	return nil
+}
+
+func (m *DeactivateUserRequest) _validateUuid(uuid string) error {
+	if matched := _core_uuidPattern.MatchString(uuid); !matched {
+		return errors.New("invalid uuid format")
 	}
 
 	return nil
@@ -3323,6 +3270,466 @@ var _ interface {
 	Cause() error
 	ErrorName() string
 } = DeactivateUserRequestValidationError{}
+
+// Validate checks the field values on ListInvitationsRequest with the rules
+// defined in the proto definition for this message. If any rules are
+// violated, the first error encountered is returned, or nil if there are no violations.
+func (m *ListInvitationsRequest) Validate() error {
+	return m.validate(false)
+}
+
+// ValidateAll checks the field values on ListInvitationsRequest with the rules
+// defined in the proto definition for this message. If any rules are
+// violated, the result is a list of violation errors wrapped in
+// ListInvitationsRequestMultiError, or nil if none found.
+func (m *ListInvitationsRequest) ValidateAll() error {
+	return m.validate(true)
+}
+
+func (m *ListInvitationsRequest) validate(all bool) error {
+	if m == nil {
+		return nil
+	}
+
+	var errors []error
+
+	if utf8.RuneCountInString(m.GetOrganizationId()) < 1 {
+		err := ListInvitationsRequestValidationError{
+			field:  "OrganizationId",
+			reason: "value length must be at least 1 runes",
+		}
+		if !all {
+			return err
+		}
+		errors = append(errors, err)
+	}
+
+	// no validation rules for Page
+
+	if val := m.GetPageSize(); val < 1 || val > 100 {
+		err := ListInvitationsRequestValidationError{
+			field:  "PageSize",
+			reason: "value must be inside range [1, 100]",
+		}
+		if !all {
+			return err
+		}
+		errors = append(errors, err)
+	}
+
+	if len(errors) > 0 {
+		return ListInvitationsRequestMultiError(errors)
+	}
+
+	return nil
+}
+
+// ListInvitationsRequestMultiError is an error wrapping multiple validation
+// errors returned by ListInvitationsRequest.ValidateAll() if the designated
+// constraints aren't met.
+type ListInvitationsRequestMultiError []error
+
+// Error returns a concatenation of all the error messages it wraps.
+func (m ListInvitationsRequestMultiError) Error() string {
+	msgs := make([]string, 0, len(m))
+	for _, err := range m {
+		msgs = append(msgs, err.Error())
+	}
+	return strings.Join(msgs, "; ")
+}
+
+// AllErrors returns a list of validation violation errors.
+func (m ListInvitationsRequestMultiError) AllErrors() []error { return m }
+
+// ListInvitationsRequestValidationError is the validation error returned by
+// ListInvitationsRequest.Validate if the designated constraints aren't met.
+type ListInvitationsRequestValidationError struct {
+	field  string
+	reason string
+	cause  error
+	key    bool
+}
+
+// Field function returns field value.
+func (e ListInvitationsRequestValidationError) Field() string { return e.field }
+
+// Reason function returns reason value.
+func (e ListInvitationsRequestValidationError) Reason() string { return e.reason }
+
+// Cause function returns cause value.
+func (e ListInvitationsRequestValidationError) Cause() error { return e.cause }
+
+// Key function returns key value.
+func (e ListInvitationsRequestValidationError) Key() bool { return e.key }
+
+// ErrorName returns error name.
+func (e ListInvitationsRequestValidationError) ErrorName() string {
+	return "ListInvitationsRequestValidationError"
+}
+
+// Error satisfies the builtin error interface
+func (e ListInvitationsRequestValidationError) Error() string {
+	cause := ""
+	if e.cause != nil {
+		cause = fmt.Sprintf(" | caused by: %v", e.cause)
+	}
+
+	key := ""
+	if e.key {
+		key = "key for "
+	}
+
+	return fmt.Sprintf(
+		"invalid %sListInvitationsRequest.%s: %s%s",
+		key,
+		e.field,
+		e.reason,
+		cause)
+}
+
+var _ error = ListInvitationsRequestValidationError{}
+
+var _ interface {
+	Field() string
+	Reason() string
+	Key() bool
+	Cause() error
+	ErrorName() string
+} = ListInvitationsRequestValidationError{}
+
+// Validate checks the field values on ListInvitationsResponse with the rules
+// defined in the proto definition for this message. If any rules are
+// violated, the first error encountered is returned, or nil if there are no violations.
+func (m *ListInvitationsResponse) Validate() error {
+	return m.validate(false)
+}
+
+// ValidateAll checks the field values on ListInvitationsResponse with the
+// rules defined in the proto definition for this message. If any rules are
+// violated, the result is a list of violation errors wrapped in
+// ListInvitationsResponseMultiError, or nil if none found.
+func (m *ListInvitationsResponse) ValidateAll() error {
+	return m.validate(true)
+}
+
+func (m *ListInvitationsResponse) validate(all bool) error {
+	if m == nil {
+		return nil
+	}
+
+	var errors []error
+
+	for idx, item := range m.GetInvitations() {
+		_, _ = idx, item
+
+		if all {
+			switch v := interface{}(item).(type) {
+			case interface{ ValidateAll() error }:
+				if err := v.ValidateAll(); err != nil {
+					errors = append(errors, ListInvitationsResponseValidationError{
+						field:  fmt.Sprintf("Invitations[%v]", idx),
+						reason: "embedded message failed validation",
+						cause:  err,
+					})
+				}
+			case interface{ Validate() error }:
+				if err := v.Validate(); err != nil {
+					errors = append(errors, ListInvitationsResponseValidationError{
+						field:  fmt.Sprintf("Invitations[%v]", idx),
+						reason: "embedded message failed validation",
+						cause:  err,
+					})
+				}
+			}
+		} else if v, ok := interface{}(item).(interface{ Validate() error }); ok {
+			if err := v.Validate(); err != nil {
+				return ListInvitationsResponseValidationError{
+					field:  fmt.Sprintf("Invitations[%v]", idx),
+					reason: "embedded message failed validation",
+					cause:  err,
+				}
+			}
+		}
+
+	}
+
+	// no validation rules for Total
+
+	// no validation rules for Page
+
+	if len(errors) > 0 {
+		return ListInvitationsResponseMultiError(errors)
+	}
+
+	return nil
+}
+
+// ListInvitationsResponseMultiError is an error wrapping multiple validation
+// errors returned by ListInvitationsResponse.ValidateAll() if the designated
+// constraints aren't met.
+type ListInvitationsResponseMultiError []error
+
+// Error returns a concatenation of all the error messages it wraps.
+func (m ListInvitationsResponseMultiError) Error() string {
+	msgs := make([]string, 0, len(m))
+	for _, err := range m {
+		msgs = append(msgs, err.Error())
+	}
+	return strings.Join(msgs, "; ")
+}
+
+// AllErrors returns a list of validation violation errors.
+func (m ListInvitationsResponseMultiError) AllErrors() []error { return m }
+
+// ListInvitationsResponseValidationError is the validation error returned by
+// ListInvitationsResponse.Validate if the designated constraints aren't met.
+type ListInvitationsResponseValidationError struct {
+	field  string
+	reason string
+	cause  error
+	key    bool
+}
+
+// Field function returns field value.
+func (e ListInvitationsResponseValidationError) Field() string { return e.field }
+
+// Reason function returns reason value.
+func (e ListInvitationsResponseValidationError) Reason() string { return e.reason }
+
+// Cause function returns cause value.
+func (e ListInvitationsResponseValidationError) Cause() error { return e.cause }
+
+// Key function returns key value.
+func (e ListInvitationsResponseValidationError) Key() bool { return e.key }
+
+// ErrorName returns error name.
+func (e ListInvitationsResponseValidationError) ErrorName() string {
+	return "ListInvitationsResponseValidationError"
+}
+
+// Error satisfies the builtin error interface
+func (e ListInvitationsResponseValidationError) Error() string {
+	cause := ""
+	if e.cause != nil {
+		cause = fmt.Sprintf(" | caused by: %v", e.cause)
+	}
+
+	key := ""
+	if e.key {
+		key = "key for "
+	}
+
+	return fmt.Sprintf(
+		"invalid %sListInvitationsResponse.%s: %s%s",
+		key,
+		e.field,
+		e.reason,
+		cause)
+}
+
+var _ error = ListInvitationsResponseValidationError{}
+
+var _ interface {
+	Field() string
+	Reason() string
+	Key() bool
+	Cause() error
+	ErrorName() string
+} = ListInvitationsResponseValidationError{}
+
+// Validate checks the field values on Invitation with the rules defined in the
+// proto definition for this message. If any rules are violated, the first
+// error encountered is returned, or nil if there are no violations.
+func (m *Invitation) Validate() error {
+	return m.validate(false)
+}
+
+// ValidateAll checks the field values on Invitation with the rules defined in
+// the proto definition for this message. If any rules are violated, the
+// result is a list of violation errors wrapped in InvitationMultiError, or
+// nil if none found.
+func (m *Invitation) ValidateAll() error {
+	return m.validate(true)
+}
+
+func (m *Invitation) validate(all bool) error {
+	if m == nil {
+		return nil
+	}
+
+	var errors []error
+
+	// no validation rules for Id
+
+	// no validation rules for OrganizationId
+
+	// no validation rules for Token
+
+	// no validation rules for Role
+
+	if all {
+		switch v := interface{}(m.GetExpiresAt()).(type) {
+		case interface{ ValidateAll() error }:
+			if err := v.ValidateAll(); err != nil {
+				errors = append(errors, InvitationValidationError{
+					field:  "ExpiresAt",
+					reason: "embedded message failed validation",
+					cause:  err,
+				})
+			}
+		case interface{ Validate() error }:
+			if err := v.Validate(); err != nil {
+				errors = append(errors, InvitationValidationError{
+					field:  "ExpiresAt",
+					reason: "embedded message failed validation",
+					cause:  err,
+				})
+			}
+		}
+	} else if v, ok := interface{}(m.GetExpiresAt()).(interface{ Validate() error }); ok {
+		if err := v.Validate(); err != nil {
+			return InvitationValidationError{
+				field:  "ExpiresAt",
+				reason: "embedded message failed validation",
+				cause:  err,
+			}
+		}
+	}
+
+	if all {
+		switch v := interface{}(m.GetUsedAt()).(type) {
+		case interface{ ValidateAll() error }:
+			if err := v.ValidateAll(); err != nil {
+				errors = append(errors, InvitationValidationError{
+					field:  "UsedAt",
+					reason: "embedded message failed validation",
+					cause:  err,
+				})
+			}
+		case interface{ Validate() error }:
+			if err := v.Validate(); err != nil {
+				errors = append(errors, InvitationValidationError{
+					field:  "UsedAt",
+					reason: "embedded message failed validation",
+					cause:  err,
+				})
+			}
+		}
+	} else if v, ok := interface{}(m.GetUsedAt()).(interface{ Validate() error }); ok {
+		if err := v.Validate(); err != nil {
+			return InvitationValidationError{
+				field:  "UsedAt",
+				reason: "embedded message failed validation",
+				cause:  err,
+			}
+		}
+	}
+
+	if all {
+		switch v := interface{}(m.GetCreatedAt()).(type) {
+		case interface{ ValidateAll() error }:
+			if err := v.ValidateAll(); err != nil {
+				errors = append(errors, InvitationValidationError{
+					field:  "CreatedAt",
+					reason: "embedded message failed validation",
+					cause:  err,
+				})
+			}
+		case interface{ Validate() error }:
+			if err := v.Validate(); err != nil {
+				errors = append(errors, InvitationValidationError{
+					field:  "CreatedAt",
+					reason: "embedded message failed validation",
+					cause:  err,
+				})
+			}
+		}
+	} else if v, ok := interface{}(m.GetCreatedAt()).(interface{ Validate() error }); ok {
+		if err := v.Validate(); err != nil {
+			return InvitationValidationError{
+				field:  "CreatedAt",
+				reason: "embedded message failed validation",
+				cause:  err,
+			}
+		}
+	}
+
+	if len(errors) > 0 {
+		return InvitationMultiError(errors)
+	}
+
+	return nil
+}
+
+// InvitationMultiError is an error wrapping multiple validation errors
+// returned by Invitation.ValidateAll() if the designated constraints aren't met.
+type InvitationMultiError []error
+
+// Error returns a concatenation of all the error messages it wraps.
+func (m InvitationMultiError) Error() string {
+	msgs := make([]string, 0, len(m))
+	for _, err := range m {
+		msgs = append(msgs, err.Error())
+	}
+	return strings.Join(msgs, "; ")
+}
+
+// AllErrors returns a list of validation violation errors.
+func (m InvitationMultiError) AllErrors() []error { return m }
+
+// InvitationValidationError is the validation error returned by
+// Invitation.Validate if the designated constraints aren't met.
+type InvitationValidationError struct {
+	field  string
+	reason string
+	cause  error
+	key    bool
+}
+
+// Field function returns field value.
+func (e InvitationValidationError) Field() string { return e.field }
+
+// Reason function returns reason value.
+func (e InvitationValidationError) Reason() string { return e.reason }
+
+// Cause function returns cause value.
+func (e InvitationValidationError) Cause() error { return e.cause }
+
+// Key function returns key value.
+func (e InvitationValidationError) Key() bool { return e.key }
+
+// ErrorName returns error name.
+func (e InvitationValidationError) ErrorName() string { return "InvitationValidationError" }
+
+// Error satisfies the builtin error interface
+func (e InvitationValidationError) Error() string {
+	cause := ""
+	if e.cause != nil {
+		cause = fmt.Sprintf(" | caused by: %v", e.cause)
+	}
+
+	key := ""
+	if e.key {
+		key = "key for "
+	}
+
+	return fmt.Sprintf(
+		"invalid %sInvitation.%s: %s%s",
+		key,
+		e.field,
+		e.reason,
+		cause)
+}
+
+var _ error = InvitationValidationError{}
+
+var _ interface {
+	Field() string
+	Reason() string
+	Key() bool
+	Cause() error
+	ErrorName() string
+} = InvitationValidationError{}
 
 // Validate checks the field values on RegisterDocumentRequest with the rules
 // defined in the proto definition for this message. If any rules are

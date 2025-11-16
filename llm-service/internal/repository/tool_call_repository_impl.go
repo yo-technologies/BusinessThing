@@ -19,6 +19,7 @@ type toolCallRow struct {
 	Name        string     `db:"name"`
 	Arguments   []byte     `db:"arguments"`
 	Result      *[]byte    `db:"result"`
+	Error       *string    `db:"error"`
 	Status      string     `db:"status"`
 	CreatedAt   time.Time  `db:"created_at"`
 	CompletedAt *time.Time `db:"completed_at"`
@@ -45,6 +46,10 @@ func (r *toolCallRow) toDomain() (*domain.ToolCall, error) {
 		tc.Result = json.RawMessage(*r.Result)
 	}
 
+	if r.Error != nil {
+		tc.Error = r.Error
+	}
+
 	if r.CompletedAt != nil {
 		tc.UpdatedAt = *r.CompletedAt
 		tc.CompletedAt = r.CompletedAt
@@ -61,8 +66,8 @@ func (r *PGXRepository) CreateToolCall(ctx context.Context, messageID domain.ID,
 	engine := r.engineFactory.Get(ctx)
 
 	query := `
-		INSERT INTO tool_calls (id, message_id, name, arguments, result, status, created_at, completed_at)
-		VALUES ($1, $2, $3, $4, $5, $6, $7, $8)
+		INSERT INTO tool_calls (id, message_id, name, arguments, result, error, status, created_at, completed_at)
+		VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9)
 	`
 
 	var resultBytes *[]byte
@@ -82,6 +87,7 @@ func (r *PGXRepository) CreateToolCall(ctx context.Context, messageID domain.ID,
 		toolCall.Name,
 		[]byte(toolCall.Arguments),
 		resultBytes,
+		toolCall.Error,
 		string(toolCall.Status),
 		toolCall.CreatedAt,
 		completedAt,
@@ -102,7 +108,7 @@ func (r *PGXRepository) GetToolCallByID(ctx context.Context, id domain.ID) (*dom
 	engine := r.engineFactory.Get(ctx)
 
 	query := `
-		SELECT id, message_id, name, arguments, result, status, created_at, completed_at
+		SELECT id, message_id, name, arguments, result, error, status, created_at, completed_at
 		FROM tool_calls
 		WHERE id = $1
 	`
@@ -126,7 +132,7 @@ func (r *PGXRepository) ListToolCallsByMessageID(ctx context.Context, messageID 
 	engine := r.engineFactory.Get(ctx)
 
 	query := `
-		SELECT id, message_id, name, arguments, result, status, created_at, completed_at
+		SELECT id, message_id, name, arguments, result, error, status, created_at, completed_at
 		FROM tool_calls
 		WHERE message_id = $1
 		ORDER BY created_at ASC
@@ -169,13 +175,14 @@ func (r *PGXRepository) UpdateToolCall(ctx context.Context, toolCall *domain.Too
 
 	query := `
 		UPDATE tool_calls
-		SET result = $2, status = $3, completed_at = $4
+		SET result = $2, error = $3, status = $4, completed_at = $5
 		WHERE id = $1
 	`
 
 	tag, err := engine.Exec(ctx, query,
 		toolCall.ID.String(),
 		resultBytes,
+		toolCall.Error,
 		string(toolCall.Status),
 		completedAt,
 	)

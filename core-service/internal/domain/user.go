@@ -112,7 +112,6 @@ func (m *OrganizationMember) IsActive() bool {
 type Invitation struct {
 	ID             ID         `db:"id"`
 	OrganizationID ID         `db:"organization_id"`
-	Email          string     `db:"email"`
 	Token          string     `db:"token"`
 	Role           UserRole   `db:"role"`
 	ExpiresAt      time.Time  `db:"expires_at"`
@@ -121,11 +120,10 @@ type Invitation struct {
 }
 
 // NewInvitation создает новое приглашение
-func NewInvitation(organizationID ID, email string, role UserRole, token string, expiresAt time.Time) Invitation {
+func NewInvitation(organizationID ID, role UserRole, token string, expiresAt time.Time) Invitation {
 	return Invitation{
 		ID:             NewID(),
 		OrganizationID: organizationID,
-		Email:          email,
 		Token:          token,
 		Role:           role,
 		ExpiresAt:      expiresAt,

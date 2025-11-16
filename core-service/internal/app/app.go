@@ -81,7 +81,7 @@ func New(cfg *config.Config, jwtProvider *jwt.Provider, services Services, authS
 		cfg:             cfg,
 		jwtProvider:     jwtProvider,
 		orgService:      organization.NewService(services.OrganizationService),
-		userService:     user.NewService(services.UserService),
+		userService:     user.NewService(services.UserService, cfg.Telegram.MiniAppURL),
 		docService:      document.NewService(services.DocumentService),
 		noteService:     note.NewService(services.NoteService),
 		templateService: template.NewService(services.TemplateService),
@@ -211,6 +211,9 @@ func (a *App) startHTTPGateway(ctx context.Context) error {
 	}
 	if err := pb.RegisterGeneratedContractServiceHandlerFromEndpoint(ctx, gatewayMux, grpcAddr, opts); err != nil {
 		return fmt.Errorf("failed to register contract handler: %w", err)
+	}
+	if err := pb.RegisterStorageServiceHandlerFromEndpoint(ctx, gatewayMux, grpcAddr, opts); err != nil {
+		return fmt.Errorf("failed to register storage handler: %w", err)
 	}
 
 	// Setup CORS

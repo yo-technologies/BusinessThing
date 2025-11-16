@@ -27,6 +27,10 @@ type Client struct {
 	lastUpdate time.Time
 	// TTL кеша (по умолчанию 5 минут)
 	cacheTTL time.Duration
+
+	// Состояние соединения
+	connected      bool
+	lastSuccessful time.Time
 }
 
 // NewSSEClient создает новый MCP клиент через SSE транспорт
@@ -39,11 +43,13 @@ func NewSSEClient(baseURL string) (*Client, error) {
 	}
 
 	client := &Client{
-		mcpClient:  mcpClient,
-		address:    baseURL,
-		tools:      make(map[string]*domain.ToolDefinition),
-		cacheTTL:   5 * time.Minute,
-		lastUpdate: time.Time{},
+		mcpClient:      mcpClient,
+		address:        baseURL,
+		tools:          make(map[string]*domain.ToolDefinition),
+		cacheTTL:       5 * time.Minute,
+		lastUpdate:     time.Time{},
+		connected:      false,
+		lastSuccessful: time.Time{},
 	}
 
 	return client, nil
@@ -79,6 +85,11 @@ func (c *Client) Initialize(ctx context.Context) error {
 	if err != nil {
 		return fmt.Errorf("failed to initialize MCP connection: %w", err)
 	}
+
+	c.mu.Lock()
+	c.connected = true
+	c.lastSuccessful = time.Now()
+	c.mu.Unlock()
 
 	logger.Info(ctx, "MCP client initialized successfully")
 	return nil
@@ -127,11 +138,23 @@ func (c *Client) fetchTools(ctx context.Context) ([]*domain.ToolDefinition, erro
 	span, ctx := opentracing.StartSpanFromContext(ctx, "mcp.Client.fetchTools")
 	defer span.Finish()
 
+	// Проверяем состояние соединения и пытаемся переподключиться при необходимости
+	if err := c.ensureConnected(ctx); err != nil {
+		return nil, fmt.Errorf("failed to ensure MCP connection: %w", err)
+	}
+
 	// Запрашиваем список инструментов через MCP протокол
 	resp, err := c.mcpClient.ListTools(ctx, mcp.ListToolsRequest{})
 	if err != nil {
+		// Помечаем соединение как неработающее при ошибке
+		c.markDisconnected()
 		return nil, fmt.Errorf("failed to list MCP tools: %w", err)
 	}
+
+	// Обновляем время последнего успешного вызова
+	c.mu.Lock()
+	c.lastSuccessful = time.Now()
+	c.mu.Unlock()
 
 	// Конвертируем MCP инструменты в доменные модели
 	tools := make([]*domain.ToolDefinition, 0, len(resp.Tools))
@@ -152,6 +175,11 @@ func (c *Client) CallTool(ctx context.Context, toolName string, arguments map[st
 
 	logger.Infof(ctx, "Calling MCP tool: %s", toolName)
 
+	// Проверяем состояние соединения и пытаемся переподключиться при необходимости
+	if err := c.ensureConnected(ctx); err != nil {
+		return nil, fmt.Errorf("failed to ensure MCP connection: %w", err)
+	}
+
 	// Вызываем инструмент через MCP протокол
 	resp, err := c.mcpClient.CallTool(ctx, mcp.CallToolRequest{
 		Params: mcp.CallToolParams{
@@ -160,6 +188,8 @@ func (c *Client) CallTool(ctx context.Context, toolName string, arguments map[st
 		},
 	})
 	if err != nil {
+		// Помечаем соединение как неработающее при ошибке
+		c.markDisconnected()
 		return nil, fmt.Errorf("failed to call MCP tool: %w", err)
 	}
 
@@ -167,6 +197,11 @@ func (c *Client) CallTool(ctx context.Context, toolName string, arguments map[st
 	if resp.IsError {
 		return nil, fmt.Errorf("MCP tool returned error")
 	}
+
+	// Обновляем время последнего успешного вызова
+	c.mu.Lock()
+	c.lastSuccessful = time.Now()
+	c.mu.Unlock()
 
 	// Формируем результат из контента
 	result := formatMCPToolResult(resp)
@@ -223,6 +258,89 @@ func (c *Client) RefreshTools(ctx context.Context) error {
 	c.InvalidateCache()
 	_, err := c.GetTools(ctx)
 	return err
+}
+
+// ensureConnected проверяет состояние соединения и переподключается при необходимости
+func (c *Client) ensureConnected(ctx context.Context) error {
+	c.mu.RLock()
+	connected := c.connected
+	lastSuccessful := c.lastSuccessful
+	c.mu.RUnlock()
+
+	// Если соединение активно и недавно было успешное взаимодействие, ничего не делаем
+	if connected && time.Since(lastSuccessful) < 30*time.Second {
+		return nil
+	}
+
+	// Если давно не было успешных вызовов или соединение разорвано, пытаемся переподключиться
+	logger.Warn(ctx, "MCP connection seems inactive, attempting to reconnect")
+	return c.reconnect(ctx)
+}
+
+// reconnect переподключается к MCP серверу
+func (c *Client) reconnect(ctx context.Context) error {
+	c.mu.Lock()
+	defer c.mu.Unlock()
+
+	logger.Info(ctx, "Attempting to reconnect to MCP server")
+
+	// Закрываем старое соединение
+	if c.mcpClient != nil {
+		_ = c.mcpClient.Close()
+	}
+
+	// Создаем новый клиент
+	mcpClient, err := mcpclient.NewSSEMCPClient(c.address)
+	if err != nil {
+		c.connected = false
+		return fmt.Errorf("failed to create new MCP client: %w", err)
+	}
+
+	// Инициализируем соединение
+	err = mcpClient.Start(ctx)
+	if err != nil {
+		c.connected = false
+		return fmt.Errorf("failed to start MCP client: %w", err)
+	}
+
+	_, err = mcpClient.Initialize(ctx, mcp.InitializeRequest{
+		Params: mcp.InitializeParams{
+			ClientInfo: mcp.Implementation{
+				Name:    "llm-service",
+				Version: "1.0.0",
+			},
+		},
+	})
+	if err != nil {
+		c.connected = false
+		return fmt.Errorf("failed to initialize MCP connection: %w", err)
+	}
+
+	c.mcpClient = mcpClient
+	c.connected = true
+	c.lastSuccessful = time.Now()
+
+	// Сбрасываем кеш инструментов, чтобы перезагрузить их
+	c.tools = make(map[string]*domain.ToolDefinition)
+	c.lastUpdate = time.Time{}
+
+	logger.Info(ctx, "Successfully reconnected to MCP server")
+	return nil
+}
+
+// markDisconnected помечает соединение как разорванное
+func (c *Client) markDisconnected() {
+	c.mu.Lock()
+	defer c.mu.Unlock()
+	c.connected = false
+	logger.Warn(context.Background(), "MCP connection marked as disconnected")
+}
+
+// IsConnected проверяет, активно ли соединение
+func (c *Client) IsConnected() bool {
+	c.mu.RLock()
+	defer c.mu.RUnlock()
+	return c.connected && time.Since(c.lastSuccessful) < time.Minute
 }
 
 // convertMCPToolToDomain конвертирует MCP определение инструмента в доменную модель
