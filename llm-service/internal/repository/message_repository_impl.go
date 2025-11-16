@@ -220,7 +220,7 @@ func (r *PGXRepository) ListMessagesWithSubchatsWithToolCalls(ctx context.Contex
 
 	qb = qb.Where(sq.Expr("(chat_id = ? OR chat_id IN (SELECT id FROM chats WHERE parent_chat_id = ?))", parentChatID.String(), parentChatID.String()))
 
-	qb = qb.OrderBy("created_at ASC").Limit(uint64(limit)).Offset(uint64(offset))
+	qb = qb.OrderBy("created_at DESC").Limit(uint64(limit)).Offset(uint64(offset))
 
 	query, args, err := qb.ToSql()
 	if err != nil {
