@@ -15,7 +15,7 @@ type repository interface {
 	CreateUser(ctx context.Context, user domain.User) (domain.User, error)
 	GetUser(ctx context.Context, id domain.ID) (domain.User, error)
 	GetUserByTelegramID(ctx context.Context, telegramID string) (domain.User, error)
-	ListUsers(ctx context.Context, organizationID domain.ID, limit, offset int) ([]domain.User, int, error)
+	ListUsers(ctx context.Context, organizationID domain.ID, limit, offset int) ([]domain.UserWithMembership, int, error)
 	UpdateUser(ctx context.Context, user domain.User) (domain.User, error)
 	UpdateUserRole(ctx context.Context, id domain.ID, role domain.UserRole) error
 	DeactivateUser(ctx context.Context, id domain.ID) error
@@ -113,7 +113,7 @@ func (s *Service) AcceptInvitation(ctx context.Context, userID domain.ID, token 
 }
 
 // ListUsers retrieves users for an organization
-func (s *Service) ListUsers(ctx context.Context, organizationID domain.ID, page, pageSize int) ([]domain.User, int, error) {
+func (s *Service) ListUsers(ctx context.Context, organizationID domain.ID, page, pageSize int) ([]domain.UserWithMembership, int, error) {
 	span, ctx := opentracing.StartSpanFromContext(ctx, "service.user.ListUsers")
 	defer span.Finish()
 
@@ -130,7 +130,7 @@ func (s *Service) ListUsers(ctx context.Context, organizationID domain.ID, page,
 }
 
 // ListUsersByOrganization retrieves all users for an organization (without pagination)
-func (s *Service) ListUsersByOrganization(ctx context.Context, organizationID domain.ID) ([]*domain.User, error) {
+func (s *Service) ListUsersByOrganization(ctx context.Context, organizationID domain.ID) ([]*domain.UserWithMembership, error) {
 	span, ctx := opentracing.StartSpanFromContext(ctx, "service.user.ListUsersByOrganization")
 	defer span.Finish()
 
@@ -139,7 +139,7 @@ func (s *Service) ListUsersByOrganization(ctx context.Context, organizationID do
 		return nil, err
 	}
 
-	result := make([]*domain.User, len(users))
+	result := make([]*domain.UserWithMembership, len(users))
 	for i := range users {
 		result[i] = &users[i]
 	}

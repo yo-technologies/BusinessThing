@@ -93,7 +93,7 @@ func (r *PGXRepository) GetUserByTelegramID(ctx context.Context, telegramID stri
 }
 
 // ListUsers retrieves users for an organization with pagination
-func (r *PGXRepository) ListUsers(ctx context.Context, organizationID domain.ID, limit, offset int) ([]domain.User, int, error) {
+func (r *PGXRepository) ListUsers(ctx context.Context, organizationID domain.ID, limit, offset int) ([]domain.UserWithMembership, int, error) {
 	span, ctx := opentracing.StartSpanFromContext(ctx, "repository.ListUsers")
 	defer span.Finish()
 
@@ -113,9 +113,18 @@ func (r *PGXRepository) ListUsers(ctx context.Context, organizationID domain.ID,
 		return nil, 0, err
 	}
 
-	// Get users
+	// Get users with membership info
 	query := `
-        SELECT u.id, u.telegram_id, u.first_name, u.last_name, u.is_active, u.registration_completed, u.created_at, u.updated_at
+        SELECT 
+            u.id, u.telegram_id, u.first_name, u.last_name, u.is_active, u.registration_completed, u.created_at, u.updated_at,
+            om.id as "organization_member.id",
+            om.organization_id as "organization_member.organization_id",
+            om.user_id as "organization_member.user_id",
+            om.email as "organization_member.email",
+            om.role as "organization_member.role",
+            om.status as "organization_member.status",
+            om.joined_at as "organization_member.joined_at",
+            om.updated_at as "organization_member.updated_at"
         FROM users u
         INNER JOIN organization_members om ON u.id = om.user_id
         WHERE om.organization_id = $1
@@ -123,7 +132,7 @@ func (r *PGXRepository) ListUsers(ctx context.Context, organizationID domain.ID,
         LIMIT $2 OFFSET $3
     `
 
-	var users []domain.User
+	var users []domain.UserWithMembership
 	err = pgxscan.Select(ctx, engine, &users, query, uuidToPgtype(organizationID), limit, offset)
 	if err != nil {
 		logger.Errorf(ctx, "failed to list users: %v", err)
@@ -267,7 +276,7 @@ func (r *PGXRepository) ListInvitations(ctx context.Context, organizationID doma
 	defer span.Finish()
 
 	engine := r.engineFactory.Get(ctx)
-	
+
 	// Get total count
 	var total int
 	countQuery := `
@@ -291,9 +300,9 @@ func (r *PGXRepository) ListInvitations(ctx context.Context, organizationID doma
 	`
 
 	var invitations []domain.Invitation
-	err = pgxscan.Select(ctx, engine, &invitations, query, 
-		uuidToPgtype(organizationID), 
-		limit, 
+	err = pgxscan.Select(ctx, engine, &invitations, query,
+		uuidToPgtype(organizationID),
+		limit,
 		offset,
 	)
 	if err != nil {
