@@ -125,3 +125,41 @@ func (s *Service) ListGeneratedContracts(ctx context.Context, req *pb.ListContra
 		Contracts: pbContracts,
 	}, nil
 }
+
+// ListContracts implements GeneratedContractService.ListContracts with pagination support.
+func (s *Service) ListContracts(ctx context.Context, req *pb.ListContractsRequest) (*pb.ListContractsResponse, error) {
+	span, ctx := opentracing.StartSpanFromContext(ctx, "api.ListContracts")
+	defer span.Finish()
+
+	orgID, err := domain.ParseID(req.OrganizationId)
+	if err != nil {
+		return nil, domain.ErrInvalidArgument
+	}
+
+	// Use pagination parameters from request, falling back to defaults if needed.
+	page := int(req.Page)
+	if page < 1 {
+		page = 1
+	}
+	pageSize := int(req.PageSize)
+	if pageSize < 1 || pageSize > 100 {
+		pageSize = 20
+	}
+
+	contracts, total, err := s.contractService.ListContracts(ctx, orgID, page, pageSize)
+	if err != nil {
+		return nil, err
+	}
+
+	pbContracts := make([]*pb.GeneratedContract, 0, len(contracts))
+	for _, contract := range contracts {
+		pbContracts = append(pbContracts, contractToProto(contract))
+	}
+
+	return &pb.ListContractsResponse{
+		Contracts: pbContracts,
+		Total:     int32(total),
+		Page:      int32(page),
+		PageSize:  int32(pageSize),
+	}, nil
+}
