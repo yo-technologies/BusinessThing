@@ -14,6 +14,8 @@ import { ChatWindow, ChatInput, ChatHeader, ChatListModal } from "@/components/c
 import { AgentGetLLMLimitsResponse } from "@/api/api.agent.generated";
 import { Card } from "@heroui/card";
 
+const CHAT_SESSION_KEY = "last_chat_id";
+
 export default function ChatPage() {
   const router = useRouter();
   const { isAuthenticated, loading, user, isNewUser, organizations } = useAuth();
@@ -51,6 +53,11 @@ export default function ChatPage() {
     onChatCreated: useCallback((newChatId: string) => {
       console.log('[ChatPage] onChatCreated called:', { newChatId, currentSelectedChatId: selectedChatId });
       setSelectedChatId(newChatId);
+      
+      // Сохраняем новый chatId в sessionStorage
+      sessionStorage.setItem(CHAT_SESSION_KEY, newChatId);
+      console.log('[ChatPage] Saved new chatId to sessionStorage:', newChatId);
+      
       reloadChats();
     }, [reloadChats, selectedChatId]),
     onFinalReceived: useCallback(async () => {
@@ -84,9 +91,6 @@ export default function ChatPage() {
       try {
         const limitsResp = await agent.v1.agentServiceGetLlmLimits();
         setLimits(limitsResp.data ?? null);
-
-        // Устанавливаем новый чат только при первой загрузке
-        setSelectedChatId(null);
         setInitialLoading(false);
       } catch (e) {
         console.error("Failed to load initial data", e);
@@ -105,6 +109,10 @@ export default function ChatPage() {
       setSelectedChatId(chatId);
       clearError();
       setLoadingMessages(true);
+
+      // Сохраняем chatId в sessionStorage
+      sessionStorage.setItem(CHAT_SESSION_KEY, chatId);
+      console.log('[ChatPage] Saved chatId to sessionStorage:', chatId);
 
       try {
         // Загружаем сообщения
@@ -130,11 +138,35 @@ export default function ChatPage() {
     [agent.v1, currentOrg?.id, setMessages, setChatName, clearError]
   );
 
+  // Восстановление последнего чата из sessionStorage
+  useEffect(() => {
+    if (initialLoading || chatsLoading || !chats.length) return;
+
+    const lastChatId = sessionStorage.getItem(CHAT_SESSION_KEY);
+    console.log('[ChatPage] Restoring from sessionStorage:', lastChatId);
+    
+    if (lastChatId && !selectedChatId) {
+      // Проверяем, что чат существует в списке
+      const chatExists = chats.some(chat => chat.id === lastChatId);
+      
+      if (chatExists) {
+        console.log('[ChatPage] Restoring existing chat:', lastChatId);
+        void handleSelectChat(lastChatId);
+      } else {
+        console.log('[ChatPage] Last chat not found in list');
+      }
+    }
+  }, [initialLoading, chatsLoading, chats, selectedChatId, handleSelectChat]);
+
   const handleCreateChat = useCallback(() => {
     setSelectedChatId(null);
     setMessages([]);
     setChatName(null);
     clearError();
+    
+    // Очищаем sessionStorage при создании нового чата
+    sessionStorage.removeItem(CHAT_SESSION_KEY);
+    console.log('[ChatPage] Cleared chatId from sessionStorage');
   }, [setMessages, setChatName, clearError]);
 
   const handleSend = useCallback(() => {

@@ -67,7 +67,7 @@ export function ChatWindow({ messages, streamingMessage, streamingToolCalls, isS
 
   return (
     <Card className="flex flex-1 flex-col border-none shadow-none py-0 border-t-none">
-        <CardBody className="flex flex-1 flex-col pb-0">
+        <CardBody className="flex flex-1 flex-col pb-0 px-4">
           {loadingMessages ? (
               <div className="flex flex-1 flex-row h-full justify-center items-center">
               <Spinner size="sm" label="Загружаем сообщения..." color="primary" />
@@ -79,7 +79,7 @@ export function ChatWindow({ messages, streamingMessage, streamingToolCalls, isS
                   </span>
               </div>
           ) : (
-            <div className="flex flex-col gap-3 pb-12">
+            <div className="flex flex-col gap-3 pb-10">
                 {messages.map((message, index) => {
                 // Пропускаем системные сообщения и сообщения типа tool
                 if (
@@ -151,10 +151,23 @@ export function ChatWindow({ messages, streamingMessage, streamingToolCalls, isS
                 <div className="flex flex-col gap-2">
                     {Array.from(streamingToolCalls.values()).map((toolCallEvent) => (
                     <ToolCallMessage 
-                        key={toolCallEvent.toolCallId} 
+                        key={`${toolCallEvent.toolCallId}-${toolCallEvent.status}`} 
                         toolCall={convertStreamingToolCall(toolCallEvent)} 
                     />
                     ))}
+                </div>
+                )}
+                
+                {/* Индикатор загрузки, когда стриминг активен но сообщение пустое */}
+                {isStreaming && !streamingMessage && (!streamingToolCalls || streamingToolCalls.size === 0) && (
+                <div className="flex flex-col gap-2">
+                    <div className="text-sm font-medium text-default-400">
+                    Ассистент
+                    </div>
+                    <div className="flex items-center gap-2">
+                    <Spinner size="sm" color="primary" />
+                    <span className="text-small">Думаю...</span>
+                    </div>
                 </div>
                 )}
                 
@@ -172,7 +185,7 @@ export function ChatWindow({ messages, streamingMessage, streamingToolCalls, isS
                         ) {
                         // Показываем заголовок, если последнее сообщение не от ассистента
                         return msg.role !== AgentMessageRole.MESSAGE_ROLE_ASSISTANT ? (
-                            <div className="text-small font-semibold text-default-600 px-1">
+                            <div className="text-sm font-medium text-default-400">
                             Ассистент
                             </div>
                         ) : null;
@@ -180,7 +193,7 @@ export function ChatWindow({ messages, streamingMessage, streamingToolCalls, isS
                     }
                     // Если нет видимых сообщений, показываем заголовок
                     return (
-                        <div className="text-small font-semibold text-default-600 px-1">
+                        <div className="text-sm font-medium text-default-400">
                         Ассистент
                         </div>
                     );

@@ -41,7 +41,7 @@ export function ChatInput({ value, onChange, onSend, disabled, isStreaming }: Ch
         onPress={onSend}
         isDisabled={disabled || !value.trim()}
       >
-        {isStreaming ? <Spinner classNames={{wrapper: "w-3 h-3"}} color="default"/> : <ArrowRightIcon className="h-5 w-5" />}
+        {isStreaming ? <Spinner size="sm" color="current" classNames={{wrapper: "w-4 h-4"}}/> : <ArrowRightIcon className="h-5 w-5" />}
       </Button>
     </div>
   );
