@@ -188,6 +188,7 @@ export interface AgentToolCall {
 }
 
 export interface AgentToolCallEvent {
+  toolCallId?: string;
   toolName?: string;
   arguments?: string;
   status?: string;

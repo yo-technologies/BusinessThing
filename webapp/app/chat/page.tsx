@@ -49,9 +49,19 @@ export default function ChatPage() {
     chatId: selectedChatId,
     organizationId: currentOrg?.id,
     onChatCreated: useCallback((newChatId: string) => {
+      console.log('[ChatPage] onChatCreated called:', { newChatId, currentSelectedChatId: selectedChatId });
       setSelectedChatId(newChatId);
       reloadChats();
-    }, [reloadChats]),
+    }, [reloadChats, selectedChatId]),
+    onFinalReceived: useCallback(async () => {
+      // Перезагружаем лимиты после завершения стрима
+      try {
+        const limitsResp = await agent.v1.agentServiceGetLlmLimits();
+        setLimits(limitsResp.data ?? null);
+      } catch (e) {
+        console.error("Failed to reload limits", e);
+      }
+    }, [agent.v1]),
   });
 
   useEffect(() => {
@@ -66,28 +76,29 @@ export default function ChatPage() {
     }
   }, [loading, orgLoading, isAuthenticated, isNewUser, needsOrganization, router]);
 
+  // Инициализация при первой загрузке
   useEffect(() => {
     const loadInitialData = async () => {
-      if (!currentOrg?.id || !isAuthenticated || isNewUser) return;
+      if (!currentOrg?.id || !isAuthenticated || isNewUser || chatsLoading) return;
 
       try {
         const limitsResp = await agent.v1.agentServiceGetLlmLimits();
         setLimits(limitsResp.data ?? null);
 
-        // По умолчанию показываем новый чат (selectedChatId = null)
-        // Пользователь может открыть список чатов по кнопке
+        // Устанавливаем новый чат только при первой загрузке
         setSelectedChatId(null);
+        setInitialLoading(false);
       } catch (e) {
         console.error("Failed to load initial data", e);
-      } finally {
         setInitialLoading(false);
       }
     };
 
-    if (!chatsLoading && chats.length >= 0) {
+    // Выполняем только один раз при монтировании компонента
+    if (initialLoading && !chatsLoading) {
       void loadInitialData();
     }
-  }, [agent.v1, currentOrg?.id, isAuthenticated, isNewUser, chats, chatsLoading]);
+  }, [agent.v1, currentOrg?.id, isAuthenticated, isNewUser, chatsLoading, initialLoading]);
 
   const handleSelectChat = useCallback(
     async (chatId: string) => {
