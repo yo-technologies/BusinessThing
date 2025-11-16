@@ -934,8 +934,7 @@ func (x *DeleteOrganizationRequest) GetId() string {
 type InviteUserRequest struct {
 	state          protoimpl.MessageState `protogen:"open.v1"`
 	OrganizationId string                 `protobuf:"bytes,1,opt,name=organization_id,json=organizationId,proto3" json:"organization_id,omitempty"`
-	Email          string                 `protobuf:"bytes,2,opt,name=email,proto3" json:"email,omitempty"`
-	Role           UserRole               `protobuf:"varint,3,opt,name=role,proto3,enum=core.api.core.UserRole" json:"role,omitempty"`
+	Role           UserRole               `protobuf:"varint,2,opt,name=role,proto3,enum=core.api.core.UserRole" json:"role,omitempty"`
 	unknownFields  protoimpl.UnknownFields
 	sizeCache      protoimpl.SizeCache
 }
@@ -973,13 +972,6 @@ func (*InviteUserRequest) Descriptor() ([]byte, []int) {
 func (x *InviteUserRequest) GetOrganizationId() string {
 	if x != nil {
 		return x.OrganizationId
-	}
-	return ""
-}
-
-func (x *InviteUserRequest) GetEmail() string {
-	if x != nil {
-		return x.Email
 	}
 	return ""
 }
@@ -1619,12 +1611,11 @@ type Invitation struct {
 	state          protoimpl.MessageState `protogen:"open.v1"`
 	Id             string                 `protobuf:"bytes,1,opt,name=id,proto3" json:"id,omitempty"`
 	OrganizationId string                 `protobuf:"bytes,2,opt,name=organization_id,json=organizationId,proto3" json:"organization_id,omitempty"`
-	Email          string                 `protobuf:"bytes,3,opt,name=email,proto3" json:"email,omitempty"`
-	Token          string                 `protobuf:"bytes,4,opt,name=token,proto3" json:"token,omitempty"`
-	Role           UserRole               `protobuf:"varint,5,opt,name=role,proto3,enum=core.api.core.UserRole" json:"role,omitempty"`
-	ExpiresAt      *timestamppb.Timestamp `protobuf:"bytes,6,opt,name=expires_at,json=expiresAt,proto3" json:"expires_at,omitempty"`
-	UsedAt         *timestamppb.Timestamp `protobuf:"bytes,7,opt,name=used_at,json=usedAt,proto3" json:"used_at,omitempty"`
-	CreatedAt      *timestamppb.Timestamp `protobuf:"bytes,8,opt,name=created_at,json=createdAt,proto3" json:"created_at,omitempty"`
+	Token          string                 `protobuf:"bytes,3,opt,name=token,proto3" json:"token,omitempty"`
+	Role           UserRole               `protobuf:"varint,4,opt,name=role,proto3,enum=core.api.core.UserRole" json:"role,omitempty"`
+	ExpiresAt      *timestamppb.Timestamp `protobuf:"bytes,5,opt,name=expires_at,json=expiresAt,proto3" json:"expires_at,omitempty"`
+	UsedAt         *timestamppb.Timestamp `protobuf:"bytes,6,opt,name=used_at,json=usedAt,proto3" json:"used_at,omitempty"`
+	CreatedAt      *timestamppb.Timestamp `protobuf:"bytes,7,opt,name=created_at,json=createdAt,proto3" json:"created_at,omitempty"`
 	unknownFields  protoimpl.UnknownFields
 	sizeCache      protoimpl.SizeCache
 }
@@ -1669,13 +1660,6 @@ func (x *Invitation) GetId() string {
 func (x *Invitation) GetOrganizationId() string {
 	if x != nil {
 		return x.OrganizationId
-	}
-	return ""
-}
-
-func (x *Invitation) GetEmail() string {
-	if x != nil {
-		return x.Email
 	}
 	return ""
 }
@@ -4269,11 +4253,10 @@ const file_core_core_proto_rawDesc = "" +
 	"\x1aUpdateOrganizationResponse\x12?\n" +
 	"\forganization\x18\x01 \x01(\v2\x1b.core.api.core.OrganizationR\forganization\"4\n" +
 	"\x19DeleteOrganizationRequest\x12\x17\n" +
-	"\x02id\x18\x01 \x01(\tB\a\xfaB\x04r\x02\x10\x01R\x02id\"\x9b\x01\n" +
+	"\x02id\x18\x01 \x01(\tB\a\xfaB\x04r\x02\x10\x01R\x02id\"|\n" +
 	"\x11InviteUserRequest\x120\n" +
-	"\x0forganization_id\x18\x01 \x01(\tB\a\xfaB\x04r\x02\x10\x01R\x0eorganizationId\x12\x1d\n" +
-	"\x05email\x18\x02 \x01(\tB\a\xfaB\x04r\x02`\x01R\x05email\x125\n" +
-	"\x04role\x18\x03 \x01(\x0e2\x17.core.api.core.UserRoleB\b\xfaB\x05\x82\x01\x02\x10\x01R\x04role\"\xa1\x01\n" +
+	"\x0forganization_id\x18\x01 \x01(\tB\a\xfaB\x04r\x02\x10\x01R\x0eorganizationId\x125\n" +
+	"\x04role\x18\x02 \x01(\x0e2\x17.core.api.core.UserRoleB\b\xfaB\x05\x82\x01\x02\x10\x01R\x04role\"\xa1\x01\n" +
 	"\x12InviteUserResponse\x12)\n" +
 	"\x10invitation_token\x18\x01 \x01(\tR\x0finvitationToken\x12%\n" +
 	"\x0einvitation_url\x18\x02 \x01(\tR\rinvitationUrl\x129\n" +
@@ -4310,19 +4293,18 @@ const file_core_core_proto_rawDesc = "" +
 	"\x17ListInvitationsResponse\x12;\n" +
 	"\vinvitations\x18\x01 \x03(\v2\x19.core.api.core.InvitationR\vinvitations\x12\x14\n" +
 	"\x05total\x18\x02 \x01(\x05R\x05total\x12\x12\n" +
-	"\x04page\x18\x03 \x01(\x05R\x04page\"\xc9\x02\n" +
+	"\x04page\x18\x03 \x01(\x05R\x04page\"\xb3\x02\n" +
 	"\n" +
 	"Invitation\x12\x0e\n" +
 	"\x02id\x18\x01 \x01(\tR\x02id\x12'\n" +
 	"\x0forganization_id\x18\x02 \x01(\tR\x0eorganizationId\x12\x14\n" +
-	"\x05email\x18\x03 \x01(\tR\x05email\x12\x14\n" +
-	"\x05token\x18\x04 \x01(\tR\x05token\x12+\n" +
-	"\x04role\x18\x05 \x01(\x0e2\x17.core.api.core.UserRoleR\x04role\x129\n" +
+	"\x05token\x18\x03 \x01(\tR\x05token\x12+\n" +
+	"\x04role\x18\x04 \x01(\x0e2\x17.core.api.core.UserRoleR\x04role\x129\n" +
 	"\n" +
-	"expires_at\x18\x06 \x01(\v2\x1a.google.protobuf.TimestampR\texpiresAt\x123\n" +
-	"\aused_at\x18\a \x01(\v2\x1a.google.protobuf.TimestampR\x06usedAt\x129\n" +
+	"expires_at\x18\x05 \x01(\v2\x1a.google.protobuf.TimestampR\texpiresAt\x123\n" +
+	"\aused_at\x18\x06 \x01(\v2\x1a.google.protobuf.TimestampR\x06usedAt\x129\n" +
 	"\n" +
-	"created_at\x18\b \x01(\v2\x1a.google.protobuf.TimestampR\tcreatedAt\"\xc5\x01\n" +
+	"created_at\x18\a \x01(\v2\x1a.google.protobuf.TimestampR\tcreatedAt\"\xc5\x01\n" +
 	"\x17RegisterDocumentRequest\x120\n" +
 	"\x0forganization_id\x18\x01 \x01(\tB\a\xfaB\x04r\x02\x10\x01R\x0eorganizationId\x12\x1e\n" +
 	"\x04name\x18\x02 \x01(\tB\n" +

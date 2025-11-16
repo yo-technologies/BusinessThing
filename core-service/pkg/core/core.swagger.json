@@ -1413,9 +1413,6 @@
     "UserServiceInviteUserBody": {
       "type": "object",
       "properties": {
-        "email": {
-          "type": "string"
-        },
         "role": {
           "$ref": "#/definitions/coreUserRole"
         }
@@ -1744,9 +1741,6 @@
           "type": "string"
         },
         "organizationId": {
-          "type": "string"
-        },
-        "email": {
           "type": "string"
         },
         "token": {

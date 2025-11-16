@@ -6,7 +6,6 @@ import (
 	"crypto/rand"
 	"encoding/base64"
 	"fmt"
-	"strings"
 	"time"
 
 	"github.com/opentracing/opentracing-go"
@@ -38,14 +37,9 @@ func New(repo repository) *Service {
 }
 
 // InviteUser creates a new invitation for a user
-func (s *Service) InviteUser(ctx context.Context, organizationID domain.ID, email string, role domain.UserRole, invitedBy domain.ID) (*domain.Invitation, error) {
+func (s *Service) InviteUser(ctx context.Context, organizationID domain.ID, role domain.UserRole, invitedBy domain.ID) (*domain.Invitation, error) {
 	span, ctx := opentracing.StartSpanFromContext(ctx, "service.user.InviteUser")
 	defer span.Finish()
-
-	email = strings.ToLower(strings.TrimSpace(email))
-	if email == "" {
-		return nil, domain.NewInvalidArgumentError("email is required")
-	}
 
 	// Generate secure token
 	token, err := generateToken()
@@ -56,7 +50,7 @@ func (s *Service) InviteUser(ctx context.Context, organizationID domain.ID, emai
 	// Invitation expires in 7 days
 	expiresAt := time.Now().Add(7 * 24 * time.Hour)
 
-	invitation := domain.NewInvitation(organizationID, email, role, token, expiresAt)
+	invitation := domain.NewInvitation(organizationID, role, token, expiresAt)
 
 	created, err := s.repo.CreateInvitation(ctx, invitation)
 	if err != nil {
@@ -103,7 +97,7 @@ func (s *Service) AcceptInvitation(ctx context.Context, userID domain.ID, token 
 	}
 
 	// Create organization membership
-	member := domain.NewOrganizationMember(invitation.OrganizationID, userID, invitation.Email, invitation.Role)
+	member := domain.NewOrganizationMember(invitation.OrganizationID, userID, "", invitation.Role)
 	_, err = s.repo.CreateOrganizationMember(ctx, member)
 	if err != nil {
 		return nil, err

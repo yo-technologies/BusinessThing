@@ -19,7 +19,7 @@ type Service struct {
 }
 
 type UserService interface {
-	InviteUser(ctx context.Context, organizationID domain.ID, email string, role domain.UserRole, invitedBy domain.ID) (*domain.Invitation, error)
+	InviteUser(ctx context.Context, organizationID domain.ID, role domain.UserRole, invitedBy domain.ID) (*domain.Invitation, error)
 	AcceptInvitation(ctx context.Context, userID domain.ID, token string) (*domain.User, error)
 	ListUsersByOrganization(ctx context.Context, organizationID domain.ID) ([]*domain.User, error)
 	ListInvitations(ctx context.Context, organizationID domain.ID, limit, offset int) ([]domain.Invitation, int, error)
@@ -99,7 +99,7 @@ func (s *Service) InviteUser(ctx context.Context, req *pb.InviteUserRequest) (*p
 
 	role := userRoleFromProto(req.Role)
 
-	invitation, err := s.userService.InviteUser(ctx, orgID, req.Email, role, invitedBy)
+	invitation, err := s.userService.InviteUser(ctx, orgID, role, invitedBy)
 	if err != nil {
 		return nil, err
 	}
@@ -255,7 +255,6 @@ func invitationToProto(inv *domain.Invitation) *pb.Invitation {
 	result := &pb.Invitation{
 		Id:             inv.ID.String(),
 		OrganizationId: inv.OrganizationID.String(),
-		Email:          inv.Email,
 		Token:          inv.Token,
 		Role:           userRoleToProto(inv.Role),
 		ExpiresAt:      timestamppb.New(inv.ExpiresAt),
