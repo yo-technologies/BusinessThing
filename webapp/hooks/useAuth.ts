@@ -14,12 +14,18 @@ interface AuthUser {
   lastName?: string;
 }
 
+interface UserInfo {
+  userId: string;
+  role: string;
+}
+
 interface AuthState {
   isAuthenticated: boolean;
   loading: boolean;
   user: AuthUser | null;
   isNewUser: boolean;
   organizations: Organization[];
+  userInfo: UserInfo | null;
 }
 
 export const useAuth = (): AuthState => {
@@ -30,12 +36,15 @@ export const useAuth = (): AuthState => {
     const existingToken = getAuthToken();
     if (existingToken) {
       const organizations = getOrganizationsFromToken(existingToken);
+      const payload = existingToken ? require('@/utils/jwt').decodeJWT(existingToken) : null;
+      const userInfo = payload ? { userId: payload.sub, role: organizations[0]?.role || '' } : null;
       return {
         isAuthenticated: true,
         loading: true, // всё ещё нужно проверить через authenticate
         user: null,
         isNewUser: false,
         organizations,
+        userInfo,
       };
     }
     return {
@@ -44,6 +53,7 @@ export const useAuth = (): AuthState => {
       user: null,
       isNewUser: false,
       organizations: [],
+      userInfo: null,
     };
   });
 
@@ -63,11 +73,14 @@ export const useAuth = (): AuthState => {
         if (accessToken) {
           setAuthToken(accessToken);
           const organizations = getOrganizationsFromToken(accessToken);
+          const payload = require('@/utils/jwt').decodeJWT(accessToken);
+          const userInfo = payload ? { userId: payload.sub, role: organizations[0]?.role || '' } : null;
           setState((prev) => ({
             ...prev,
             isAuthenticated: true,
             loading: false,
             organizations,
+            userInfo,
           }));
         }
         return;
@@ -86,9 +99,9 @@ export const useAuth = (): AuthState => {
     try {
       console.log("Authenticating with initData:", initData);
       
-      const payload: CoreAuthenticateWithTelegramRequest = { initData };
+      const requestPayload: CoreAuthenticateWithTelegramRequest = { initData };
 
-      const response = await core.v1.authServiceAuthenticateWithTelegram(payload, {
+      const response = await core.v1.authServiceAuthenticateWithTelegram(requestPayload, {
         secure: false,
       });
 
@@ -101,6 +114,9 @@ export const useAuth = (): AuthState => {
         organizations = getOrganizationsFromToken(accessToken);
       }
 
+      const payload = accessToken ? require('@/utils/jwt').decodeJWT(accessToken) : null;
+      const userInfo = payload ? { userId: payload.sub, role: organizations[0]?.role || '' } : null;
+
       setState((prev) => ({
         ...prev,
         isAuthenticated: Boolean(accessToken),
@@ -108,6 +124,7 @@ export const useAuth = (): AuthState => {
         user: user ?? null,
         isNewUser: Boolean(isNewUser),
         organizations,
+        userInfo,
       }));
     } catch (error) {
       console.error("Auth error", error);
@@ -135,10 +152,13 @@ export const useAuth = (): AuthState => {
       const token = getAuthToken();
       if (token) {
         const organizations = getOrganizationsFromToken(token);
+        const payload = require('@/utils/jwt').decodeJWT(token);
+        const userInfo = payload ? { userId: payload.sub, role: organizations[0]?.role || '' } : null;
         setState((prev) => ({
           ...prev,
           organizations,
           isAuthenticated: true,
+          userInfo,
         }));
       }
     });
