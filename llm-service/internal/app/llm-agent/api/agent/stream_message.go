@@ -139,9 +139,10 @@ func (a *streamAdapter) SendToolCall(toolCall *domain.ToolCall) error {
 	return a.stream.Send(&desc.StreamMessageResponse{
 		Event: &desc.StreamMessageResponse_ToolCall{
 			ToolCall: &desc.ToolCallEvent{
-				ToolName:  toolCall.Name,
-				Arguments: string(args),
-				Status:    string(toolCall.Status),
+				ToolCallId: toolCall.ID.String(),
+				ToolName:   toolCall.Name,
+				Arguments:  string(args),
+				Status:     string(toolCall.Status),
 			},
 		},
 	})

@@ -458,6 +458,10 @@ func (e *Executor) runAgentLoopStream(
 			if err := e.chatManager.UpdateToolCall(ctx, toolCall); err != nil {
 				logger.Errorf(ctx, "Failed to update tool call status to executing: %v", err)
 			}
+			// Отправляем событие о начале выполнения
+			if err := stream.SendToolCall(toolCall); err != nil {
+				logger.Errorf(ctx, "Failed to send executing tool call event: %v", err)
+			}
 
 			result, err := e.toolExecutor.Execute(ctx, toolCall.Name, arguments, currentExecCtx, &toolCall.ID)
 
@@ -475,6 +479,10 @@ func (e *Executor) runAgentLoopStream(
 			// Сохраняем финальный статус (completed/failed) в БД
 			if err := e.chatManager.UpdateToolCall(ctx, toolCall); err != nil {
 				logger.Errorf(ctx, "Failed to update tool call final status: %v", err)
+			}
+			// Отправляем событие о завершении выполнения
+			if err := stream.SendToolCall(toolCall); err != nil {
+				logger.Errorf(ctx, "Failed to send final tool call event: %v", err)
 			}
 
 			// Специальная обработка для switch_to_subagent
