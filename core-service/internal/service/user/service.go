@@ -22,6 +22,7 @@ type repository interface {
 	DeactivateUser(ctx context.Context, id domain.ID) error
 	CreateInvitation(ctx context.Context, invitation domain.Invitation) (domain.Invitation, error)
 	GetInvitationByToken(ctx context.Context, token string) (domain.Invitation, error)
+	ListInvitations(ctx context.Context, organizationID domain.ID, limit, offset int) ([]domain.Invitation, int, error)
 	MarkInvitationAsUsed(ctx context.Context, id domain.ID) error
 	CreateOrganizationMember(ctx context.Context, member domain.OrganizationMember) (domain.OrganizationMember, error)
 	GetOrganizationMember(ctx context.Context, userID, organizationID domain.ID) (*domain.OrganizationMember, error)
@@ -200,6 +201,14 @@ func (s *Service) DeactivateUser(ctx context.Context, id domain.ID) error {
 	return s.repo.DeactivateUser(ctx, id)
 }
 
+// ListInvitations retrieves invitations for an organization
+func (s *Service) ListInvitations(ctx context.Context, organizationID domain.ID, limit, offset int) ([]domain.Invitation, int, error) {
+	span, ctx := opentracing.StartSpanFromContext(ctx, "service.user.ListInvitations")
+	defer span.Finish()
+
+	return s.repo.ListInvitations(ctx, organizationID, limit, offset)
+}
+
 // generateToken generates a secure random token
 func generateToken() (string, error) {
 	b := make([]byte, 32)
@@ -210,7 +219,7 @@ func generateToken() (string, error) {
 	return base64.URLEncoding.EncodeToString(b), nil
 }
 
-// GetInvitationURL generates invitation URL
-func GetInvitationURL(token string, baseURL string) string {
-	return fmt.Sprintf("%s/invite/%s", baseURL, token)
+// GenerateInvitationURL generates Telegram Mini App invitation URL with token
+func GenerateInvitationURL(token string, miniAppURL string) string {
+	return fmt.Sprintf("%s?startapp=invitation_%s", miniAppURL, token)
 }

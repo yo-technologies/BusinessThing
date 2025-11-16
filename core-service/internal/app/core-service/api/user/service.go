@@ -5,6 +5,7 @@ import (
 	"core-service/internal/app/interceptors"
 	"core-service/internal/domain"
 	pb "core-service/pkg/core"
+	"fmt"
 
 	"github.com/opentracing/opentracing-go"
 	"google.golang.org/protobuf/types/known/emptypb"
@@ -14,20 +15,23 @@ import (
 type Service struct {
 	pb.UnimplementedUserServiceServer
 	userService UserService
+	miniAppURL  string
 }
 
 type UserService interface {
 	InviteUser(ctx context.Context, organizationID domain.ID, email string, role domain.UserRole, invitedBy domain.ID) (*domain.Invitation, error)
 	AcceptInvitation(ctx context.Context, userID domain.ID, token string) (*domain.User, error)
 	ListUsersByOrganization(ctx context.Context, organizationID domain.ID) ([]*domain.User, error)
+	ListInvitations(ctx context.Context, organizationID domain.ID, limit, offset int) ([]domain.Invitation, int, error)
 	GetUser(ctx context.Context, id domain.ID) (*domain.User, error)
 	UpdateUserRole(ctx context.Context, id domain.ID, role domain.UserRole) (*domain.User, error)
 	DeactivateUser(ctx context.Context, id domain.ID) error
 }
 
-func NewService(userService UserService) *Service {
+func NewService(userService UserService, miniAppURL string) *Service {
 	return &Service{
 		userService: userService,
+		miniAppURL:  miniAppURL,
 	}
 }
 
@@ -100,8 +104,12 @@ func (s *Service) InviteUser(ctx context.Context, req *pb.InviteUserRequest) (*p
 		return nil, err
 	}
 
+	// Generate Telegram Mini App URL with invitation token
+	invitationURL := fmt.Sprintf("%s?startapp=invitation_%s", s.miniAppURL, invitation.Token)
+
 	return &pb.InviteUserResponse{
 		InvitationToken: invitation.Token,
+		InvitationUrl:   invitationURL,
 		ExpiresAt:       timestamppb.New(invitation.ExpiresAt),
 	}, nil
 }
@@ -205,4 +213,56 @@ func (s *Service) DeactivateUser(ctx context.Context, req *pb.DeactivateUserRequ
 	}
 
 	return &emptypb.Empty{}, nil
+}
+
+func (s *Service) ListInvitations(ctx context.Context, req *pb.ListInvitationsRequest) (*pb.ListInvitationsResponse, error) {
+	span, ctx := opentracing.StartSpanFromContext(ctx, "api.ListInvitations")
+	defer span.Finish()
+
+	orgID, err := domain.ParseID(req.OrganizationId)
+	if err != nil {
+		return nil, domain.ErrInvalidArgument
+	}
+
+	page := int(req.Page)
+	if page < 1 {
+		page = 1
+	}
+	pageSize := int(req.PageSize)
+	if pageSize < 1 || pageSize > 100 {
+		pageSize = 20
+	}
+	offset := (page - 1) * pageSize
+
+	invitations, total, err := s.userService.ListInvitations(ctx, orgID, pageSize, offset)
+	if err != nil {
+		return nil, err
+	}
+
+	pbInvitations := make([]*pb.Invitation, len(invitations))
+	for i, inv := range invitations {
+		pbInvitations[i] = invitationToProto(&inv)
+	}
+
+	return &pb.ListInvitationsResponse{
+		Invitations: pbInvitations,
+		Total:       int32(total),
+		Page:        int32(page),
+	}, nil
+}
+
+func invitationToProto(inv *domain.Invitation) *pb.Invitation {
+	result := &pb.Invitation{
+		Id:             inv.ID.String(),
+		OrganizationId: inv.OrganizationID.String(),
+		Email:          inv.Email,
+		Token:          inv.Token,
+		Role:           userRoleToProto(inv.Role),
+		ExpiresAt:      timestamppb.New(inv.ExpiresAt),
+		CreatedAt:      timestamppb.New(inv.CreatedAt),
+	}
+	if inv.UsedAt != nil {
+		result.UsedAt = timestamppb.New(*inv.UsedAt)
+	}
+	return result
 }

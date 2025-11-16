@@ -68,6 +68,7 @@ type S3 struct {
 type Telegram struct {
 	BotTokens          []string `mapstructure:"bot_tokens"`
 	InitDataTTLSeconds int      `mapstructure:"init_data_ttl_seconds"`
+	MiniAppURL         string   `mapstructure:"mini_app_url"`
 }
 
 // Config holds all runtime-configurable settings

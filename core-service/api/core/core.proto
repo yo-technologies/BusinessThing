@@ -154,6 +154,13 @@ service UserService {
             body: "*"
         };
     }
+
+    // Список приглашений организации
+    rpc ListInvitations(ListInvitationsRequest) returns (ListInvitationsResponse) {
+        option (google.api.http) = {
+            get: "/v1/organizations/{organization_id}/invitations"
+        };
+    }
 }
 
 // ===== Document Service =====
@@ -449,7 +456,30 @@ message UpdateUserRoleResponse {
 }
 
 message DeactivateUserRequest {
-    string id = 1 [(validate.rules).string.min_len = 1];
+    string id = 1 [(validate.rules).string.uuid = true];
+}
+
+message ListInvitationsRequest {
+    string organization_id = 1 [(validate.rules).string.min_len = 1];
+    int32 page = 2;
+    int32 page_size = 3 [(validate.rules).int32 = {gte: 1, lte: 100}];
+}
+
+message ListInvitationsResponse {
+    repeated Invitation invitations = 1;
+    int32 total = 2;
+    int32 page = 3;
+}
+
+message Invitation {
+    string id = 1;
+    string organization_id = 2;
+    string email = 3;
+    string token = 4;
+    UserRole role = 5;
+    google.protobuf.Timestamp expires_at = 6;
+    google.protobuf.Timestamp used_at = 7;
+    google.protobuf.Timestamp created_at = 8;
 }
 
 // ===== Document Messages =====
