@@ -43,8 +43,8 @@ func templateToProto(template domain.ContractTemplate) *pb.ContractTemplate {
 	}
 }
 
-func (s *Service) CreateContractTemplate(ctx context.Context, req *pb.CreateTemplateRequest) (*pb.CreateTemplateResponse, error) {
-	span, ctx := opentracing.StartSpanFromContext(ctx, "api.CreateContractTemplate")
+func (s *Service) CreateTemplate(ctx context.Context, req *pb.CreateTemplateRequest) (*pb.CreateTemplateResponse, error) {
+	span, ctx := opentracing.StartSpanFromContext(ctx, "api.CreateTemplate")
 	defer span.Finish()
 
 	orgID, err := domain.ParseID(req.OrganizationId)
@@ -62,8 +62,8 @@ func (s *Service) CreateContractTemplate(ctx context.Context, req *pb.CreateTemp
 	}, nil
 }
 
-func (s *Service) GetContractTemplate(ctx context.Context, req *pb.GetTemplateRequest) (*pb.GetTemplateResponse, error) {
-	span, ctx := opentracing.StartSpanFromContext(ctx, "api.GetContractTemplate")
+func (s *Service) GetTemplate(ctx context.Context, req *pb.GetTemplateRequest) (*pb.GetTemplateResponse, error) {
+	span, ctx := opentracing.StartSpanFromContext(ctx, "api.GetTemplate")
 	defer span.Finish()
 
 	id, err := domain.ParseID(req.Id)
@@ -81,8 +81,8 @@ func (s *Service) GetContractTemplate(ctx context.Context, req *pb.GetTemplateRe
 	}, nil
 }
 
-func (s *Service) UpdateContractTemplate(ctx context.Context, req *pb.UpdateTemplateRequest) (*pb.UpdateTemplateResponse, error) {
-	span, ctx := opentracing.StartSpanFromContext(ctx, "api.UpdateContractTemplate")
+func (s *Service) UpdateTemplate(ctx context.Context, req *pb.UpdateTemplateRequest) (*pb.UpdateTemplateResponse, error) {
+	span, ctx := opentracing.StartSpanFromContext(ctx, "api.UpdateTemplate")
 	defer span.Finish()
 
 	id, err := domain.ParseID(req.Id)
@@ -100,8 +100,8 @@ func (s *Service) UpdateContractTemplate(ctx context.Context, req *pb.UpdateTemp
 	}, nil
 }
 
-func (s *Service) DeleteContractTemplate(ctx context.Context, req *pb.DeleteTemplateRequest) (*emptypb.Empty, error) {
-	span, ctx := opentracing.StartSpanFromContext(ctx, "api.DeleteContractTemplate")
+func (s *Service) DeleteTemplate(ctx context.Context, req *pb.DeleteTemplateRequest) (*emptypb.Empty, error) {
+	span, ctx := opentracing.StartSpanFromContext(ctx, "api.DeleteTemplate")
 	defer span.Finish()
 
 	id, err := domain.ParseID(req.Id)
@@ -117,8 +117,8 @@ func (s *Service) DeleteContractTemplate(ctx context.Context, req *pb.DeleteTemp
 	return &emptypb.Empty{}, nil
 }
 
-func (s *Service) ListContractTemplates(ctx context.Context, req *pb.ListTemplatesRequest) (*pb.ListTemplatesResponse, error) {
-	span, ctx := opentracing.StartSpanFromContext(ctx, "api.ListContractTemplates")
+func (s *Service) ListTemplates(ctx context.Context, req *pb.ListTemplatesRequest) (*pb.ListTemplatesResponse, error) {
+	span, ctx := opentracing.StartSpanFromContext(ctx, "api.ListTemplates")
 	defer span.Finish()
 
 	orgID, err := domain.ParseID(req.OrganizationId)
