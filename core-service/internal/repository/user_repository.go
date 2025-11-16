@@ -214,16 +214,15 @@ func (r *PGXRepository) CreateInvitation(ctx context.Context, invitation domain.
 
 	engine := r.engineFactory.Get(ctx)
 	query := `
-        INSERT INTO invitations (id, organization_id, email, token, role, expires_at, created_at)
-        VALUES ($1, $2, $3, $4, $5, $6, $7)
-        RETURNING id, organization_id, email, token, role, expires_at, used_at, created_at
+        INSERT INTO invitations (id, organization_id, token, role, expires_at, created_at)
+        VALUES ($1, $2, $3, $4, $5, $6)
+        RETURNING id, organization_id, token, role, expires_at, used_at, created_at
     `
 
 	var created domain.Invitation
 	err := pgxscan.Get(ctx, engine, &created, query,
 		uuidToPgtype(invitation.ID),
 		uuidToPgtype(invitation.OrganizationID),
-		invitation.Email,
 		invitation.Token,
 		invitation.Role,
 		invitation.ExpiresAt,
@@ -244,7 +243,7 @@ func (r *PGXRepository) GetInvitationByToken(ctx context.Context, token string) 
 
 	engine := r.engineFactory.Get(ctx)
 	query := `
-        SELECT id, organization_id, email, token, role, expires_at, used_at, created_at
+        SELECT id, organization_id, token, role, expires_at, used_at, created_at
         FROM invitations
         WHERE token = $1
     `
@@ -284,7 +283,7 @@ func (r *PGXRepository) ListInvitations(ctx context.Context, organizationID doma
 
 	// Get invitations
 	query := `
-		SELECT id, organization_id, email, token, role, expires_at, used_at, created_at
+		SELECT id, organization_id, token, role, expires_at, used_at, created_at
 		FROM invitations
 		WHERE organization_id = $1
 		ORDER BY created_at DESC

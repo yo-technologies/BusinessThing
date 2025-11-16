@@ -407,8 +407,7 @@ message DeleteOrganizationRequest {
 
 message InviteUserRequest {
     string organization_id = 1 [(validate.rules).string.min_len = 1];
-    string email = 2 [(validate.rules).string.email = true];
-    UserRole role = 3 [(validate.rules).enum.defined_only = true];
+    UserRole role = 2 [(validate.rules).enum.defined_only = true];
 }
 
 message InviteUserResponse {
@@ -474,12 +473,11 @@ message ListInvitationsResponse {
 message Invitation {
     string id = 1;
     string organization_id = 2;
-    string email = 3;
-    string token = 4;
-    UserRole role = 5;
-    google.protobuf.Timestamp expires_at = 6;
-    google.protobuf.Timestamp used_at = 7;
-    google.protobuf.Timestamp created_at = 8;
+    string token = 3;
+    UserRole role = 4;
+    google.protobuf.Timestamp expires_at = 5;
+    google.protobuf.Timestamp used_at = 6;
+    google.protobuf.Timestamp created_at = 7;
 }
 
 // ===== Document Messages =====
