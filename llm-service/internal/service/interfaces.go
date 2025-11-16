@@ -172,3 +172,12 @@ type ContractGeneratorService interface {
 	// ListContracts получает список сгенерированных контрактов
 	ListContracts(ctx context.Context, organizationID string, limit, offset int) ([]*contracts.ContractListItem, int, error)
 }
+
+// QuotaService - сервис для управления квотами использования токенов
+type QuotaService interface {
+	// Confirm подтверждает использование токенов и сохраняет в БД
+	Confirm(ctx context.Context, userID domain.ID, reserved int, actual int) error
+
+	// GetLimits получает лимиты пользователя
+	GetLimits(ctx context.Context, userID domain.ID) (domain.LLMLimits, error)
+}

@@ -191,6 +191,7 @@ func Run() error {
 		toolExecutor,
 		subagentManager,
 		llmClient,
+		quotaService,
 		cfg,
 	)
 

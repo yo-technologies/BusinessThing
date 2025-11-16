@@ -29,6 +29,7 @@ type Executor struct {
 	toolExecutor    service.ToolExecutor
 	subagentManager service.SubagentManager
 	llmProvider     llm.CompletionProvider
+	quotaService    service.QuotaService
 	cfg             *config.Config
 }
 
@@ -40,6 +41,7 @@ func NewExecutor(
 	toolExecutor service.ToolExecutor,
 	subagentManager service.SubagentManager,
 	llmProvider llm.CompletionProvider,
+	quotaService service.QuotaService,
 	cfg *config.Config,
 ) *Executor {
 	return &Executor{
@@ -49,6 +51,7 @@ func NewExecutor(
 		toolExecutor:    toolExecutor,
 		subagentManager: subagentManager,
 		llmProvider:     llmProvider,
+		quotaService:    quotaService,
 		cfg:             cfg,
 	}
 }
@@ -134,6 +137,9 @@ func (e *Executor) SendMessageStream(ctx context.Context, req dto.SendMessageDTO
 	span, ctx := opentracing.StartSpanFromContext(ctx, "executor.SendMessageStream")
 	defer span.Finish()
 
+	logger.Infof(ctx, "SendMessageStream: started with chatID=%v, userID=%s, orgID=%s, content_len=%d",
+		req.ChatID, req.UserID, req.OrgID, len(req.Content))
+
 	// Получаем чат (всегда родительский - пользователь пишет в него)
 	// Если нет, создаем новый
 	var (
@@ -141,6 +147,7 @@ func (e *Executor) SendMessageStream(ctx context.Context, req dto.SendMessageDTO
 		err  error
 	)
 	if req.ChatID == nil {
+		logger.Info(ctx, "SendMessageStream: no chatID provided, creating new chat")
 		title, genErr := e.generateChatTitle(ctx, req.Content)
 		if genErr != nil {
 			logger.Errorf(ctx, "failed to generate chat title: %v", genErr)
@@ -152,17 +159,23 @@ func (e *Executor) SendMessageStream(ctx context.Context, req dto.SendMessageDTO
 			Title:          lo.Ternary(title != "", title, "New Chat"),
 		})
 		if err != nil {
+			logger.Errorf(ctx, "SendMessageStream: failed to create chat: %v", err)
 			return stream.SendError(err)
 		}
+
+		logger.Infof(ctx, "SendMessageStream: created new chat with ID=%s, title=%s", chat.ID, chat.Title)
 
 		// Получаем агента и сохраняем system message с RAG
 		agentDef, err := e.agentManager.GetAgent("main")
 		if err != nil {
+			logger.Errorf(ctx, "SendMessageStream: failed to get agent: %v", err)
 			return stream.SendError(err)
 		}
 
+		logger.Info(ctx, "SendMessageStream: building system prompt with RAG")
 		systemPrompt, err := e.buildSystemPromptWithRAG(ctx, chat, agentDef, req.Content)
 		if err != nil {
+			logger.Errorf(ctx, "SendMessageStream: failed to build system prompt: %v", err)
 			return stream.SendError(err)
 		}
 
@@ -173,37 +186,50 @@ func (e *Executor) SendMessageStream(ctx context.Context, req dto.SendMessageDTO
 			Content: systemPrompt,
 		}
 		if err := e.chatManager.SaveMessage(ctx, systemMessage); err != nil {
+			logger.Errorf(ctx, "SendMessageStream: failed to save system message: %v", err)
 			return stream.SendError(err)
 		}
 
+		logger.Info(ctx, "SendMessageStream: sending chat event to client")
 		stream.SendChat(chat)
 		req.ChatID = &chat.ID
 	} else {
+		logger.Infof(ctx, "SendMessageStream: loading existing chat with ID=%s", *req.ChatID)
 		chat, err = e.chatManager.GetChat(ctx, *req.ChatID)
 		if err != nil {
+			logger.Errorf(ctx, "SendMessageStream: failed to get chat: %v", err)
 			return stream.SendError(err)
 		}
+		logger.Infof(ctx, "SendMessageStream: loaded chat, agentKey=%s, status=%v", chat.AgentKey, chat.Status)
 	}
 
 	// Определяем активный чат: если есть активная сессия субагента, используем её
 	activeChat := chat
 	activeChatID, err := e.getActiveChatID(ctx, chat.ID)
 	if err != nil {
+		logger.Errorf(ctx, "SendMessageStream: failed to get active chat ID: %v", err)
 		return stream.SendError(err)
 	}
+
+	logger.Infof(ctx, "SendMessageStream: activeChatID=%s (parent chatID=%s)", activeChatID, chat.ID)
 
 	if activeChatID != chat.ID {
 		activeChat, err = e.chatManager.GetChat(ctx, activeChatID)
 		if err != nil {
+			logger.Errorf(ctx, "SendMessageStream: failed to get active chat: %v", err)
 			return stream.SendError(err)
 		}
+		logger.Infof(ctx, "SendMessageStream: using subagent chat, agentKey=%s", activeChat.AgentKey)
 	}
 
 	// Получаем определение активного агента
 	agentDef, err := e.agentManager.GetAgent(activeChat.AgentKey)
 	if err != nil {
+		logger.Errorf(ctx, "SendMessageStream: failed to get agent definition: %v", err)
 		return stream.SendError(err)
 	}
+
+	logger.Infof(ctx, "SendMessageStream: using agent '%s'(%s)", agentDef.Name, agentDef.Key)
 
 	// Сохраняем сообщение пользователя в активный чат
 	userMessage := &domain.Message{
@@ -213,8 +239,11 @@ func (e *Executor) SendMessageStream(ctx context.Context, req dto.SendMessageDTO
 		Content: req.Content,
 	}
 	if err := e.chatManager.SaveMessage(ctx, userMessage); err != nil {
+		logger.Errorf(ctx, "SendMessageStream: failed to save user message: %v", err)
 		return stream.SendError(err)
 	}
+
+	logger.Infof(ctx, "SendMessageStream: saved user message with ID=%s", userMessage.ID)
 
 	// Создаем execution context для активного чата
 	execCtx := &domain.ExecutionContext{
@@ -224,11 +253,17 @@ func (e *Executor) SendMessageStream(ctx context.Context, req dto.SendMessageDTO
 		AgentKey:       activeChat.AgentKey,
 	}
 
+	logger.Infof(ctx, "SendMessageStream: starting agent loop for chatID=%s, agentKey=%s",
+		activeChat.ID, activeChat.AgentKey)
+
 	// Выполняем стриминг с активным чатом
 	err = e.runAgentLoopStream(ctx, activeChat, agentDef, execCtx, stream)
 	if err != nil {
+		logger.Errorf(ctx, "SendMessageStream: agent loop failed: %v", err)
 		return err
 	}
+
+	logger.Info(ctx, "SendMessageStream: agent loop completed successfully")
 
 	// Отправляем финальное состояние чата
 	finalChat, err := e.chatManager.GetChat(ctx, chat.ID)
@@ -304,6 +339,7 @@ func (e *Executor) runAgentLoopStream(
 		var contentBuilder strings.Builder
 		var toolCalls []*domain.ToolCall
 		toolCallsMap := make(map[int]*domain.ToolCall)
+		var usage llm.Usage
 
 		for llmStream.Next() {
 			chunk := llmStream.Chunk()
@@ -316,6 +352,11 @@ func (e *Executor) runAgentLoopStream(
 					llmStream.Close()
 					return err
 				}
+			}
+
+			// Собираем usage
+			if chunk.Usage.TotalTokens > 0 {
+				usage = chunk.Usage
 			}
 
 			// Обрабатываем tool calls
@@ -348,6 +389,26 @@ func (e *Executor) runAgentLoopStream(
 
 		if err := llmStream.Err(); err != nil {
 			return stream.SendError(err)
+		}
+
+		// Отправляем usage если есть (только для MessageStream)
+		if usage.TotalTokens > 0 {
+			if msgStream, ok := stream.(service.MessageStream); ok {
+				if err := msgStream.SendUsage(&dto.ChatUsageDTO{
+					PromptTokens:     usage.PromptTokens,
+					CompletionTokens: usage.CompletionTokens,
+					TotalTokens:      usage.TotalTokens,
+				}); err != nil {
+					logger.Errorf(ctx, "Failed to send usage: %v", err)
+				}
+			}
+
+			// Сохраняем использование токенов в БД
+			if e.quotaService != nil {
+				if err := e.quotaService.Confirm(ctx, execCtx.UserID, 0, usage.TotalTokens); err != nil {
+					logger.Errorf(ctx, "Failed to confirm token usage: %v", err)
+				}
+			}
 		}
 
 		// Сохраняем сообщение ассистента в текущий чат
