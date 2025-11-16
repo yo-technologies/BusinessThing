@@ -8,8 +8,8 @@ import { useAuth } from "@/hooks/useAuth";
 import { useOrganization } from "@/hooks/useOrganization";
 
 export const OrganizationSwitcher = () => {
-  const { organizations } = useAuth();
-  const { currentOrg, switchOrganization } = useOrganization({ organizations });
+  const { organizations, loading } = useAuth();
+  const { currentOrg, switchOrganization } = useOrganization({ organizations, authLoading: loading });
 
   if (!currentOrg || organizations.length <= 1) {
     return null;

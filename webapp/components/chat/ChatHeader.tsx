@@ -26,8 +26,8 @@ export function ChatHeader({
     : 0;
 
   return (
-    <Card className="relative border-none bg-default-50/60 shadow-sm overflow-visible rounded-b-none px-1">
-      <CardHeader className="flex items-center gap-2 pb-2">
+    <Card className="relative border-none shadow-none overflow-visible rounded-b-none px-1">
+      <CardHeader className="flex items-center gap-2 pb-1">
         <div className="flex flex-1 flex-col items-start gap-0.5">
           <span className="text-tiny font-medium uppercase text-default-400">Чат с агентом</span>
           <h1 className="text-base font-semibold">
@@ -36,12 +36,12 @@ export function ChatHeader({
         </div>
         <div className="flex items-center gap-2">
           {onCreateChat && (
-            <Button isIconOnly size="sm" variant="flat" color="primary" onPress={onCreateChat}>
+            <Button isIconOnly size="sm" variant="ghost" color="success" onPress={onCreateChat}>
               <PlusIcon className="h-5 w-5" />
             </Button>
           )}
           {onShowChatList && (
-            <Button isIconOnly size="sm" variant="flat" onPress={onShowChatList}>
+            <Button isIconOnly size="sm" variant="ghost" color="secondary" onPress={onShowChatList}>
               <Bars3Icon className="h-5 w-5" />
             </Button>
           )}

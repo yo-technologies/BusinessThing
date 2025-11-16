@@ -14,12 +14,18 @@ interface AuthUser {
   lastName?: string;
 }
 
+interface UserInfo {
+  userId: string;
+  role: string;
+}
+
 interface AuthState {
   isAuthenticated: boolean;
   loading: boolean;
   user: AuthUser | null;
   isNewUser: boolean;
   organizations: Organization[];
+  userInfo: UserInfo | null;
 }
 
 export const useAuth = (): AuthState => {
@@ -30,12 +36,15 @@ export const useAuth = (): AuthState => {
     const existingToken = getAuthToken();
     if (existingToken) {
       const organizations = getOrganizationsFromToken(existingToken);
+      const payload = existingToken ? require('@/utils/jwt').decodeJWT(existingToken) : null;
+      const userInfo = payload ? { userId: payload.sub, role: organizations[0]?.role || '' } : null;
       return {
         isAuthenticated: true,
-        loading: true, // всё ещё нужно проверить через authenticate
+        loading: false, // если токен есть, считаем что загрузка завершена
         user: null,
         isNewUser: false,
         organizations,
+        userInfo,
       };
     }
     return {
@@ -44,6 +53,7 @@ export const useAuth = (): AuthState => {
       user: null,
       isNewUser: false,
       organizations: [],
+      userInfo: null,
     };
   });
 
@@ -51,39 +61,6 @@ export const useAuth = (): AuthState => {
     if (typeof window === "undefined") {
       console.log("useAuth: SSR mode, skipping auth");
       return;
-    }
-    
-    // Если токен уже есть, попробуем его обновить без повторной аутентификации
-    const existingToken = getAuthToken();
-    if (existingToken) {
-      try {
-        const response = await core.v1.authServiceRefreshToken();
-        const { accessToken } = response.data;
-        
-        if (accessToken) {
-          setAuthToken(accessToken);
-          const organizations = getOrganizationsFromToken(accessToken);
-          const userId = getUserIdFromToken(accessToken);
-          let user = null;
-
-          if (userId) {
-            const userResponse = await core.v1.userServiceGetUser(userId);
-            user = userResponse.data.user ?? null;
-          }
-
-          setState((prev) => ({
-            ...prev,
-            isAuthenticated: true,
-            loading: false,
-            organizations,
-            user,
-          }));
-        }
-        return;
-      } catch (error) {
-        console.warn("Token refresh failed, will try to authenticate with Telegram", error);
-        setAuthToken(null);
-      }
     }
     
     if (!initData) {
@@ -95,9 +72,9 @@ export const useAuth = (): AuthState => {
     try {
       console.log("Authenticating with initData:", initData);
       
-      const payload: CoreAuthenticateWithTelegramRequest = { initData };
+      const requestPayload: CoreAuthenticateWithTelegramRequest = { initData };
 
-      const response = await core.v1.authServiceAuthenticateWithTelegram(payload, {
+      const response = await core.v1.authServiceAuthenticateWithTelegram(requestPayload, {
         secure: false,
       });
 
@@ -110,6 +87,9 @@ export const useAuth = (): AuthState => {
         organizations = getOrganizationsFromToken(accessToken);
       }
 
+      const payload = accessToken ? require('@/utils/jwt').decodeJWT(accessToken) : null;
+      const userInfo = payload ? { userId: payload.sub, role: organizations[0]?.role || '' } : null;
+
       setState((prev) => ({
         ...prev,
         isAuthenticated: Boolean(accessToken),
@@ -117,6 +97,7 @@ export const useAuth = (): AuthState => {
         user: user ?? null,
         isNewUser: Boolean(isNewUser),
         organizations,
+        userInfo,
       }));
     } catch (error) {
       console.error("Auth error", error);
@@ -126,6 +107,13 @@ export const useAuth = (): AuthState => {
 
   useEffect(() => {
     let cancelled = false;
+
+    // Если токен уже есть, не нужно заново аутентифицироваться
+    const existingToken = getAuthToken();
+    if (existingToken) {
+      console.log("useAuth: Token already exists, skipping authentication");
+      return;
+    }
 
     authenticate().catch((err) => {
       if (!cancelled) {
@@ -144,10 +132,13 @@ export const useAuth = (): AuthState => {
       const token = getAuthToken();
       if (token) {
         const organizations = getOrganizationsFromToken(token);
+        const payload = require('@/utils/jwt').decodeJWT(token);
+        const userInfo = payload ? { userId: payload.sub, role: organizations[0]?.role || '' } : null;
         setState((prev) => ({
           ...prev,
           organizations,
           isAuthenticated: true,
+          userInfo,
         }));
       }
     });

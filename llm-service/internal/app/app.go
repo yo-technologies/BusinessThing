@@ -14,6 +14,7 @@ import (
 
 	"llm-service/internal/app/interceptors"
 	"llm-service/internal/app/llm-agent/api/agent"
+	"llm-service/internal/app/llm-agent/api/contracts"
 	"llm-service/internal/app/llm-agent/api/memory"
 	"llm-service/internal/app/websocket"
 	"llm-service/internal/jwt"
@@ -101,9 +102,10 @@ func WithWSGrpcConn(conn *grpc.ClientConn) OptionsFunc {
 }
 
 type App struct {
-	agentService  *agent.Service
-	memoryService *memory.Service
-	jwtProvider   *jwt.Provider
+	agentService     *agent.Service
+	memoryService    *memory.Service
+	contractsService *contracts.Service
+	jwtProvider      *jwt.Provider
 
 	options *Options
 }
@@ -111,6 +113,7 @@ type App struct {
 func New(
 	agentService *agent.Service,
 	memoryService *memory.Service,
+	contractsService *contracts.Service,
 	jwtProvider *jwt.Provider,
 	options ...OptionsFunc,
 ) *App {
@@ -119,10 +122,11 @@ func New(
 		o(opts)
 	}
 	return &App{
-		agentService:  agentService,
-		memoryService: memoryService,
-		jwtProvider:   jwtProvider,
-		options:       opts,
+		agentService:     agentService,
+		memoryService:    memoryService,
+		contractsService: contractsService,
+		jwtProvider:      jwtProvider,
+		options:          opts,
 	}
 }
 
@@ -154,6 +158,7 @@ func (a *App) Run(ctx context.Context) error {
 	// Register the services
 	desc.RegisterAgentServiceServer(srv, a.agentService)
 	desc.RegisterMemoryServiceServer(srv, a.memoryService)
+	desc.RegisterContractsServiceServer(srv, a.contractsService)
 
 	// Reflect the service
 	if a.options.enableReflection {
@@ -277,6 +282,11 @@ func registerGateway(ctx context.Context, mux *runtime.ServeMux, grpcEndpoint st
 	}
 
 	err = desc.RegisterMemoryServiceHandlerFromEndpoint(ctx, mux, grpcEndpoint, opts)
+	if err != nil {
+		return err
+	}
+
+	err = desc.RegisterContractsServiceHandlerFromEndpoint(ctx, mux, grpcEndpoint, opts)
 	if err != nil {
 		return err
 	}

@@ -22,12 +22,12 @@ export function ChatInput({ value, onChange, onSend, disabled, isStreaming }: Ch
   };
 
   return (
-    <div className="flex items-center gap-2 justify-between p-1.5 absolute bottom-0 left-0 right-0 bg-gradient-to-t from-content1 to-transparent]">
+    <div className="flex items-center gap-2 justify-between p-2 absolute bottom-0 left-0 right-0 bg-gradient-to-t from-content1 to-transparent]">
       <Input
         size="md"
         radius="full"
         variant="bordered"
-        classNames={{inputWrapper: "border-white/10 border-1 bg-content1/20 backdrop-blur-xs"}}
+        classNames={{inputWrapper: "border-white/10 border-1 bg-content1/20 backdrop-blur-xs rounded-4xl"}}
         placeholder="Напиши сообщение..."
         value={value}
         onChange={(e) => onChange(e.target.value)}
@@ -36,7 +36,7 @@ export function ChatInput({ value, onChange, onSend, disabled, isStreaming }: Ch
       />
       <Button
         isIconOnly
-        color="primary"
+        color="success"
         radius="full"
         onPress={onSend}
         isDisabled={disabled || !value.trim()}

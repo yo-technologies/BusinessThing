@@ -33,7 +33,7 @@ type UserRepository interface {
 	CreateUser(ctx context.Context, user domain.User) (domain.User, error)
 	GetUser(ctx context.Context, id domain.ID) (domain.User, error)
 	GetUserByTelegramID(ctx context.Context, telegramID string) (domain.User, error)
-	ListUsers(ctx context.Context, organizationID domain.ID, limit, offset int) ([]domain.User, int, error)
+	ListUsers(ctx context.Context, organizationID domain.ID, limit, offset int) ([]domain.UserWithMembership, int, error)
 	UpdateUser(ctx context.Context, user domain.User) (domain.User, error)
 	UpdateUserRole(ctx context.Context, id domain.ID, role domain.UserRole) error
 	DeactivateUser(ctx context.Context, id domain.ID) error

@@ -19,7 +19,7 @@ const CHAT_SESSION_KEY = "last_chat_id";
 export default function ChatPage() {
   const router = useRouter();
   const { isAuthenticated, loading, user, isNewUser, organizations } = useAuth();
-  const { currentOrg, loading: orgLoading, needsOrganization } = useOrganization({ organizations });
+  const { currentOrg, loading: orgLoading, needsOrganization } = useOrganization({ organizations, authLoading: loading });
   const { agent } = useApiClients();
 
   const [selectedChatId, setSelectedChatId] = useState<string | null>(null);
@@ -86,7 +86,7 @@ export default function ChatPage() {
   // Инициализация при первой загрузке
   useEffect(() => {
     const loadInitialData = async () => {
-      if (!currentOrg?.id || !isAuthenticated || isNewUser || chatsLoading) return;
+      if (!currentOrg?.id || !isAuthenticated || isNewUser || chatsLoading || needsOrganization) return;
 
       try {
         const limitsResp = await agent.v1.agentServiceGetLlmLimits();
@@ -99,10 +99,10 @@ export default function ChatPage() {
     };
 
     // Выполняем только один раз при монтировании компонента
-    if (initialLoading && !chatsLoading) {
+    if (initialLoading && !chatsLoading && !orgLoading) {
       void loadInitialData();
     }
-  }, [agent.v1, currentOrg?.id, isAuthenticated, isNewUser, chatsLoading, initialLoading]);
+  }, [agent.v1, currentOrg?.id, isAuthenticated, isNewUser, chatsLoading, needsOrganization, initialLoading, orgLoading]);
 
   const handleSelectChat = useCallback(
     async (chatId: string) => {
@@ -140,7 +140,7 @@ export default function ChatPage() {
 
   // Восстановление последнего чата из sessionStorage
   useEffect(() => {
-    if (initialLoading || chatsLoading || !chats.length) return;
+    if (initialLoading || chatsLoading || orgLoading || !chats.length || !currentOrg?.id) return;
 
     const lastChatId = sessionStorage.getItem(CHAT_SESSION_KEY);
     console.log('[ChatPage] Restoring from sessionStorage:', lastChatId);
@@ -156,7 +156,7 @@ export default function ChatPage() {
         console.log('[ChatPage] Last chat not found in list');
       }
     }
-  }, [initialLoading, chatsLoading, chats, selectedChatId, handleSelectChat]);
+  }, [initialLoading, chatsLoading, orgLoading, chats, selectedChatId, currentOrg?.id, handleSelectChat]);
 
   const handleCreateChat = useCallback(() => {
     setSelectedChatId(null);
@@ -201,7 +201,7 @@ export default function ChatPage() {
     return (
       <div className="flex h-full flex-col items-center justify-center gap-3">
         <h1 className="text-xl font-semibold">Не удалось авторизоваться</h1>
-        <p className="text-center text-small text-default-500">
+        <p className="text-center text-small text-default-400">
           Попробуй закрыть мини-приложение и открыть его заново из Telegram.
         </p>
       </div>
@@ -210,7 +210,7 @@ export default function ChatPage() {
 
   return (
     <>
-      <Card className="flex flex-1 flex-col rounded-3xl shadow-none py-0">
+      <Card className="flex flex-1 flex-col rounded-4xl shadow-none py-0">
         <ChatHeader
           chatName={chatName}
           limits={limits}

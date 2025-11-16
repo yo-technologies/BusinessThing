@@ -19,6 +19,7 @@ type ContractService interface {
 	RegisterGeneratedContract(ctx context.Context, organizationID, templateID domain.ID, name, filledData, s3Key, fileType string) (domain.GeneratedContract, error)
 	GetGeneratedContract(ctx context.Context, id domain.ID) (domain.GeneratedContract, error)
 	DeleteGeneratedContract(ctx context.Context, id domain.ID) error
+	ListContracts(ctx context.Context, organizationID domain.ID, page, pageSize int) ([]domain.GeneratedContract, int, error)
 	ListGeneratedContractsByOrganization(ctx context.Context, organizationID domain.ID) ([]domain.GeneratedContract, error)
 	ListGeneratedContractsByTemplate(ctx context.Context, templateID domain.ID) ([]domain.GeneratedContract, error)
 }
