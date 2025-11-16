@@ -81,7 +81,7 @@ func New(cfg *config.Config, jwtProvider *jwt.Provider, services Services, authS
 		cfg:             cfg,
 		jwtProvider:     jwtProvider,
 		orgService:      organization.NewService(services.OrganizationService),
-		userService:     user.NewService(services.UserService),
+		userService:     user.NewService(services.UserService, cfg.Telegram.MiniAppURL),
 		docService:      document.NewService(services.DocumentService),
 		noteService:     note.NewService(services.NoteService),
 		templateService: template.NewService(services.TemplateService),

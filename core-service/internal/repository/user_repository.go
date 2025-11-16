@@ -262,6 +262,53 @@ func (r *PGXRepository) GetInvitationByToken(ctx context.Context, token string) 
 	return invitation, nil
 }
 
+// ListInvitations retrieves invitations for an organization
+func (r *PGXRepository) ListInvitations(ctx context.Context, organizationID domain.ID, limit, offset int) ([]domain.Invitation, int, error) {
+	span, ctx := opentracing.StartSpanFromContext(ctx, "repository.ListInvitations")
+	defer span.Finish()
+
+	engine := r.engineFactory.Get(ctx)
+	
+	// Get total count
+	var total int
+	countQuery := `
+		SELECT COUNT(*)
+		FROM invitations
+		WHERE organization_id = $1
+	`
+	err := pgxscan.Get(ctx, engine, &total, countQuery, uuidToPgtype(organizationID))
+	if err != nil {
+		logger.Errorf(ctx, "failed to count invitations: %v", err)
+		return nil, 0, err
+	}
+
+	// Get invitations
+	query := `
+		SELECT id, organization_id, email, token, role, expires_at, used_at, created_at
+		FROM invitations
+		WHERE organization_id = $1
+		ORDER BY created_at DESC
+		LIMIT $2 OFFSET $3
+	`
+
+	var invitations []domain.Invitation
+	err = pgxscan.Select(ctx, engine, &invitations, query, 
+		uuidToPgtype(organizationID), 
+		limit, 
+		offset,
+	)
+	if err != nil {
+		logger.Errorf(ctx, "failed to list invitations: %v", err)
+		return nil, 0, err
+	}
+
+	if invitations == nil {
+		invitations = []domain.Invitation{}
+	}
+
+	return invitations, total, nil
+}
+
 // MarkInvitationAsUsed marks an invitation as used
 func (r *PGXRepository) MarkInvitationAsUsed(ctx context.Context, id domain.ID) error {
 	span, ctx := opentracing.StartSpanFromContext(ctx, "repository.MarkInvitationAsUsed")
