@@ -165,7 +165,7 @@ export default function ChatPage() {
 
   return (
     <>
-      <Card className="flex flex-1 flex-col rounded-3xl shadow-none">
+      <Card className="flex flex-1 flex-col rounded-3xl shadow-none py-0">
         <ChatHeader
           chatName={chatName}
           limits={limits}
@@ -179,6 +179,7 @@ export default function ChatPage() {
           streamingToolCalls={streamingToolCalls}
           isStreaming={isStreaming}
           loadingMessages={loadingMessages}
+          chatId={selectedChatId}
         />
 
         <ChatInput
