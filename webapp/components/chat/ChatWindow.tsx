@@ -43,19 +43,14 @@ export function ChatWindow({ messages, streamingMessage, streamingToolCalls, isS
         ) : (
           <>
             {messages.map((message) => {
+              if (message.role === AgentMessageRole.MESSAGE_ROLE_SYSTEM) {
+                return null; // Пропускаем системные сообщения
+              }
+
               const isUser = message.role === AgentMessageRole.MESSAGE_ROLE_USER;
               
               return (
                 <div key={message.id} className="flex flex-col gap-2">
-                  {/* Отображаем tool calls сообщения, если есть */}
-                  {message.toolCalls && message.toolCalls.length > 0 && (
-                    <div className="flex flex-col gap-2">
-                      {message.toolCalls.map((toolCall) => (
-                        <ToolCallMessage key={toolCall.id} toolCall={toolCall} />
-                      ))}
-                    </div>
-                  )}
-                  
                   {/* Отображаем текст сообщения */}
                   {message.content && (
                     <div
@@ -66,6 +61,15 @@ export function ChatWindow({ messages, streamingMessage, streamingToolCalls, isS
                       }
                     >
                       <MarkdownWrapper content={message.content} />
+                    </div>
+                  )}
+                  
+                  {/* Отображаем tool calls сообщения, если есть */}
+                  {message.toolCalls && message.toolCalls.length > 0 && (
+                    <div className="flex flex-col gap-2">
+                      {message.toolCalls.map((toolCall) => (
+                        <ToolCallMessage key={toolCall.id} toolCall={toolCall} />
+                      ))}
                     </div>
                   )}
                 </div>
