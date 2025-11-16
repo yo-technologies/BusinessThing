@@ -34,7 +34,7 @@ type TabType = "users" | "invitations";
 export default function UsersPage() {
   const router = useRouter();
   const { loading: authLoading, isAuthenticated, isNewUser, organizations, userInfo } = useAuth();
-  const { currentOrg, loading: orgLoading, needsOrganization } = useOrganization({ organizations });
+  const { currentOrg, loading: orgLoading, needsOrganization } = useOrganization({ organizations, authLoading });
   const { core } = useApiClients();
   const { isAdmin } = useCurrentRole();
 

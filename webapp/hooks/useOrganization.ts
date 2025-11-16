@@ -15,9 +15,10 @@ interface OrganizationState {
 
 interface UseOrganizationProps {
   organizations: Organization[];
+  authLoading?: boolean; // Добавляем флаг загрузки авторизации
 }
 
-export const useOrganization = ({ organizations }: UseOrganizationProps) => {
+export const useOrganization = ({ organizations, authLoading = false }: UseOrganizationProps) => {
   const [state, setState] = useState<OrganizationState>({
     currentOrg: null,
     organizations: [],
@@ -26,6 +27,11 @@ export const useOrganization = ({ organizations }: UseOrganizationProps) => {
   });
 
   useEffect(() => {
+    // Если авторизация еще не завершилась, ждем
+    if (authLoading) {
+      return;
+    }
+
     if (organizations.length === 0) {
       setState({
         currentOrg: null,
@@ -56,7 +62,7 @@ export const useOrganization = ({ organizations }: UseOrganizationProps) => {
       loading: false,
       needsOrganization: false,
     });
-  }, [organizations]);
+  }, [organizations, authLoading]);
 
   const switchOrganization = useCallback(
     (orgId: string) => {

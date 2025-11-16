@@ -23,7 +23,7 @@ type ContractWithLoading = CoreGeneratedContract & { deleting?: boolean };
 export default function ContractsPage() {
   const router = useRouter();
   const { loading: authLoading, isAuthenticated, isNewUser, organizations } = useAuth();
-  const { currentOrg, loading: orgLoading, needsOrganization } = useOrganization({ organizations });
+  const { currentOrg, loading: orgLoading, needsOrganization } = useOrganization({ organizations, authLoading });
   const { core } = useApiClients();
 
   const [contracts, setContracts] = useState<ContractWithLoading[]>([]);

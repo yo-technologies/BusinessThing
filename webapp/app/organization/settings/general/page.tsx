@@ -18,7 +18,7 @@ import { useCurrentRole } from "@/hooks/useCurrentRole";
 export default function GeneralSettingsPage() {
   const router = useRouter();
   const { loading: authLoading, isAuthenticated, isNewUser, organizations } = useAuth();
-  const { currentOrg, loading: orgLoading, needsOrganization } = useOrganization({ organizations });
+  const { currentOrg, loading: orgLoading, needsOrganization } = useOrganization({ organizations, authLoading });
   const { core } = useApiClients();
   const { isAdmin } = useCurrentRole();
 

@@ -27,7 +27,7 @@ type DocumentWithLoading = CoreDocument & { deleting?: boolean; uploading?: bool
 export default function KnowledgePage() {
   const router = useRouter();
   const { loading: authLoading, isAuthenticated, isNewUser, organizations } = useAuth();
-  const { currentOrg, loading: orgLoading, needsOrganization } = useOrganization({ organizations });
+  const { currentOrg, loading: orgLoading, needsOrganization } = useOrganization({ organizations, authLoading });
   const { core } = useApiClients();
   const fileInputRef = useRef<HTMLInputElement>(null);
 

@@ -40,7 +40,7 @@ export const useAuth = (): AuthState => {
       const userInfo = payload ? { userId: payload.sub, role: organizations[0]?.role || '' } : null;
       return {
         isAuthenticated: true,
-        loading: true, // всё ещё нужно проверить через authenticate
+        loading: false, // если токен есть, считаем что загрузка завершена
         user: null,
         isNewUser: false,
         organizations,
@@ -61,33 +61,6 @@ export const useAuth = (): AuthState => {
     if (typeof window === "undefined") {
       console.log("useAuth: SSR mode, skipping auth");
       return;
-    }
-    
-    // Если токен уже есть, попробуем его обновить без повторной аутентификации
-    const existingToken = getAuthToken();
-    if (existingToken) {
-      try {
-        const response = await core.v1.authServiceRefreshToken();
-        const { accessToken } = response.data;
-        
-        if (accessToken) {
-          setAuthToken(accessToken);
-          const organizations = getOrganizationsFromToken(accessToken);
-          const payload = require('@/utils/jwt').decodeJWT(accessToken);
-          const userInfo = payload ? { userId: payload.sub, role: organizations[0]?.role || '' } : null;
-          setState((prev) => ({
-            ...prev,
-            isAuthenticated: true,
-            loading: false,
-            organizations,
-            userInfo,
-          }));
-        }
-        return;
-      } catch (error) {
-        console.warn("Token refresh failed, will try to authenticate with Telegram", error);
-        setAuthToken(null);
-      }
     }
     
     if (!initData) {
@@ -134,6 +107,13 @@ export const useAuth = (): AuthState => {
 
   useEffect(() => {
     let cancelled = false;
+
+    // Если токен уже есть, не нужно заново аутентифицироваться
+    const existingToken = getAuthToken();
+    if (existingToken) {
+      console.log("useAuth: Token already exists, skipping authentication");
+      return;
+    }
 
     authenticate().catch((err) => {
       if (!cancelled) {
