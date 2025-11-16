@@ -24,6 +24,7 @@ export default function ChatPage() {
   const [input, setInput] = useState("");
   const [limits, setLimits] = useState<AgentGetLLMLimitsResponse | null>(null);
   const [initialLoading, setInitialLoading] = useState(true);
+  const [loadingMessages, setLoadingMessages] = useState(false);
 
   const { chats, loading: chatsLoading, reload: reloadChats } = useChatList({
     organizationId: currentOrg?.id,
@@ -33,11 +34,15 @@ export default function ChatPage() {
   const {
     messages,
     streamingMessage,
+    streamingToolCalls,
     isStreaming,
     error,
     usageTokens,
+    chatName,
+    currentChatId,
     sendMessage,
     setMessages,
+    setChatName,
     clearError,
   } = useChatWebSocket({
     chatId: selectedChatId,
@@ -87,22 +92,37 @@ export default function ChatPage() {
     async (chatId: string) => {
       setSelectedChatId(chatId);
       clearError();
+      setLoadingMessages(true);
 
       try {
-        const messagesResp = await agent.v1.agentServiceGetMessages(chatId, { limit: 50, offset: 0 });
+        // Загружаем сообщения
+        const messagesResp = await agent.v1.agentServiceGetMessages(chatId, { 
+          orgId: currentOrg?.id ?? "",
+          limit: 50, 
+          offset: 0 
+        });
         setMessages(messagesResp.data.messages ?? []);
+        
+        // Загружаем информацию о чате
+        const chatResp = await agent.v1.agentServiceGetChat(chatId, { orgId: currentOrg?.id ?? "" });
+        if (chatResp.data.chat?.title) {
+          setChatName(chatResp.data.chat.title);
+        }
       } catch (e) {
-        console.error("Failed to load messages", e);
+        console.error("Failed to load chat data", e);
+      } finally {
+        setLoadingMessages(false);
       }
     },
-    [agent.v1, setMessages, clearError]
+    [agent.v1, currentOrg?.id, setMessages, setChatName, clearError]
   );
 
   const handleCreateChat = useCallback(() => {
     setSelectedChatId(null);
     setMessages([]);
+    setChatName(null);
     clearError();
-  }, [setMessages, clearError]);
+  }, [setMessages, setChatName, clearError]);
 
   const handleSend = useCallback(() => {
     if (!input.trim()) return;
@@ -133,15 +153,19 @@ export default function ChatPage() {
   return (
     <>
       <div className="flex flex-1 flex-col gap-3">
-        {/* <ChatHeader
-          userName={user?.firstName}
+        <ChatHeader
+          chatName={chatName}
           limits={limits}
-          error={error}
-          usageTokens={usageTokens}
           onShowChatList={() => setShowChatListModal(true)}
-        /> */}
+        />
 
-        <ChatWindow messages={messages} streamingMessage={streamingMessage} isStreaming={isStreaming} />
+        <ChatWindow 
+          messages={messages} 
+          streamingMessage={streamingMessage} 
+          streamingToolCalls={streamingToolCalls}
+          isStreaming={isStreaming}
+          loadingMessages={loadingMessages}
+        />
 
         <ChatInput
           value={input}

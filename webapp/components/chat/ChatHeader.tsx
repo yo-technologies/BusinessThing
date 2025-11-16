@@ -1,54 +1,50 @@
 "use client";
 
-import { Card, CardBody, CardHeader } from "@heroui/card";
+import { Card, CardHeader } from "@heroui/card";
 import { Button } from "@heroui/button";
 import { Bars3Icon } from "@heroicons/react/24/outline";
 import { AgentGetLLMLimitsResponse } from "@/api/api.agent.generated";
 
 interface ChatHeaderProps {
-  userName?: string;
+  chatName?: string | null;
   limits?: AgentGetLLMLimitsResponse | null;
-  error?: string | null;
-  usageTokens?: number | null;
   onShowChatList?: () => void;
 }
 
 export function ChatHeader({
-  userName,
+  chatName,
   limits,
-  error,
-  usageTokens,
   onShowChatList,
 }: ChatHeaderProps) {
+  // Вычисляем процент использования токенов
+  const usagePercent = limits && limits.dailyLimit
+    ? Math.min(((limits.used ?? 0) / limits.dailyLimit) * 100, 100)
+    : 0;
+
   return (
-    <Card className="border-none bg-default-50/60 shadow-sm">
+    <Card className="relative border-none bg-default-50/60 shadow-sm overflow-visible">
       <CardHeader className="flex items-center gap-2 pb-2">
-        <div className="flex flex-1 flex-col items-start gap-1">
-          <span className="text-tiny font-medium uppercase text-primary">Чат с агентом</span>
-          <h1 className="text-base font-semibold">{userName ?? "Клиент"}</h1>
+        <div className="flex flex-1 flex-col items-start gap-0.5">
+          <span className="text-tiny font-medium uppercase text-default-400">Чат с агентом</span>
+          <h1 className="text-base font-semibold">
+            {chatName || "Новый чат"}
+          </h1>
         </div>
-        {limits && (
-          <div className="flex flex-col items-end text-right text-[11px] text-default-500">
-            <span>
-              {limits.used ?? 0} / {limits.dailyLimit ?? 0}
-            </span>
-          </div>
-        )}
         {onShowChatList && (
           <Button isIconOnly size="sm" variant="flat" onPress={onShowChatList}>
             <Bars3Icon className="h-5 w-5" />
           </Button>
         )}
       </CardHeader>
-      {error && (
-        <CardBody className="pb-3 pt-0">
-          <p className="text-xs text-danger-500">{error}</p>
-        </CardBody>
-      )}
-      {usageTokens && (
-        <CardBody className="pb-3 pt-0">
-          <p className="text-[11px] text-default-400">Потрачено токенов: {usageTokens}</p>
-        </CardBody>
+      
+      {/* Индикатор использования токенов */}
+      {limits && limits.dailyLimit && (
+        <div className="absolute bottom-0 left-0 right-0 h-1 bg-default-200">
+          <div 
+            className="h-full bg-primary transition-all duration-300"
+            style={{ width: `${usagePercent}%` }}
+          />
+        </div>
       )}
     </Card>
   );

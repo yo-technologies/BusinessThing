@@ -1,7 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useRef, useState } from "react";
-import { AgentMessage, AgentMessageRole } from "@/api/api.agent.generated";
+import { AgentMessage, AgentMessageRole, AgentToolCallEvent } from "@/api/api.agent.generated";
 import { createChatWebSocket, ChatWsEvent } from "@/api/chatWsClient";
 
 interface UseChatWebSocketParams {
@@ -14,9 +14,11 @@ interface UseChatWebSocketParams {
 interface ChatWebSocketState {
   messages: AgentMessage[];
   streamingMessage: string;
+  streamingToolCalls: Map<string, AgentToolCallEvent>;
   isStreaming: boolean;
   error: string | null;
   usageTokens: number | null;
+  chatName: string | null;
 }
 
 export function useChatWebSocket({ chatId, organizationId, onMessageReceived, onChatCreated }: UseChatWebSocketParams) {
@@ -25,9 +27,11 @@ export function useChatWebSocket({ chatId, organizationId, onMessageReceived, on
   const [state, setState] = useState<ChatWebSocketState>({
     messages: [],
     streamingMessage: "",
+    streamingToolCalls: new Map(),
     isStreaming: false,
     error: null,
     usageTokens: null,
+    chatName: null,
   });
 
   useEffect(() => {
@@ -63,6 +67,23 @@ export function useChatWebSocket({ chatId, organizationId, onMessageReceived, on
           }));
         }
 
+        if (event.toolCall) {
+          console.log('[useChatWebSocket] Received tool call event:', event.toolCall);
+          setState((prev) => {
+            const newToolCalls = new Map(prev.streamingToolCalls);
+            const toolName = event.toolCall?.toolName ?? "";
+            
+            if (toolName) {
+              newToolCalls.set(toolName, event.toolCall!);
+            }
+            
+            return {
+              ...prev,
+              streamingToolCalls: newToolCalls,
+            };
+          });
+        }
+
         if (event.message) {
           console.log('[useChatWebSocket] Received complete message:', {
             messageId: event.message.id,
@@ -73,6 +94,7 @@ export function useChatWebSocket({ chatId, organizationId, onMessageReceived, on
             ...prev,
             messages: [...prev.messages, event.message!],
             streamingMessage: "",
+            streamingToolCalls: new Map(),
             isStreaming: false,
           }));
           onMessageReceived?.(event.message);
@@ -82,6 +104,22 @@ export function useChatWebSocket({ chatId, organizationId, onMessageReceived, on
             console.log('[useChatWebSocket] New chat created:', event.message.chatId);
             setCurrentChatId(event.message.chatId);
             onChatCreated?.(event.message.chatId);
+          }
+        }
+
+        if (event.chat) {
+          console.log('[useChatWebSocket] Received chat event:', event.chat);
+          if (event.chat.chatId && event.chat.chatId !== currentChatId) {
+            console.log('[useChatWebSocket] Updating chat ID:', event.chat.chatId);
+            setCurrentChatId(event.chat.chatId);
+            onChatCreated?.(event.chat.chatId);
+          }
+          if (event.chat.chatName) {
+            console.log('[useChatWebSocket] Updating chat name:', event.chat.chatName);
+            setState((prev) => ({
+              ...prev,
+              chatName: event.chat?.chatName ?? null,
+            }));
           }
         }
 
@@ -139,13 +177,12 @@ export function useChatWebSocket({ chatId, organizationId, onMessageReceived, on
         createdAt: new Date().toISOString(),
       };
 
-      setState((prev) => ({
-        ...prev,
-        messages: [...prev.messages, optimisticMessage],
-        error: null,
-      }));
-
-      // Формируем payload в соответствии с protobuf контрактом StreamMessageRequest
+        setState((prev) => ({
+          ...prev,
+          messages: [...prev.messages, optimisticMessage],
+          error: null,
+          streamingToolCalls: new Map(),
+        }));      // Формируем payload в соответствии с protobuf контрактом StreamMessageRequest
       const payload: any = {
         newMessage: {
           content,
@@ -181,7 +218,11 @@ export function useChatWebSocket({ chatId, organizationId, onMessageReceived, on
   );
 
   const setMessages = useCallback((messages: AgentMessage[]) => {
-    setState((prev) => ({ ...prev, messages }));
+    setState((prev) => ({ ...prev, messages, streamingToolCalls: new Map() }));
+  }, []);
+
+  const setChatName = useCallback((chatName: string | null) => {
+    setState((prev) => ({ ...prev, chatName }));
   }, []);
 
   const clearError = useCallback(() => {
@@ -190,8 +231,10 @@ export function useChatWebSocket({ chatId, organizationId, onMessageReceived, on
 
   return {
     ...state,
+    currentChatId,
     sendMessage,
     setMessages,
+    setChatName,
     clearError,
   };
 }

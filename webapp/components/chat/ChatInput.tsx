@@ -27,7 +27,7 @@ export function ChatInput({ value, onChange, onSend, disabled, isStreaming }: Ch
         size="md"
         radius="full"
         variant="bordered"
-        classNames={{inputWrapper: "border-white/15 border-1"}}
+        classNames={{inputWrapper: "border-white/10 border-1"}}
         placeholder="Напиши сообщение..."
         value={value}
         onChange={(e) => onChange(e.target.value)}
@@ -41,7 +41,7 @@ export function ChatInput({ value, onChange, onSend, disabled, isStreaming }: Ch
         onPress={onSend}
         isDisabled={disabled || !value.trim()}
       >
-        {isStreaming ? <Spinner classNames={{wrapper: "w-3 h-3"}} color="warning"/> : <ArrowRightIcon className="h-5 w-5" />}
+        {isStreaming ? <Spinner classNames={{wrapper: "w-3 h-3"}} color="default"/> : <ArrowRightIcon className="h-5 w-5" />}
       </Button>
     </div>
   );

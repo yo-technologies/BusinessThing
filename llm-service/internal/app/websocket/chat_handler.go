@@ -53,7 +53,7 @@ func (h *ChatHandler) HandleChatStream(w http.ResponseWriter, r *http.Request) {
 	// Get token from header
 	token := r.Header.Get(authHeader)
 	logger.Infof(ctx, "websocket: token from header: %t", token != "")
-	
+
 	if token == "" {
 		// Fallback to query parameter for compatibility
 		if initData := r.URL.Query().Get("init_data"); initData != "" {
