@@ -121,13 +121,35 @@ export function useChatWebSocket({
 
         // Обработка tool calls
         if (event.toolCall) {
+          console.log('[useChatWebSocket] Received tool call event:', {
+            toolCallId: event.toolCall.toolCallId,
+            status: event.toolCall.status,
+            toolName: event.toolCall.toolName,
+          });
+          
           setState((prev) => {
             const newToolCalls = new Map(prev.streamingToolCalls);
             const toolCallId = event.toolCall?.toolCallId ?? "";
             
             if (toolCallId) {
+              const existingToolCall = newToolCalls.get(toolCallId);
+              console.log('[useChatWebSocket] Updating tool call:', {
+                toolCallId,
+                existingStatus: existingToolCall?.status,
+                newStatus: event.toolCall?.status,
+              });
+              
               newToolCalls.set(toolCallId, event.toolCall!);
             }
+            
+            console.log('[useChatWebSocket] Updated streamingToolCalls:', {
+              size: newToolCalls.size,
+              toolCalls: Array.from(newToolCalls.entries()).map(([id, tc]) => ({
+                id,
+                status: tc.status,
+                name: tc.toolName,
+              })),
+            });
             
             return {
               ...prev,
@@ -186,15 +208,20 @@ export function useChatWebSocket({
 
         // Обработка финального события
         if (event.final) {
-          setState((prev) => ({
-            ...prev,
-            messages: event.final?.messages ?? prev.messages,
-            streamingMessage: "",
-            streamingToolCalls: new Map(),
-            isStreaming: false,
-            usageTokens: 0,
-            chatName: event.final?.chat?.title ?? prev.chatName,
-          }));
+          setState((prev) => {
+            // Переворачиваем массив, т.к. backend отдаёт от новых к старым
+            const finalMessages = event.final?.messages ? [...event.final.messages].reverse() : prev.messages;
+            
+            return {
+              ...prev,
+              messages: finalMessages,
+              streamingMessage: "",
+              streamingToolCalls: new Map(),
+              isStreaming: false,
+              usageTokens: 0,
+              chatName: event.final?.chat?.title ?? prev.chatName,
+            };
+          });
           
           callbacksRef.current.onFinalReceived?.();
         }

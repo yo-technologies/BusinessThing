@@ -22,12 +22,12 @@ export function ChatInput({ value, onChange, onSend, disabled, isStreaming }: Ch
   };
 
   return (
-    <div className="flex items-center gap-2 justify-between p-1.5">
+    <div className="flex items-center gap-2 justify-between p-1.5 absolute bottom-0 left-0 right-0 bg-gradient-to-t from-content1 to-transparent]">
       <Input
         size="md"
         radius="full"
         variant="bordered"
-        classNames={{inputWrapper: "border-white/10 border-1"}}
+        classNames={{inputWrapper: "border-white/10 border-1 bg-content1/20 backdrop-blur-xs"}}
         placeholder="Напиши сообщение..."
         value={value}
         onChange={(e) => onChange(e.target.value)}
@@ -41,7 +41,7 @@ export function ChatInput({ value, onChange, onSend, disabled, isStreaming }: Ch
         onPress={onSend}
         isDisabled={disabled || !value.trim()}
       >
-        {isStreaming ? <Spinner classNames={{wrapper: "w-3 h-3"}} color="default"/> : <ArrowRightIcon className="h-5 w-5" />}
+        {isStreaming ? <Spinner size="sm" color="current" classNames={{wrapper: "w-4 h-4"}}/> : <ArrowRightIcon className="h-5 w-5" />}
       </Button>
     </div>
   );
