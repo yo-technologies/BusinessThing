@@ -118,7 +118,7 @@ func (r *PGXRepository) ListMessagesByChatID(ctx context.Context, chatID domain.
 	engine := r.engineFactory.Get(ctx)
 
 	// Подсчет общего количества
-	countQuery := `SELECT COUNT(*) FROM messages WHERE chat_id = $1`
+	countQuery := `SELECT COUNT(*) AS count FROM messages WHERE chat_id = $1`
 	var countResult []struct {
 		Count int `db:"count"`
 	}
@@ -191,7 +191,7 @@ func (r *PGXRepository) ListMessagesWithSubchatsWithToolCalls(ctx context.Contex
 	subchatsSubquery := sq.Select("id").From("chats").Where(sq.Eq{"parent_chat_id": parentChatID.String()}).PlaceholderFormat(sq.Dollar)
 
 	// Подсчет общего количества сообщений из родительского чата и всех субчатов
-	countQb := sq.Select("COUNT(*)").From("messages").PlaceholderFormat(sq.Dollar)
+	countQb := sq.Select("COUNT(*) AS count").From("messages").PlaceholderFormat(sq.Dollar)
 	countQb = countQb.Where(sq.Or{
 		sq.Eq{"chat_id": parentChatID.String()},
 		sq.Expr("chat_id IN (?)", subchatsSubquery),

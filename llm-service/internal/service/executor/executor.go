@@ -29,6 +29,7 @@ type Executor struct {
 	toolExecutor    service.ToolExecutor
 	subagentManager service.SubagentManager
 	llmProvider     llm.CompletionProvider
+	quotaService    service.QuotaService
 	cfg             *config.Config
 }
 
@@ -40,6 +41,7 @@ func NewExecutor(
 	toolExecutor service.ToolExecutor,
 	subagentManager service.SubagentManager,
 	llmProvider llm.CompletionProvider,
+	quotaService service.QuotaService,
 	cfg *config.Config,
 ) *Executor {
 	return &Executor{
@@ -49,6 +51,7 @@ func NewExecutor(
 		toolExecutor:    toolExecutor,
 		subagentManager: subagentManager,
 		llmProvider:     llmProvider,
+		quotaService:    quotaService,
 		cfg:             cfg,
 	}
 }
@@ -336,6 +339,7 @@ func (e *Executor) runAgentLoopStream(
 		var contentBuilder strings.Builder
 		var toolCalls []*domain.ToolCall
 		toolCallsMap := make(map[int]*domain.ToolCall)
+		var usage llm.Usage
 
 		for llmStream.Next() {
 			chunk := llmStream.Chunk()
@@ -348,6 +352,11 @@ func (e *Executor) runAgentLoopStream(
 					llmStream.Close()
 					return err
 				}
+			}
+
+			// Собираем usage
+			if chunk.Usage.TotalTokens > 0 {
+				usage = chunk.Usage
 			}
 
 			// Обрабатываем tool calls
@@ -380,6 +389,26 @@ func (e *Executor) runAgentLoopStream(
 
 		if err := llmStream.Err(); err != nil {
 			return stream.SendError(err)
+		}
+
+		// Отправляем usage если есть (только для MessageStream)
+		if usage.TotalTokens > 0 {
+			if msgStream, ok := stream.(service.MessageStream); ok {
+				if err := msgStream.SendUsage(&dto.ChatUsageDTO{
+					PromptTokens:     usage.PromptTokens,
+					CompletionTokens: usage.CompletionTokens,
+					TotalTokens:      usage.TotalTokens,
+				}); err != nil {
+					logger.Errorf(ctx, "Failed to send usage: %v", err)
+				}
+			}
+
+			// Сохраняем использование токенов в БД
+			if e.quotaService != nil {
+				if err := e.quotaService.Confirm(ctx, execCtx.UserID, 0, usage.TotalTokens); err != nil {
+					logger.Errorf(ctx, "Failed to confirm token usage: %v", err)
+				}
+			}
 		}
 
 		// Сохраняем сообщение ассистента в текущий чат
