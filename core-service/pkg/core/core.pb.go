@@ -3792,7 +3792,7 @@ type GenerateUploadURLRequest struct {
 
 func (x *GenerateUploadURLRequest) Reset() {
 	*x = GenerateUploadURLRequest{}
-	mi := &file_core_core_proto_msgTypes[61]
+	mi := &file_core_core_proto_msgTypes[63]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -3804,7 +3804,7 @@ func (x *GenerateUploadURLRequest) String() string {
 func (*GenerateUploadURLRequest) ProtoMessage() {}
 
 func (x *GenerateUploadURLRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_core_core_proto_msgTypes[61]
+	mi := &file_core_core_proto_msgTypes[63]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -3817,7 +3817,7 @@ func (x *GenerateUploadURLRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use GenerateUploadURLRequest.ProtoReflect.Descriptor instead.
 func (*GenerateUploadURLRequest) Descriptor() ([]byte, []int) {
-	return file_core_core_proto_rawDescGZIP(), []int{61}
+	return file_core_core_proto_rawDescGZIP(), []int{63}
 }
 
 func (x *GenerateUploadURLRequest) GetOrganizationId() string {
@@ -3852,7 +3852,7 @@ type GenerateUploadURLResponse struct {
 
 func (x *GenerateUploadURLResponse) Reset() {
 	*x = GenerateUploadURLResponse{}
-	mi := &file_core_core_proto_msgTypes[62]
+	mi := &file_core_core_proto_msgTypes[64]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -3864,7 +3864,7 @@ func (x *GenerateUploadURLResponse) String() string {
 func (*GenerateUploadURLResponse) ProtoMessage() {}
 
 func (x *GenerateUploadURLResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_core_core_proto_msgTypes[62]
+	mi := &file_core_core_proto_msgTypes[64]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -3877,7 +3877,7 @@ func (x *GenerateUploadURLResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use GenerateUploadURLResponse.ProtoReflect.Descriptor instead.
 func (*GenerateUploadURLResponse) Descriptor() ([]byte, []int) {
-	return file_core_core_proto_rawDescGZIP(), []int{62}
+	return file_core_core_proto_rawDescGZIP(), []int{64}
 }
 
 func (x *GenerateUploadURLResponse) GetUploadUrl() string {
@@ -3910,7 +3910,7 @@ type GenerateDownloadURLRequest struct {
 
 func (x *GenerateDownloadURLRequest) Reset() {
 	*x = GenerateDownloadURLRequest{}
-	mi := &file_core_core_proto_msgTypes[63]
+	mi := &file_core_core_proto_msgTypes[65]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -3922,7 +3922,7 @@ func (x *GenerateDownloadURLRequest) String() string {
 func (*GenerateDownloadURLRequest) ProtoMessage() {}
 
 func (x *GenerateDownloadURLRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_core_core_proto_msgTypes[63]
+	mi := &file_core_core_proto_msgTypes[65]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -3935,7 +3935,7 @@ func (x *GenerateDownloadURLRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use GenerateDownloadURLRequest.ProtoReflect.Descriptor instead.
 func (*GenerateDownloadURLRequest) Descriptor() ([]byte, []int) {
-	return file_core_core_proto_rawDescGZIP(), []int{63}
+	return file_core_core_proto_rawDescGZIP(), []int{65}
 }
 
 func (x *GenerateDownloadURLRequest) GetS3Key() string {
@@ -3955,7 +3955,7 @@ type GenerateDownloadURLResponse struct {
 
 func (x *GenerateDownloadURLResponse) Reset() {
 	*x = GenerateDownloadURLResponse{}
-	mi := &file_core_core_proto_msgTypes[64]
+	mi := &file_core_core_proto_msgTypes[66]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -3967,7 +3967,7 @@ func (x *GenerateDownloadURLResponse) String() string {
 func (*GenerateDownloadURLResponse) ProtoMessage() {}
 
 func (x *GenerateDownloadURLResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_core_core_proto_msgTypes[64]
+	mi := &file_core_core_proto_msgTypes[66]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -3980,7 +3980,7 @@ func (x *GenerateDownloadURLResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use GenerateDownloadURLResponse.ProtoReflect.Descriptor instead.
 func (*GenerateDownloadURLResponse) Descriptor() ([]byte, []int) {
-	return file_core_core_proto_rawDescGZIP(), []int{64}
+	return file_core_core_proto_rawDescGZIP(), []int{66}
 }
 
 func (x *GenerateDownloadURLResponse) GetDownloadUrl() string {
@@ -4364,7 +4364,7 @@ func file_core_core_proto_rawDescGZIP() []byte {
 }
 
 var file_core_core_proto_enumTypes = make([]protoimpl.EnumInfo, 3)
-var file_core_core_proto_msgTypes = make([]protoimpl.MessageInfo, 63)
+var file_core_core_proto_msgTypes = make([]protoimpl.MessageInfo, 67)
 var file_core_core_proto_goTypes = []any{
 	(UserRole)(0),                            // 0: core.api.core.UserRole
 	(UserStatus)(0),                          // 1: core.api.core.UserStatus
@@ -4432,8 +4432,12 @@ var file_core_core_proto_goTypes = []any{
 	(*Note)(nil),                             // 63: core.api.core.Note
 	(*ContractTemplate)(nil),                 // 64: core.api.core.ContractTemplate
 	(*GeneratedContract)(nil),                // 65: core.api.core.GeneratedContract
-	(*timestamppb.Timestamp)(nil),            // 66: google.protobuf.Timestamp
-	(*emptypb.Empty)(nil),                    // 67: google.protobuf.Empty
+	(*GenerateUploadURLRequest)(nil),         // 66: core.api.core.GenerateUploadURLRequest
+	(*GenerateUploadURLResponse)(nil),        // 67: core.api.core.GenerateUploadURLResponse
+	(*GenerateDownloadURLRequest)(nil),       // 68: core.api.core.GenerateDownloadURLRequest
+	(*GenerateDownloadURLResponse)(nil),      // 69: core.api.core.GenerateDownloadURLResponse
+	(*timestamppb.Timestamp)(nil),            // 70: google.protobuf.Timestamp
+	(*emptypb.Empty)(nil),                    // 71: google.protobuf.Empty
 }
 var file_core_core_proto_depIdxs = []int32{
 	61, // 0: core.api.core.AuthenticateWithTelegramResponse.user:type_name -> core.api.core.User
@@ -4443,7 +4447,7 @@ var file_core_core_proto_depIdxs = []int32{
 	60, // 4: core.api.core.ListMyOrganizationsResponse.organizations:type_name -> core.api.core.Organization
 	60, // 5: core.api.core.UpdateOrganizationResponse.organization:type_name -> core.api.core.Organization
 	0,  // 6: core.api.core.InviteUserRequest.role:type_name -> core.api.core.UserRole
-	66, // 7: core.api.core.InviteUserResponse.expires_at:type_name -> google.protobuf.Timestamp
+	70, // 7: core.api.core.InviteUserResponse.expires_at:type_name -> google.protobuf.Timestamp
 	61, // 8: core.api.core.AcceptInvitationResponse.user:type_name -> core.api.core.User
 	61, // 9: core.api.core.ListUsersResponse.users:type_name -> core.api.core.User
 	61, // 10: core.api.core.GetUserResponse.user:type_name -> core.api.core.User
@@ -4464,20 +4468,20 @@ var file_core_core_proto_depIdxs = []int32{
 	65, // 25: core.api.core.RegisterContractResponse.contract:type_name -> core.api.core.GeneratedContract
 	65, // 26: core.api.core.GetContractResponse.contract:type_name -> core.api.core.GeneratedContract
 	65, // 27: core.api.core.ListContractsResponse.contracts:type_name -> core.api.core.GeneratedContract
-	66, // 28: core.api.core.Organization.created_at:type_name -> google.protobuf.Timestamp
-	66, // 29: core.api.core.Organization.updated_at:type_name -> google.protobuf.Timestamp
-	66, // 30: core.api.core.Organization.deleted_at:type_name -> google.protobuf.Timestamp
+	70, // 28: core.api.core.Organization.created_at:type_name -> google.protobuf.Timestamp
+	70, // 29: core.api.core.Organization.updated_at:type_name -> google.protobuf.Timestamp
+	70, // 30: core.api.core.Organization.deleted_at:type_name -> google.protobuf.Timestamp
 	0,  // 31: core.api.core.User.role:type_name -> core.api.core.UserRole
 	1,  // 32: core.api.core.User.status:type_name -> core.api.core.UserStatus
-	66, // 33: core.api.core.User.created_at:type_name -> google.protobuf.Timestamp
-	66, // 34: core.api.core.User.updated_at:type_name -> google.protobuf.Timestamp
+	70, // 33: core.api.core.User.created_at:type_name -> google.protobuf.Timestamp
+	70, // 34: core.api.core.User.updated_at:type_name -> google.protobuf.Timestamp
 	2,  // 35: core.api.core.Document.status:type_name -> core.api.core.DocumentStatus
-	66, // 36: core.api.core.Document.created_at:type_name -> google.protobuf.Timestamp
-	66, // 37: core.api.core.Document.updated_at:type_name -> google.protobuf.Timestamp
-	66, // 38: core.api.core.Note.created_at:type_name -> google.protobuf.Timestamp
-	66, // 39: core.api.core.ContractTemplate.created_at:type_name -> google.protobuf.Timestamp
-	66, // 40: core.api.core.ContractTemplate.updated_at:type_name -> google.protobuf.Timestamp
-	66, // 41: core.api.core.GeneratedContract.created_at:type_name -> google.protobuf.Timestamp
+	70, // 36: core.api.core.Document.created_at:type_name -> google.protobuf.Timestamp
+	70, // 37: core.api.core.Document.updated_at:type_name -> google.protobuf.Timestamp
+	70, // 38: core.api.core.Note.created_at:type_name -> google.protobuf.Timestamp
+	70, // 39: core.api.core.ContractTemplate.created_at:type_name -> google.protobuf.Timestamp
+	70, // 40: core.api.core.ContractTemplate.updated_at:type_name -> google.protobuf.Timestamp
+	70, // 41: core.api.core.GeneratedContract.created_at:type_name -> google.protobuf.Timestamp
 	3,  // 42: core.api.core.AuthService.AuthenticateWithTelegram:input_type -> core.api.core.AuthenticateWithTelegramRequest
 	5,  // 43: core.api.core.AuthService.CompleteRegistration:input_type -> core.api.core.CompleteRegistrationRequest
 	7,  // 44: core.api.core.AuthService.RefreshToken:input_type -> core.api.core.RefreshTokenRequest
@@ -4510,40 +4514,44 @@ var file_core_core_proto_depIdxs = []int32{
 	55, // 71: core.api.core.GeneratedContractService.GetContract:input_type -> core.api.core.GetContractRequest
 	57, // 72: core.api.core.GeneratedContractService.ListContracts:input_type -> core.api.core.ListContractsRequest
 	59, // 73: core.api.core.GeneratedContractService.DeleteContract:input_type -> core.api.core.DeleteContractRequest
-	4,  // 74: core.api.core.AuthService.AuthenticateWithTelegram:output_type -> core.api.core.AuthenticateWithTelegramResponse
-	6,  // 75: core.api.core.AuthService.CompleteRegistration:output_type -> core.api.core.CompleteRegistrationResponse
-	8,  // 76: core.api.core.AuthService.RefreshToken:output_type -> core.api.core.RefreshTokenResponse
-	10, // 77: core.api.core.OrganizationService.CreateOrganization:output_type -> core.api.core.CreateOrganizationResponse
-	12, // 78: core.api.core.OrganizationService.GetOrganization:output_type -> core.api.core.GetOrganizationResponse
-	14, // 79: core.api.core.OrganizationService.ListMyOrganizations:output_type -> core.api.core.ListMyOrganizationsResponse
-	16, // 80: core.api.core.OrganizationService.UpdateOrganization:output_type -> core.api.core.UpdateOrganizationResponse
-	67, // 81: core.api.core.OrganizationService.DeleteOrganization:output_type -> google.protobuf.Empty
-	19, // 82: core.api.core.UserService.InviteUser:output_type -> core.api.core.InviteUserResponse
-	21, // 83: core.api.core.UserService.AcceptInvitation:output_type -> core.api.core.AcceptInvitationResponse
-	23, // 84: core.api.core.UserService.ListUsers:output_type -> core.api.core.ListUsersResponse
-	25, // 85: core.api.core.UserService.GetUser:output_type -> core.api.core.GetUserResponse
-	27, // 86: core.api.core.UserService.UpdateUserRole:output_type -> core.api.core.UpdateUserRoleResponse
-	67, // 87: core.api.core.UserService.DeactivateUser:output_type -> google.protobuf.Empty
-	30, // 88: core.api.core.DocumentService.RegisterDocument:output_type -> core.api.core.RegisterDocumentResponse
-	32, // 89: core.api.core.DocumentService.GetDocument:output_type -> core.api.core.GetDocumentResponse
-	34, // 90: core.api.core.DocumentService.ListDocuments:output_type -> core.api.core.ListDocumentsResponse
-	67, // 91: core.api.core.DocumentService.UpdateDocumentStatus:output_type -> google.protobuf.Empty
-	67, // 92: core.api.core.DocumentService.DeleteDocument:output_type -> google.protobuf.Empty
-	38, // 93: core.api.core.NoteService.CreateNote:output_type -> core.api.core.CreateNoteResponse
-	40, // 94: core.api.core.NoteService.ListNotes:output_type -> core.api.core.ListNotesResponse
-	42, // 95: core.api.core.NoteService.GetNote:output_type -> core.api.core.GetNoteResponse
-	67, // 96: core.api.core.NoteService.DeleteNote:output_type -> google.protobuf.Empty
-	45, // 97: core.api.core.ContractTemplateService.CreateTemplate:output_type -> core.api.core.CreateTemplateResponse
-	47, // 98: core.api.core.ContractTemplateService.GetTemplate:output_type -> core.api.core.GetTemplateResponse
-	49, // 99: core.api.core.ContractTemplateService.ListTemplates:output_type -> core.api.core.ListTemplatesResponse
-	51, // 100: core.api.core.ContractTemplateService.UpdateTemplate:output_type -> core.api.core.UpdateTemplateResponse
-	67, // 101: core.api.core.ContractTemplateService.DeleteTemplate:output_type -> google.protobuf.Empty
-	54, // 102: core.api.core.GeneratedContractService.RegisterContract:output_type -> core.api.core.RegisterContractResponse
-	56, // 103: core.api.core.GeneratedContractService.GetContract:output_type -> core.api.core.GetContractResponse
-	58, // 104: core.api.core.GeneratedContractService.ListContracts:output_type -> core.api.core.ListContractsResponse
-	67, // 105: core.api.core.GeneratedContractService.DeleteContract:output_type -> google.protobuf.Empty
-	74, // [74:106] is the sub-list for method output_type
-	42, // [42:74] is the sub-list for method input_type
+	66, // 74: core.api.core.StorageService.GenerateUploadURL:input_type -> core.api.core.GenerateUploadURLRequest
+	68, // 75: core.api.core.StorageService.GenerateDownloadURL:input_type -> core.api.core.GenerateDownloadURLRequest
+	4,  // 76: core.api.core.AuthService.AuthenticateWithTelegram:output_type -> core.api.core.AuthenticateWithTelegramResponse
+	6,  // 77: core.api.core.AuthService.CompleteRegistration:output_type -> core.api.core.CompleteRegistrationResponse
+	8,  // 78: core.api.core.AuthService.RefreshToken:output_type -> core.api.core.RefreshTokenResponse
+	10, // 79: core.api.core.OrganizationService.CreateOrganization:output_type -> core.api.core.CreateOrganizationResponse
+	12, // 80: core.api.core.OrganizationService.GetOrganization:output_type -> core.api.core.GetOrganizationResponse
+	14, // 81: core.api.core.OrganizationService.ListMyOrganizations:output_type -> core.api.core.ListMyOrganizationsResponse
+	16, // 82: core.api.core.OrganizationService.UpdateOrganization:output_type -> core.api.core.UpdateOrganizationResponse
+	71, // 83: core.api.core.OrganizationService.DeleteOrganization:output_type -> google.protobuf.Empty
+	19, // 84: core.api.core.UserService.InviteUser:output_type -> core.api.core.InviteUserResponse
+	21, // 85: core.api.core.UserService.AcceptInvitation:output_type -> core.api.core.AcceptInvitationResponse
+	23, // 86: core.api.core.UserService.ListUsers:output_type -> core.api.core.ListUsersResponse
+	25, // 87: core.api.core.UserService.GetUser:output_type -> core.api.core.GetUserResponse
+	27, // 88: core.api.core.UserService.UpdateUserRole:output_type -> core.api.core.UpdateUserRoleResponse
+	71, // 89: core.api.core.UserService.DeactivateUser:output_type -> google.protobuf.Empty
+	30, // 90: core.api.core.DocumentService.RegisterDocument:output_type -> core.api.core.RegisterDocumentResponse
+	32, // 91: core.api.core.DocumentService.GetDocument:output_type -> core.api.core.GetDocumentResponse
+	34, // 92: core.api.core.DocumentService.ListDocuments:output_type -> core.api.core.ListDocumentsResponse
+	71, // 93: core.api.core.DocumentService.UpdateDocumentStatus:output_type -> google.protobuf.Empty
+	71, // 94: core.api.core.DocumentService.DeleteDocument:output_type -> google.protobuf.Empty
+	38, // 95: core.api.core.NoteService.CreateNote:output_type -> core.api.core.CreateNoteResponse
+	40, // 96: core.api.core.NoteService.ListNotes:output_type -> core.api.core.ListNotesResponse
+	42, // 97: core.api.core.NoteService.GetNote:output_type -> core.api.core.GetNoteResponse
+	71, // 98: core.api.core.NoteService.DeleteNote:output_type -> google.protobuf.Empty
+	45, // 99: core.api.core.ContractTemplateService.CreateTemplate:output_type -> core.api.core.CreateTemplateResponse
+	47, // 100: core.api.core.ContractTemplateService.GetTemplate:output_type -> core.api.core.GetTemplateResponse
+	49, // 101: core.api.core.ContractTemplateService.ListTemplates:output_type -> core.api.core.ListTemplatesResponse
+	51, // 102: core.api.core.ContractTemplateService.UpdateTemplate:output_type -> core.api.core.UpdateTemplateResponse
+	71, // 103: core.api.core.ContractTemplateService.DeleteTemplate:output_type -> google.protobuf.Empty
+	54, // 104: core.api.core.GeneratedContractService.RegisterContract:output_type -> core.api.core.RegisterContractResponse
+	56, // 105: core.api.core.GeneratedContractService.GetContract:output_type -> core.api.core.GetContractResponse
+	58, // 106: core.api.core.GeneratedContractService.ListContracts:output_type -> core.api.core.ListContractsResponse
+	71, // 107: core.api.core.GeneratedContractService.DeleteContract:output_type -> google.protobuf.Empty
+	67, // 108: core.api.core.StorageService.GenerateUploadURL:output_type -> core.api.core.GenerateUploadURLResponse
+	69, // 109: core.api.core.StorageService.GenerateDownloadURL:output_type -> core.api.core.GenerateDownloadURLResponse
+	76, // [76:110] is the sub-list for method output_type
+	42, // [42:76] is the sub-list for method input_type
 	42, // [42:42] is the sub-list for extension type_name
 	42, // [42:42] is the sub-list for extension extendee
 	0,  // [0:42] is the sub-list for field type_name
@@ -4564,7 +4572,7 @@ func file_core_core_proto_init() {
 			GoPackagePath: reflect.TypeOf(x{}).PkgPath(),
 			RawDescriptor: unsafe.Slice(unsafe.StringData(file_core_core_proto_rawDesc), len(file_core_core_proto_rawDesc)),
 			NumEnums:      3,
-			NumMessages:   63,
+			NumMessages:   67,
 			NumExtensions: 0,
 			NumServices:   8,
 		},
