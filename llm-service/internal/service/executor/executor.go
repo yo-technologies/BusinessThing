@@ -467,7 +467,7 @@ func (e *Executor) runAgentLoopStream(
 
 			var resultJSON []byte
 			if err != nil {
-				toolCall.Fail()
+				toolCall.Fail(err.Error())
 				resultJSON, _ = json.Marshal(map[string]interface{}{
 					"error": err.Error(),
 				})

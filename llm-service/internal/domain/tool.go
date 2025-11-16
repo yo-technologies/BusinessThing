@@ -22,6 +22,7 @@ type ToolCall struct {
 	Name        string
 	Arguments   json.RawMessage
 	Result      json.RawMessage
+	Error       *string // Текст ошибки при выполнении инструмента (если status = failed)
 	Status      ToolCallStatus
 	CompletedAt *time.Time
 }
@@ -55,8 +56,9 @@ func (tc *ToolCall) Complete(result json.RawMessage) {
 }
 
 // Fail - завершает tool call с ошибкой
-func (tc *ToolCall) Fail() {
+func (tc *ToolCall) Fail(errorMessage string) {
 	tc.Status = ToolCallStatusFailed
+	tc.Error = &errorMessage
 	now := time.Now()
 	tc.CompletedAt = &now
 }
