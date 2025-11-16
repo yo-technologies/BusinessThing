@@ -8,13 +8,15 @@ import {
   DocumentDuplicateIcon,
   Cog6ToothIcon,
   BriefcaseIcon,
+  UserIcon, // Added UserIcon
 } from "@heroicons/react/24/outline";
 import {
   ChatBubbleOvalLeftEllipsisIcon as SolidChatBubbleIcon,
   DocumentTextIcon as SolidDocumentTextIcon,
   DocumentDuplicateIcon as SolidDocumentDuplicateIcon,
   Cog6ToothIcon as SolidCog6ToothIcon,
-  BriefcaseIcon as SolidBriefcaseIcon
+  BriefcaseIcon as SolidBriefcaseIcon,
+  UserIcon as SolidUserIcon, // Added SolidUserIcon
 } from "@heroicons/react/24/solid";
 import clsx from "clsx";
 
@@ -32,11 +34,10 @@ const navigationItems = [
     SolidIcon: SolidBriefcaseIcon,
   },
   {
-    href: "/management",
-    label: "Настройки",
-    Icon: Cog6ToothIcon,
-    SolidIcon: SolidCog6ToothIcon,
-    adminOnly: true, // We can use this later for role-based rendering
+    href: "/user",
+    label: "Профиль",
+    Icon: UserIcon,
+    SolidIcon: SolidUserIcon,
   },
 ];
 
