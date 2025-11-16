@@ -13,6 +13,7 @@ import (
 
 	"llm-service/internal/app"
 	agentapi "llm-service/internal/app/llm-agent/api/agent"
+	contractsapi "llm-service/internal/app/llm-agent/api/contracts"
 	memoryapi "llm-service/internal/app/llm-agent/api/memory"
 	"llm-service/internal/config"
 	"llm-service/internal/contracts"
@@ -198,6 +199,7 @@ func Run() error {
 	// Create API services
 	agentAPIService := agentapi.NewService(chatManager, agentExecutor, quotaService)
 	memoryAPIService := memoryapi.NewService(orgMemoryService)
+	contractsAPIService := contractsapi.NewService(contractGeneratorService)
 
 	// Initialize JWT provider from config (fallbacks: env JWT_SECRET -> dev-secret)
 	jwtSecret := cfg.GetJWTSecret()
@@ -225,6 +227,7 @@ func Run() error {
 	app := app.New(
 		agentAPIService,
 		memoryAPIService,
+		contractsAPIService,
 		jwtProvider,
 		app.WithHTTPPathPrefix(cfg.GetHTTPPathPrefix()),
 		app.WithGrpcPort(cfg.GetGRPCPort()),
