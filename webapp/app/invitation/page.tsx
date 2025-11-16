@@ -67,7 +67,7 @@ function InvitationContent() {
       <div className="flex h-full flex-col items-center justify-center px-2">
         <Card className="w-full max-w-md border-none bg-content1/80 shadow-md">
           <CardBody className="text-center">
-            <p className="text-default-500">Токен приглашения не найден</p>
+            <p className="text-default-400">Токен приглашения не найден</p>
           </CardBody>
         </Card>
       </div>
@@ -78,7 +78,7 @@ function InvitationContent() {
     <div className="flex h-full flex-col items-center justify-center px-2">
       <Card className="w-full max-w-md border-none bg-content1/80 shadow-md">
         <CardHeader className="flex flex-col items-start gap-1 pb-2">
-          <span className="text-tiny font-medium uppercase text-primary">Приглашение</span>
+          <span className="text-tiny font-medium uppercase text-secondary">Приглашение</span>
           <h1 className="text-xl font-semibold">Присоединиться к организации</h1>
         </CardHeader>
         <CardBody className="space-y-4">
@@ -87,13 +87,13 @@ function InvitationContent() {
               {error}
             </div>
           ) : (
-            <p className="text-small text-default-500">
+            <p className="text-small text-default-400">
               Вы получили приглашение присоединиться к организации. Нажмите кнопку ниже, чтобы принять приглашение.
             </p>
           )}
 
           <Button
-            color="primary"
+            color="success"
             radius="lg"
             className="w-full"
             isLoading={accepting}

@@ -62,11 +62,11 @@ export default function OnboardingPage() {
     <div className="flex h-full flex-col items-center justify-center px-2">
       <Card className="w-full max-w-md border-none bg-content1/80 shadow-md">
         <CardHeader className="flex flex-col items-start gap-1 pb-2">
-          <span className="text-tiny font-medium uppercase text-primary">Добро пожаловать</span>
+          <span className="text-tiny font-medium uppercase text-secondary">Добро пожаловать</span>
           <h1 className="text-xl font-semibold">Заполни профиль</h1>
         </CardHeader>
         <CardBody className="space-y-4">
-          <p className="text-small text-default-500">
+          <p className="text-small text-default-400">
             Мы сохраним твои имя и фамилию, чтобы подставлять их в документы и чаты.
           </p>
 
@@ -91,7 +91,7 @@ export default function OnboardingPage() {
           />
 
           <Button
-            color="primary"
+            color="success"
             radius="lg"
             className="w-full mt-2"
             isDisabled={!firstName.trim() || !lastName.trim()}

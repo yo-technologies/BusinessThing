@@ -124,7 +124,7 @@ export default function ContractsPage() {
       <Card className="rounded-4xl shadow-none">
         <CardHeader className="flex flex-col gap-1 px-5 py-4">
           <div className="flex items-start gap-2 w-full">
-            <DocumentTextIcon className="h-5 w-5 flex-shrink-0 text-warning mt-1" />
+            <DocumentTextIcon className="h-5 w-5 flex-shrink-0 text-success mt-1" />
             <p className="text-xl font-semibold">Сгенерированные документы</p>
           </div>
           <p className="text-xs text-default-300">
@@ -136,7 +136,7 @@ export default function ContractsPage() {
       <Card className="flex-1 rounded-4xl shadow-none ">
         <CardBody className="gap-4 px-5 py-5">
           {contracts.length === 0 ? (
-            <div className="flex flex-col items-center justify-center py-12 gap-2">
+            <div className="flex flex-col h-full items-center justify-center py-12 gap-2">
               <DocumentTextIcon className="h-16 w-16 text-default-300" />
               <p className="text-default-400 text-center">Нет сгенерированных документов</p>
               <p className="text-sm text-default-300 text-center">
@@ -151,7 +151,7 @@ export default function ContractsPage() {
                   className="flex flex-col gap-3 p-4 rounded-3xl  bg-default-50/60 hover:bg-default-100/70 transition-colors"
                 >
                   <div className="flex items-start gap-3 flex-1">
-                    <DocumentTextIcon className="h-6 w-6 flex-shrink-0 text-primary mt-1" />
+                    <DocumentTextIcon className="h-6 w-6 flex-shrink-0 text-success mt-1" />
                     <div className="flex-1 min-w-0">
                       <p className="font-medium line-clamp-2">{contract.name}</p>
                       {contract.createdAt && (
@@ -165,7 +165,7 @@ export default function ContractsPage() {
                     <Button
                       size="sm"
                       variant="flat"
-                      color="primary"
+                      color="secondary"
                       fullWidth
                       startContent={<ArrowDownTrayIcon className="h-4 w-4" />}
                       onPress={() => handleDownload(contract)}

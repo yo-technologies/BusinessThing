@@ -36,7 +36,7 @@ export function ChatInput({ value, onChange, onSend, disabled, isStreaming }: Ch
       />
       <Button
         isIconOnly
-        color="primary"
+        color="success"
         radius="full"
         onPress={onSend}
         isDisabled={disabled || !value.trim()}

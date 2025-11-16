@@ -27,7 +27,7 @@ const sections = [
     description: "Управление пользователями организации",
     icon: UsersIcon,
     path: "/organization/settings/users",
-    color: "text-orange-500",
+    color: "text-secondary",
   },
   {
     key: "knowledge",
@@ -35,7 +35,7 @@ const sections = [
     description: "Управление документами организации",
     icon: BookOpenIcon,
     path: "/organization/settings/knowledge",
-    color: "text-blue-500",
+    color: "text-primary",
   },
   {
     key: "memory",
@@ -43,7 +43,7 @@ const sections = [
     description: "Факты и контекст для AI ассистента",
     icon: LightBulbIcon,
     path: "/organization/settings/memory",
-    color: "text-yellow-500",
+    color: "text-warning",
   },
   {
     key: "contracts",
@@ -51,7 +51,7 @@ const sections = [
     description: "Сгенерированные договоры и контракты",
     icon: DocumentTextIcon,
     path: "/organization/settings/contracts",
-    color: "text-green-500",
+    color: "text-success",
   },
   {
     key: "general",
@@ -59,7 +59,7 @@ const sections = [
     description: "Основные параметры организации",
     icon: Cog6ToothIcon,
     path: "/organization/settings/general",
-    color: "text-gray-500",
+    color: "text-default-400",
   },
 ];
 
@@ -146,7 +146,7 @@ export default function OrganizationPage() {
 
       {/* Список разделов */}
       <div className="flex-1">
-        <h2 className="text-sm font-semibold text-default-500 uppercase tracking-wide mb-3">
+        <h2 className="text-sm font-semibold text-default-400 uppercase tracking-wide mb-3">
           Разделы
         </h2>
         <div className="flex flex-col gap-3">

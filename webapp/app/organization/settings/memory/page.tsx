@@ -101,7 +101,7 @@ export default function MemoryPage() {
       <Card className="rounded-4xl shadow-none">
         <CardHeader className="flex flex-col gap-1 px-5 py-4">
           <div className="flex items-center gap-2 w-full">
-            <LightBulbIcon className="h-6 w-6 flex-shrink-0 text-yellow-500" />
+            <LightBulbIcon className="h-6 w-6 flex-shrink-0 text-warning" />
             <p className="text-xl font-semibold">Память агента</p>
           </div>
           <p className="text-xs text-default-300">

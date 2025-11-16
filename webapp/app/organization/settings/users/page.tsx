@@ -131,7 +131,7 @@ export default function UsersPage() {
   const getRoleLabel = (role?: CoreUserRole) => {
     switch (role) {
       case CoreUserRole.USER_ROLE_ADMIN:
-        return { label: "Администратор", color: "primary" as const, icon: ShieldCheckIcon };
+        return { label: "Администратор", color: "secondary" as const, icon: ShieldCheckIcon };
       case CoreUserRole.USER_ROLE_EMPLOYEE:
         return { label: "Сотрудник", color: "default" as const, icon: UserIcon };
       default:
@@ -175,7 +175,7 @@ export default function UsersPage() {
       <Card className="rounded-4xl shadow-none">
         <CardHeader className="flex flex-col gap-1 px-5 py-4">
           <div className="flex items-center gap-2 w-full">
-            <UsersIcon className="h-6 w-6 flex-shrink-0 text-orange-500" />
+            <UsersIcon className="h-6 w-6 flex-shrink-0 text-secondary" />
             <p className="text-xl font-semibold">Сотрудники</p>
           </div>
           <p className="text-xs text-default-300">
@@ -205,7 +205,7 @@ export default function UsersPage() {
             <div className="flex items-center gap-2 rounded-full">
               <UsersIcon className="h-4 w-4" />
               <span>Пользователи</span>
-              <Chip size="sm" variant="flat" color="primary">
+              <Chip size="sm" variant="flat" color="secondary">
                 {users.length}
               </Chip>
             </div>
@@ -231,7 +231,7 @@ export default function UsersPage() {
                   >
                     <div className="flex items-center gap-3">
                       <div className="flex items-center justify-center w-12 h-12 rounded-full bg-default-100 shrink-0">
-                        <UserIcon className="h-6 w-6 text-default-500" />
+                        <UserIcon className="h-6 w-6 text-default-400" />
                       </div>
                       <div className="flex-1 min-w-0">
                         <div className="flex items-center gap-2 flex-wrap">
@@ -278,7 +278,7 @@ export default function UsersPage() {
             <div className="flex items-center gap-2">
               <EnvelopeIcon className="h-4 w-4" />
               <span>Приглашения</span>
-              <Chip size="sm" variant="flat" color="primary">
+              <Chip size="sm" variant="flat" color="warning">
                 {invitations.length}
               </Chip>
             </div>
@@ -307,7 +307,7 @@ export default function UsersPage() {
                   >
                     <div className="flex items-center gap-3">
                       <div className="flex items-center justify-center w-12 h-12 rounded-full bg-default-100 shrink-0">
-                        <EnvelopeIcon className="h-6 w-6 text-default-500" />
+                        <EnvelopeIcon className="h-6 w-6 text-default-400" />
                       </div>
                       <div className="flex-1 min-w-0">
                         <p className="font-semibold">Приглашение #{invitation.id?.slice(0, 8)}</p>
@@ -371,7 +371,7 @@ export default function UsersPage() {
               Отмена
             </Button>
             <Button
-              color="primary"
+              color="success"
               isLoading={inviting}
               onPress={handleInvite}
             >
@@ -400,7 +400,7 @@ export default function UsersPage() {
               Закрыть
             </Button>
             <Button
-              color="primary"
+              color="secondary"
               startContent={<ClipboardDocumentCheckIcon className="h-5 w-5" />}
               onPress={handleCopyInvitation}
             >
