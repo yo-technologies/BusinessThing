@@ -187,15 +187,14 @@ func (r *PGXRepository) ListMessagesWithSubchatsWithToolCalls(ctx context.Contex
 
 	engine := r.engineFactory.Get(ctx)
 
-	// Создаем подзапрос для получения ID субчатов
-	subchatsSubquery := sq.Select("id").From("chats").Where(sq.Eq{"parent_chat_id": parentChatID.String()}).PlaceholderFormat(sq.Dollar)
+	// Создаем подзапрос для получения ID субчатов (не используем SelectBuilder напрямую в Where,
+	// чтобы не передавать его как аргумент в запрос и не вызывать проблему кодирования).
 
 	// Подсчет общего количества сообщений из родительского чата и всех субчатов
 	countQb := sq.Select("COUNT(*) AS count").From("messages").PlaceholderFormat(sq.Dollar)
-	countQb = countQb.Where(sq.Or{
-		sq.Eq{"chat_id": parentChatID.String()},
-		sq.Eq{"chat_id": subchatsSubquery},
-	})
+	// Используем SQL-выражение с подзапросом (вставляем placeholder для parentChatID),
+	// чтобы не передавать SelectBuilder как аргумент в запрос (это вызывает ошибку кодирования).
+	countQb = countQb.Where(sq.Expr("(chat_id = ? OR chat_id IN (SELECT id FROM chats WHERE parent_chat_id = ?))", parentChatID.String(), parentChatID.String()))
 
 	countQuery, countArgs, err := countQb.ToSql()
 	if err != nil {
@@ -219,10 +218,7 @@ func (r *PGXRepository) ListMessagesWithSubchatsWithToolCalls(ctx context.Contex
 		"id", "chat_id", "role", "content", "sender", "tool_call_id", "created_at",
 	).From("messages").PlaceholderFormat(sq.Dollar)
 
-	qb = qb.Where(sq.Or{
-		sq.Eq{"chat_id": parentChatID.String()},
-		sq.Eq{"chat_id": subchatsSubquery},
-	})
+	qb = qb.Where(sq.Expr("(chat_id = ? OR chat_id IN (SELECT id FROM chats WHERE parent_chat_id = ?))", parentChatID.String(), parentChatID.String()))
 
 	qb = qb.OrderBy("created_at ASC").Limit(uint64(limit)).Offset(uint64(offset))
 
