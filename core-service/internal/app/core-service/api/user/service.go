@@ -21,7 +21,7 @@ type Service struct {
 type UserService interface {
 	InviteUser(ctx context.Context, organizationID domain.ID, role domain.UserRole, invitedBy domain.ID) (*domain.Invitation, error)
 	AcceptInvitation(ctx context.Context, userID domain.ID, token string) (*domain.User, error)
-	ListUsersByOrganization(ctx context.Context, organizationID domain.ID) ([]*domain.User, error)
+	ListUsersByOrganization(ctx context.Context, organizationID domain.ID) ([]*domain.UserWithMembership, error)
 	ListInvitations(ctx context.Context, organizationID domain.ID, limit, offset int) ([]domain.Invitation, int, error)
 	GetUser(ctx context.Context, id domain.ID) (*domain.User, error)
 	UpdateUserRole(ctx context.Context, id domain.ID, role domain.UserRole) (*domain.User, error)
@@ -35,14 +35,27 @@ func NewService(userService UserService, miniAppURL string) *Service {
 	}
 }
 
-func userToProto(user *domain.User) *pb.User {
+func userToProto(user *domain.UserWithMembership) *pb.User {
+	return &pb.User{
+		Id:         user.User.ID.String(),
+		TelegramId: user.User.TelegramID,
+		FirstName:  user.User.FirstName,
+		LastName:   user.User.LastName,
+		Role:       userRoleToProto(user.OrganizationMember.Role),
+		Status:     userStatusToProto(user.OrganizationMember.Status),
+		CreatedAt:  timestamppb.New(user.User.CreatedAt),
+		UpdatedAt:  timestamppb.New(user.User.UpdatedAt),
+	}
+}
+
+func simpleUserToProto(user *domain.User) *pb.User {
 	return &pb.User{
 		Id:         user.ID.String(),
 		TelegramId: user.TelegramID,
 		FirstName:  user.FirstName,
 		LastName:   user.LastName,
-		Role:       pb.UserRole_USER_ROLE_UNSPECIFIED,     // Role хранится в OrganizationMember
-		Status:     pb.UserStatus_USER_STATUS_UNSPECIFIED, // Status хранится в OrganizationMember
+		Role:       pb.UserRole_USER_ROLE_UNSPECIFIED,
+		Status:     pb.UserStatus_USER_STATUS_UNSPECIFIED,
 		CreatedAt:  timestamppb.New(user.CreatedAt),
 		UpdatedAt:  timestamppb.New(user.UpdatedAt),
 	}
@@ -130,7 +143,7 @@ func (s *Service) AcceptInvitation(ctx context.Context, req *pb.AcceptInvitation
 	}
 
 	return &pb.AcceptInvitationResponse{
-		User: userToProto(user),
+		User: simpleUserToProto(user),
 	}, nil
 }
 
@@ -173,7 +186,7 @@ func (s *Service) GetUser(ctx context.Context, req *pb.GetUserRequest) (*pb.GetU
 	}
 
 	return &pb.GetUserResponse{
-		User: userToProto(user),
+		User: simpleUserToProto(user),
 	}, nil
 }
 
@@ -194,7 +207,7 @@ func (s *Service) UpdateUserRole(ctx context.Context, req *pb.UpdateUserRoleRequ
 	}
 
 	return &pb.UpdateUserRoleResponse{
-		User: userToProto(user),
+		User: simpleUserToProto(user),
 	}, nil
 }
 
