@@ -278,6 +278,7 @@ export default function KnowledgePage() {
         onPress={handleUploadClick}
         isLoading={uploading}
         isDisabled={uploading}
+        spinner={<Spinner size="sm" color="success" />}
       >
         <PlusIcon className="h-6 w-6" />
       </Button>

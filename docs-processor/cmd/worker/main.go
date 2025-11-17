@@ -119,6 +119,7 @@ func main() {
 	jobProcessor := service.NewJobProcessor(
 		documentProcessor,
 		templateProcessor,
+		coreClient,
 	)
 
 	rabbitMQ, err := queue.NewRabbitMQClient(

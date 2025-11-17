@@ -124,9 +124,13 @@ export default function OrganizationPage() {
   }
 
   return (
-    <div className="flex flex-col min-h-screen pb-20 gap-4">
+    <div className="flex flex-col min-h-screen pb-20 gap-4 justify-start">
       {/* Заголовок организации */}
-      <Card className="rounded-4xl shadow-md mt-4 p-5 gap-3">
+      <Card className="flex flex-row rounded-4xl shadow-md p-4 gap-3">
+        <div className="flex flex-col justify-center">
+          <BuildingOfficeIcon className="h-8 w-8 text-default-400 flex-shrink-0" />
+        </div>
+        <div className="flex flex-col min-h-fit gap-2 ">
           <div className="flex items-start gap-2">
             <div className="flex-1 min-w-0 gap-0.5 flex flex-col">
               <h1 className="text-xl font-bold truncate">{organization.name || currentOrg.id}</h1>
@@ -142,6 +146,7 @@ export default function OrganizationPage() {
           {organization.description && (
             <p className="text-xs text-default-400 font-semibold line-clamp-2">{organization.description}</p>
           )}
+        </div>
       </Card>
 
       {/* Список разделов */}

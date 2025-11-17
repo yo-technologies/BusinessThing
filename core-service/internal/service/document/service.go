@@ -38,15 +38,15 @@ func New(repo repository, queue queueClient, queueName string) *Service {
 
 // DocumentProcessingJob represents a job for document processing
 type DocumentProcessingJob struct {
-	JobType        string `json:"job_type"`
-	DocumentID     string `json:"document_id"`
-	OrganizationID string `json:"organization_id"`
-	S3Key          string `json:"s3_key"`
-	DocumentType   string `json:"document_type"`
-	DocumentName   string `json:"document_name"`
-	RetryCount     int    `json:"retry_count"`
-	MaxRetries     int    `json:"max_retries"`
-	CreatedAt      string `json:"created_at"`
+	JobType        string    `json:"job_type"`
+	DocumentID     domain.ID `json:"document_id"`
+	OrganizationID domain.ID `json:"organization_id"`
+	S3Key          string    `json:"s3_key"`
+	DocumentType   string    `json:"document_type"`
+	DocumentName   string    `json:"document_name"`
+	RetryCount     int       `json:"retry_count"`
+	MaxRetries     int       `json:"max_retries"`
+	CreatedAt      time.Time `json:"created_at"`
 }
 
 // RegisterDocument registers a new document and publishes processing job
@@ -136,14 +136,14 @@ func (s *Service) DeleteDocument(ctx context.Context, id domain.ID) error {
 func (s *Service) publishProcessingJob(ctx context.Context, doc domain.Document) error {
 	job := DocumentProcessingJob{
 		JobType:        "document",
-		DocumentID:     doc.ID.String(),
-		OrganizationID: doc.OrganizationID.String(),
+		DocumentID:     doc.ID,
+		OrganizationID: doc.OrganizationID,
 		S3Key:          doc.S3Key,
 		DocumentType:   doc.FileType,
 		DocumentName:   doc.Name,
 		RetryCount:     0,
 		MaxRetries:     3,
-		CreatedAt:      doc.CreatedAt.Format(time.RFC3339),
+		CreatedAt:      doc.CreatedAt,
 	}
 
 	body, err := json.Marshal(job)
