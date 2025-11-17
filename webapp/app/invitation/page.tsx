@@ -9,6 +9,7 @@ import { retrieveLaunchParams } from "@telegram-apps/sdk-react";
 
 import { refreshAuthToken, useApiClients } from "@/api/client";
 import { useAuth } from "@/hooks/useAuth";
+import { markInvitationAsProcessed } from "@/hooks/useInvitationToken";
 
 function InvitationContent() {
   const router = useRouter();
@@ -62,14 +63,38 @@ function InvitationContent() {
     try {
       await core.v1.userServiceAcceptInvitation(token, {});
 
+      // Помечаем приглашение как обработанное
+      markInvitationAsProcessed();
+
       // Синхронно обновляем токен с новыми организациями
       await refreshAuthToken();
 
       // Переходим на главную страницу (токен уже обновлен)
       router.push("/chat");
     } catch (err: any) {
-      console.error("Failed to accept invitation:", err);
-      setError(err.response?.data?.message || "Не удалось принять приглашение");
+      console.error("[InvitationPage] Failed to accept invitation:", err);
+      console.error("[InvitationPage] Error status:", err.response?.status);
+      console.error("[InvitationPage] Error data:", err.response?.data);
+      
+      // Если 400 - возможно приглашение уже использовано, логируем и идем дальше
+      if (err.response?.status === 400) {
+        console.warn("[InvitationPage] Got 400 error, possibly invitation already used. Continuing anyway...");
+        
+        // Помечаем приглашение как обработанное
+        markInvitationAsProcessed();
+        
+        // Обновляем токен на всякий случай
+        try {
+          await refreshAuthToken();
+        } catch (refreshErr) {
+          console.error("[InvitationPage] Failed to refresh token:", refreshErr);
+        }
+        
+        // Переходим на главную страницу
+        router.push("/chat");
+      } else {
+        setError(err.response?.data?.message || "Не удалось принять приглашение");
+      }
     } finally {
       setAccepting(false);
     }

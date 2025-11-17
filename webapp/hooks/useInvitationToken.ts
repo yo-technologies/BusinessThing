@@ -3,6 +3,8 @@
 import { useEffect, useState } from "react";
 import { retrieveLaunchParams } from "@telegram-apps/sdk-react";
 
+const INVITATION_PROCESSED_KEY = "businessthing_invitation_processed";
+
 /**
  * Хук для проверки наличия токена приглашения в startParam из Telegram или window.location
  * @returns true если есть токен приглашения, false в противном случае
@@ -12,6 +14,14 @@ export const useHasInvitation = () => {
 
   useEffect(() => {
     if (typeof window === "undefined") return;
+
+    // Проверяем, не было ли уже обработано приглашение в этой сессии
+    const processed = sessionStorage.getItem(INVITATION_PROCESSED_KEY);
+    if (processed) {
+      console.log("[useHasInvitation] Invitation already processed in this session");
+      setHasInvitation(false);
+      return;
+    }
 
     // Проверяем URL параметры
     const urlParams = new URLSearchParams(window.location.search);
@@ -52,4 +62,24 @@ export const useHasInvitation = () => {
   }, []);
 
   return hasInvitation;
+};
+
+/**
+ * Функция для пометки приглашения как обработанного
+ */
+export const markInvitationAsProcessed = () => {
+  if (typeof window !== "undefined") {
+    console.log("[markInvitationAsProcessed] Marking invitation as processed");
+    sessionStorage.setItem(INVITATION_PROCESSED_KEY, "true");
+  }
+};
+
+/**
+ * Функция для очистки флага обработки приглашения
+ */
+export const clearInvitationProcessed = () => {
+  if (typeof window !== "undefined") {
+    console.log("[clearInvitationProcessed] Clearing invitation processed flag");
+    sessionStorage.removeItem(INVITATION_PROCESSED_KEY);
+  }
 };

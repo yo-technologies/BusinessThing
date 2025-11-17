@@ -101,12 +101,12 @@ export default function ChatPage() {
       !loading &&
       !orgLoading &&
       isAuthenticated &&
-      !isNewUser &&
-      needsOrganization
+      !isNewUser
     ) {
+      // Приоритет - приглашение (даже если у пользователя уже есть организации)
       if (hasInvitation) {
         router.replace("/invitation");
-      } else {
+      } else if (needsOrganization) {
         router.replace("/organization/create");
       }
     }

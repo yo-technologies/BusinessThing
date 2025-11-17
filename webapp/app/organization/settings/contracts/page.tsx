@@ -65,12 +65,11 @@ export default function ContractsPage() {
       !authLoading &&
       !orgLoading &&
       isAuthenticated &&
-      !isNewUser &&
-      needsOrganization
+      !isNewUser
     ) {
       if (hasInvitation) {
         router.replace("/invitation");
-      } else {
+      } else if (needsOrganization) {
         router.replace("/organization/create");
       }
     }
