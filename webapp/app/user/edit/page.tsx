@@ -9,6 +9,7 @@ import { Card, CardBody, CardHeader, CardFooter } from "@heroui/card";
 
 import { useAuth } from "@/hooks/useAuth";
 import { useApiClients } from "@/api/client";
+import { useBackButton } from "@/hooks/useBackButton";
 
 export default function EditUserPage() {
   const router = useRouter();
@@ -20,6 +21,8 @@ export default function EditUserPage() {
   const [isLoading, setIsLoading] = useState(true);
   const [isSaving, setIsSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
+
+  useBackButton(true);
 
   useEffect(() => {
     const fetchUser = async () => {

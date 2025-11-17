@@ -159,7 +159,7 @@ export default function OrganizationPage() {
   }
 
   return (
-    <div className="flex flex-col min-h-screen pb-20 gap-4 justify-start">
+    <div className="flex flex-col min-h-screen gap-4 justify-start px-4 pb-23">
       {/* Заголовок организации */}
       <Card className="flex flex-row rounded-4xl shadow-md p-4 gap-3 min-h-fit">
         <div className="flex flex-col justify-center h-full">
