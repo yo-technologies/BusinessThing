@@ -74,7 +74,7 @@ export function ChatWindow({ messages, streamingMessage, streamingToolCalls, isS
 
   return (
     <Card className="flex flex-1 flex-col border-none shadow-none py-0 border-t-none">
-        <CardBody className="flex flex-1 flex-col pb-0 px-4" ref={messagesEndRef}>
+        
           {loadingMessages ? (
               <div className="flex flex-1 flex-row h-full justify-center items-center">
               <Spinner size="sm" label="Загружаем сообщения..." color="primary" />
@@ -86,7 +86,7 @@ export function ChatWindow({ messages, streamingMessage, streamingToolCalls, isS
                   </span>
               </div>
           ) : (
-            <div className="flex flex-col gap-3 pb-20">
+            <div className="flex flex-col gap-3 pb-20 h-full overflow-auto px-4 pt-10" ref={messagesEndRef}>
                 {messages.map((message, index) => {
                 // Пропускаем системные сообщения и сообщения типа tool
                 if (
@@ -180,7 +180,7 @@ export function ChatWindow({ messages, streamingMessage, streamingToolCalls, isS
                 
                 {/* Отображаем streaming message */}
                 {streamingMessage && (
-                <div className="flex flex-col gap-2" ref={messagesEndRef}>
+                <div className="flex flex-col gap-2">
                     {/* Заголовок для streaming сообщения агента, если последнее видимое сообщение не от ассистента */}
                     {(() => {
                     // Находим последнее видимое сообщение
@@ -214,7 +214,7 @@ export function ChatWindow({ messages, streamingMessage, streamingToolCalls, isS
                 
             </div>
           )}
-        </CardBody>
+        
     </Card>
   );
 }
