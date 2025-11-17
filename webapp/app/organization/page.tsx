@@ -124,9 +124,9 @@ export default function OrganizationPage() {
   }
 
   return (
-    <div className="flex flex-col min-h-screen pb-20 gap-4">
+    <div className="flex flex-col pb-20 gap-4">
       {/* Заголовок организации */}
-      <Card className="rounded-4xl shadow-md mt-4 p-5 gap-3">
+      <Card className="rounded-4xl shadow-md p-5 gap-3">
           <div className="flex items-start gap-2">
             <div className="flex-1 min-w-0 gap-0.5 flex flex-col">
               <h1 className="text-xl font-bold truncate">{organization.name || currentOrg.id}</h1>

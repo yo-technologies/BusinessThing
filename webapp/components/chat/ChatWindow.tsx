@@ -79,7 +79,7 @@ export function ChatWindow({ messages, streamingMessage, streamingToolCalls, isS
                   </span>
               </div>
           ) : (
-            <div className="flex flex-col gap-3 pb-10">
+            <div className="flex flex-col gap-3 pb-20">
                 {messages.map((message, index) => {
                 // Пропускаем системные сообщения и сообщения типа tool
                 if (
