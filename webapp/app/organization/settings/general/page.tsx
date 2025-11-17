@@ -1,7 +1,6 @@
 "use client";
 
 import { useCallback, useEffect, useState } from "react";
-import { Button } from "@heroui/button";
 import { Card, CardBody, CardHeader } from "@heroui/card";
 import { Spinner } from "@heroui/spinner";
 import { Input, Textarea } from "@heroui/input";
@@ -12,17 +11,30 @@ import { CoreOrganization } from "@/api/api.core.generated";
 import { useApiClients } from "@/api/client";
 import { useAuth } from "@/hooks/useAuth";
 import { useOrganization } from "@/hooks/useOrganization";
+import { useHasInvitation } from "@/hooks/useInvitationToken";
 import { useBackButton } from "@/hooks/useBackButton";
 import { useCurrentRole } from "@/hooks/useCurrentRole";
 
 export default function GeneralSettingsPage() {
   const router = useRouter();
-  const { loading: authLoading, isAuthenticated, isNewUser, organizations } = useAuth();
-  const { currentOrg, loading: orgLoading, needsOrganization } = useOrganization({ organizations, authLoading });
+  const {
+    loading: authLoading,
+    isAuthenticated,
+    isNewUser,
+    organizations,
+  } = useAuth();
+  const {
+    currentOrg,
+    loading: orgLoading,
+    needsOrganization,
+  } = useOrganization({ organizations, authLoading });
+  const hasInvitation = useHasInvitation();
   const { core } = useApiClients();
   const { isAdmin } = useCurrentRole();
 
-  const [organization, setOrganization] = useState<CoreOrganization | null>(null);
+  const [organization, setOrganization] = useState<CoreOrganization | null>(
+    null,
+  );
   const [initialLoading, setInitialLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [saving, setSaving] = useState(false);
@@ -41,10 +53,28 @@ export default function GeneralSettingsPage() {
   }, [isNewUser, authLoading, router]);
 
   useEffect(() => {
-    if (!authLoading && !orgLoading && isAuthenticated && !isNewUser && needsOrganization) {
-      router.replace("/organization/create");
+    if (
+      !authLoading &&
+      !orgLoading &&
+      isAuthenticated &&
+      !isNewUser &&
+      needsOrganization
+    ) {
+      if (hasInvitation) {
+        router.replace("/invitation");
+      } else {
+        router.replace("/organization/create");
+      }
     }
-  }, [authLoading, orgLoading, isAuthenticated, isNewUser, needsOrganization, router]);
+  }, [
+    authLoading,
+    orgLoading,
+    isAuthenticated,
+    isNewUser,
+    needsOrganization,
+    hasInvitation,
+    router,
+  ]);
 
   const loadOrganization = useCallback(async () => {
     if (!currentOrg?.id) return;
@@ -52,8 +82,11 @@ export default function GeneralSettingsPage() {
     setInitialLoading(true);
     setError(null);
     try {
-      const response = await core.v1.organizationServiceGetOrganization(currentOrg.id);
+      const response = await core.v1.organizationServiceGetOrganization(
+        currentOrg.id,
+      );
       const org = response.data.organization;
+
       if (org) {
         setOrganization(org);
         setName(org.name || "");
@@ -72,19 +105,29 @@ export default function GeneralSettingsPage() {
   useEffect(() => {
     if (!isAuthenticated || authLoading || isNewUser || !currentOrg?.id) return;
     void loadOrganization();
-  }, [isAuthenticated, authLoading, isNewUser, currentOrg?.id, loadOrganization]);
+  }, [
+    isAuthenticated,
+    authLoading,
+    isNewUser,
+    currentOrg?.id,
+    loadOrganization,
+  ]);
 
   const handleSave = async () => {
     if (!organization?.id || !isAdmin) return;
 
     setSaving(true);
     try {
-      const response = await core.v1.organizationServiceUpdateOrganization(organization.id, {
-        name: name || undefined,
-        industry: industry || undefined,
-        region: region || undefined,
-        description: description || undefined,
-      });
+      const response = await core.v1.organizationServiceUpdateOrganization(
+        organization.id,
+        {
+          name: name || undefined,
+          industry: industry || undefined,
+          region: region || undefined,
+          description: description || undefined,
+        },
+      );
+
       if (response.data.organization) {
         setOrganization(response.data.organization);
       }
@@ -96,12 +139,12 @@ export default function GeneralSettingsPage() {
     }
   };
 
-  const hasChanges = organization && (
-    name !== (organization.name || "") ||
-    industry !== (organization.industry || "") ||
-    region !== (organization.region || "") ||
-    description !== (organization.description || "")
-  );
+  const hasChanges =
+    organization &&
+    (name !== (organization.name || "") ||
+      industry !== (organization.industry || "") ||
+      region !== (organization.region || "") ||
+      description !== (organization.description || ""));
 
   if (authLoading || orgLoading || initialLoading) {
     return (
@@ -148,37 +191,37 @@ export default function GeneralSettingsPage() {
       <Card className="flex-1 rounded-4xl shadow-none ">
         <CardBody className="gap-5 px-5 py-5">
           <Input
+            isDisabled={!isAdmin}
             label="Название организации"
             placeholder="ООО «Моя компания»"
             value={name}
             onValueChange={setName}
-            isDisabled={!isAdmin}
           />
 
           <Input
+            isDisabled={!isAdmin}
             label="Отрасль"
             placeholder="IT, Финансы, Производство..."
             value={industry}
             onValueChange={setIndustry}
-            isDisabled={!isAdmin}
           />
 
           <Input
+            isDisabled={!isAdmin}
             label="Регион"
             placeholder="Москва, Санкт-Петербург..."
             value={region}
             onValueChange={setRegion}
-            isDisabled={!isAdmin}
           />
 
           <Textarea
+            isDisabled={!isAdmin}
             label="Описание"
+            maxRows={10}
+            minRows={4}
             placeholder="Краткое описание деятельности организации"
             value={description}
             onValueChange={setDescription}
-            minRows={4}
-            maxRows={10}
-            isDisabled={!isAdmin}
           />
 
           {!isAdmin && (
@@ -188,7 +231,9 @@ export default function GeneralSettingsPage() {
           )}
 
           <div className="rounded-3xl  bg-default-50/40 px-4 py-4">
-            <h3 className="text-base font-semibold mb-3">Дополнительная информация</h3>
+            <h3 className="text-base font-semibold mb-3">
+              Дополнительная информация
+            </h3>
             <div className="grid gap-3 text-sm">
               <div className="flex justify-between">
                 <span className="text-default-400">ID организации:</span>
@@ -197,13 +242,19 @@ export default function GeneralSettingsPage() {
               {organization.createdAt && (
                 <div className="flex justify-between">
                   <span className="text-default-400">Дата создания:</span>
-                  <span>{new Date(organization.createdAt).toLocaleString("ru-RU")}</span>
+                  <span>
+                    {new Date(organization.createdAt).toLocaleString("ru-RU")}
+                  </span>
                 </div>
               )}
               {organization.updatedAt && (
                 <div className="flex justify-between">
-                  <span className="text-default-400">Последнее обновление:</span>
-                  <span>{new Date(organization.updatedAt).toLocaleString("ru-RU")}</span>
+                  <span className="text-default-400">
+                    Последнее обновление:
+                  </span>
+                  <span>
+                    {new Date(organization.updatedAt).toLocaleString("ru-RU")}
+                  </span>
                 </div>
               )}
             </div>

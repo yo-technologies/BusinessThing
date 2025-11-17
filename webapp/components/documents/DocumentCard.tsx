@@ -2,10 +2,18 @@ import { Card, CardHeader, CardBody, CardFooter } from "@heroui/card";
 import { Chip } from "@heroui/chip";
 import { Image } from "@heroui/image";
 import { Button } from "@heroui/button";
-import { DocumentInfo } from "@/types/document";
 import { TrashIcon, DocumentIcon } from "@heroicons/react/24/outline";
 import { useState } from "react";
-import { Modal, ModalContent, ModalHeader, ModalBody, ModalFooter, useDisclosure } from "@heroui/modal"; // Assuming @heroui has a Modal component
+import {
+  Modal,
+  ModalContent,
+  ModalHeader,
+  ModalBody,
+  ModalFooter,
+  useDisclosure,
+} from "@heroui/modal"; // Assuming @heroui has a Modal component
+
+import { DocumentInfo } from "@/types/document";
 
 interface DocumentCardProps {
   documentInfo: DocumentInfo;
@@ -13,7 +21,11 @@ interface DocumentCardProps {
   isAdmin?: boolean; // To show delete button for Admin
 }
 
-export const DocumentCard = ({ documentInfo, onDelete, isAdmin }: DocumentCardProps) => {
+export const DocumentCard = ({
+  documentInfo,
+  onDelete,
+  isAdmin,
+}: DocumentCardProps) => {
   const { isOpen, onOpen, onOpenChange } = useDisclosure();
   const [isDeleting, setIsDeleting] = useState(false);
 
@@ -24,7 +36,7 @@ export const DocumentCard = ({ documentInfo, onDelete, isAdmin }: DocumentCardPr
       case "processing":
         return "warning";
       case "error":
-        return "danger"
+        return "danger";
       default:
         return "default";
     }
@@ -60,28 +72,31 @@ export const DocumentCard = ({ documentInfo, onDelete, isAdmin }: DocumentCardPr
         </div>
       )}
       {/* Overlay for better text readability */}
-      
 
       <CardHeader className="absolute top-0 left-0 right-0 pb-0 pt-2 px-4 flex-col items-start z-20">
         <div className="flex gap-1 mt-2">
-          <Chip size="sm" color="secondary" variant="flat">
+          <Chip color="secondary" size="sm" variant="flat">
             {new Date(documentInfo.uploadDate).toLocaleDateString()}
           </Chip>
-          <Chip color={getStatusColor(documentInfo.status)} size="sm" className="text-white">
+          <Chip
+            className="text-white"
+            color={getStatusColor(documentInfo.status)}
+            size="sm"
+          >
             {documentInfo.status}
           </Chip>
         </div>
       </CardHeader>
-      <CardBody className="absolute inset-0 flex items-center justify-center z-20"></CardBody>
-      
+      <CardBody className="absolute inset-0 flex items-center justify-center z-20" />
+
       {isAdmin && onDelete && (
         <div className="absolute top-2 right-2 z-30">
           <Button
             isIconOnly
             color="danger"
-            variant="solid"
-            size="sm"
             radius="full"
+            size="sm"
+            variant="solid"
             onPress={handleDeleteClick} // Open modal instead of direct delete
           >
             <TrashIcon className="w-4 h-4" />
@@ -97,15 +112,24 @@ export const DocumentCard = ({ documentInfo, onDelete, isAdmin }: DocumentCardPr
         <ModalContent>
           {(onClose) => (
             <>
-              <ModalHeader className="flex flex-col gap-1">Вы уверены?</ModalHeader>
+              <ModalHeader className="flex flex-col gap-1">
+                Вы уверены?
+              </ModalHeader>
               <ModalBody>
-                <p className="text-default-400">Вы уверены, что хотите удалить <b>{documentInfo.name}</b>? Это действие нельзя будет отменить.</p>
+                <p className="text-default-400">
+                  Вы уверены, что хотите удалить <b>{documentInfo.name}</b>? Это
+                  действие нельзя будет отменить.
+                </p>
               </ModalBody>
               <ModalFooter>
                 <Button color="default" variant="light" onPress={onClose}>
                   Отмена
                 </Button>
-                <Button color="danger" onPress={handleConfirmDelete} isLoading={isDeleting}>
+                <Button
+                  color="danger"
+                  isLoading={isDeleting}
+                  onPress={handleConfirmDelete}
+                >
                   Удалить
                 </Button>
               </ModalFooter>

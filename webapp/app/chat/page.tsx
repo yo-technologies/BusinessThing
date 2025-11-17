@@ -2,24 +2,35 @@
 
 import { useCallback, useEffect, useState } from "react";
 import { Spinner } from "@heroui/spinner";
-import { Divider } from "@heroui/divider";
 import { useRouter } from "next/navigation";
+import { Card } from "@heroui/card";
 
 import { useAuth } from "@/hooks/useAuth";
 import { useOrganization } from "@/hooks/useOrganization";
+import { useHasInvitation } from "@/hooks/useInvitationToken";
 import { useChatList } from "@/hooks/useChatList";
 import { useChatWebSocket } from "@/hooks/useChatWebSocket";
 import { useApiClients } from "@/api/client";
-import { ChatWindow, ChatInput, ChatHeader, ChatListModal } from "@/components/chat";
+import {
+  ChatWindow,
+  ChatInput,
+  ChatHeader,
+  ChatListModal,
+} from "@/components/chat";
 import { AgentGetLLMLimitsResponse } from "@/api/api.agent.generated";
-import { Card } from "@heroui/card";
 
 const CHAT_SESSION_KEY = "last_chat_id";
 
 export default function ChatPage() {
   const router = useRouter();
-  const { isAuthenticated, loading, user, isNewUser, organizations } = useAuth();
-  const { currentOrg, loading: orgLoading, needsOrganization } = useOrganization({ organizations, authLoading: loading });
+  const { isAuthenticated, loading, user, isNewUser, organizations } =
+    useAuth();
+  const {
+    currentOrg,
+    loading: orgLoading,
+    needsOrganization,
+  } = useOrganization({ organizations, authLoading: loading });
+  const hasInvitation = useHasInvitation();
   const { agent } = useApiClients();
 
   const [selectedChatId, setSelectedChatId] = useState<string | null>(null);
@@ -29,7 +40,12 @@ export default function ChatPage() {
   const [initialLoading, setInitialLoading] = useState(true);
   const [loadingMessages, setLoadingMessages] = useState(false);
 
-  const { chats, loading: chatsLoading, reload: reloadChats, deleteChat } = useChatList({
+  const {
+    chats,
+    loading: chatsLoading,
+    reload: reloadChats,
+    deleteChat,
+  } = useChatList({
     organizationId: currentOrg?.id,
     enabled: isAuthenticated && !isNewUser && !needsOrganization,
   });
@@ -50,20 +66,22 @@ export default function ChatPage() {
   } = useChatWebSocket({
     chatId: selectedChatId,
     organizationId: currentOrg?.id,
-    onChatCreated: useCallback((newChatId: string) => {
-      console.log('[ChatPage] onChatCreated called:', { newChatId, currentSelectedChatId: selectedChatId });
-      setSelectedChatId(newChatId);
-      
-      // Сохраняем новый chatId в sessionStorage
-      sessionStorage.setItem(CHAT_SESSION_KEY, newChatId);
-      console.log('[ChatPage] Saved new chatId to sessionStorage:', newChatId);
-      
-      reloadChats();
-    }, [reloadChats, selectedChatId]),
+    onChatCreated: useCallback(
+      (newChatId: string) => {
+        setSelectedChatId(newChatId);
+
+        // Сохраняем новый chatId в sessionStorage
+        sessionStorage.setItem(CHAT_SESSION_KEY, newChatId);
+
+        reloadChats();
+      },
+      [reloadChats, selectedChatId],
+    ),
     onFinalReceived: useCallback(async () => {
       // Перезагружаем лимиты после завершения стрима
       try {
         const limitsResp = await agent.v1.agentServiceGetLlmLimits();
+
         setLimits(limitsResp.data ?? null);
       } catch (e) {
         console.error("Failed to reload limits", e);
@@ -77,19 +95,46 @@ export default function ChatPage() {
     }
   }, [isNewUser, loading, router]);
 
+  // Проверяем наличие приглашения перед редиректом на создание организации
   useEffect(() => {
-    if (!loading && !orgLoading && isAuthenticated && !isNewUser && needsOrganization) {
-      router.replace("/organization/create");
+    if (
+      !loading &&
+      !orgLoading &&
+      isAuthenticated &&
+      !isNewUser &&
+      needsOrganization
+    ) {
+      if (hasInvitation) {
+        router.replace("/invitation");
+      } else {
+        router.replace("/organization/create");
+      }
     }
-  }, [loading, orgLoading, isAuthenticated, isNewUser, needsOrganization, router]);
+  }, [
+    loading,
+    orgLoading,
+    isAuthenticated,
+    isNewUser,
+    needsOrganization,
+    hasInvitation,
+    router,
+  ]);
 
   // Инициализация при первой загрузке
   useEffect(() => {
     const loadInitialData = async () => {
-      if (!currentOrg?.id || !isAuthenticated || isNewUser || chatsLoading || needsOrganization) return;
+      if (
+        !currentOrg?.id ||
+        !isAuthenticated ||
+        isNewUser ||
+        chatsLoading ||
+        needsOrganization
+      )
+        return;
 
       try {
         const limitsResp = await agent.v1.agentServiceGetLlmLimits();
+
         setLimits(limitsResp.data ?? null);
         setInitialLoading(false);
       } catch (e) {
@@ -102,7 +147,16 @@ export default function ChatPage() {
     if (initialLoading && !chatsLoading && !orgLoading) {
       void loadInitialData();
     }
-  }, [agent.v1, currentOrg?.id, isAuthenticated, isNewUser, chatsLoading, needsOrganization, initialLoading, orgLoading]);
+  }, [
+    agent.v1,
+    currentOrg?.id,
+    isAuthenticated,
+    isNewUser,
+    chatsLoading,
+    needsOrganization,
+    initialLoading,
+    orgLoading,
+  ]);
 
   const handleSelectChat = useCallback(
     async (chatId: string) => {
@@ -112,20 +166,23 @@ export default function ChatPage() {
 
       // Сохраняем chatId в sessionStorage
       sessionStorage.setItem(CHAT_SESSION_KEY, chatId);
-      console.log('[ChatPage] Saved chatId to sessionStorage:', chatId);
 
       try {
         // Загружаем сообщения
-        const messagesResp = await agent.v1.agentServiceGetMessages(chatId, { 
+        const messagesResp = await agent.v1.agentServiceGetMessages(chatId, {
           orgId: currentOrg?.id ?? "",
-          limit: 50, 
-          offset: 0 
+          limit: 50,
+          offset: 0,
         });
+
         // Переворачиваем массив, т.к. backend отдаёт от новых к старым
         setMessages([...(messagesResp.data.messages ?? [])].reverse());
-        
+
         // Загружаем информацию о чате
-        const chatResp = await agent.v1.agentServiceGetChat(chatId, { orgId: currentOrg?.id ?? "" });
+        const chatResp = await agent.v1.agentServiceGetChat(chatId, {
+          orgId: currentOrg?.id ?? "",
+        });
+
         if (chatResp.data.chat?.title) {
           setChatName(chatResp.data.chat.title);
         }
@@ -135,52 +192,65 @@ export default function ChatPage() {
         setLoadingMessages(false);
       }
     },
-    [agent.v1, currentOrg?.id, setMessages, setChatName, clearError]
+    [agent.v1, currentOrg?.id, setMessages, setChatName, clearError],
   );
 
   // Восстановление последнего чата из sessionStorage
   useEffect(() => {
-    if (initialLoading || chatsLoading || orgLoading || !chats.length || !currentOrg?.id) return;
+    if (
+      initialLoading ||
+      chatsLoading ||
+      orgLoading ||
+      !chats.length ||
+      !currentOrg?.id
+    )
+      return;
 
     const lastChatId = sessionStorage.getItem(CHAT_SESSION_KEY);
-    console.log('[ChatPage] Restoring from sessionStorage:', lastChatId);
-    
+
     if (lastChatId && !selectedChatId) {
       // Проверяем, что чат существует в списке
-      const chatExists = chats.some(chat => chat.id === lastChatId);
-      
+      const chatExists = chats.some((chat) => chat.id === lastChatId);
+
       if (chatExists) {
-        console.log('[ChatPage] Restoring existing chat:', lastChatId);
         void handleSelectChat(lastChatId);
       } else {
-        console.log('[ChatPage] Last chat not found in list');
       }
     }
-  }, [initialLoading, chatsLoading, orgLoading, chats, selectedChatId, currentOrg?.id, handleSelectChat]);
+  }, [
+    initialLoading,
+    chatsLoading,
+    orgLoading,
+    chats,
+    selectedChatId,
+    currentOrg?.id,
+    handleSelectChat,
+  ]);
 
   const handleCreateChat = useCallback(() => {
     setSelectedChatId(null);
     setMessages([]);
     setChatName(null);
     clearError();
-    
+
     // Очищаем sessionStorage при создании нового чата
     sessionStorage.removeItem(CHAT_SESSION_KEY);
-    console.log('[ChatPage] Cleared chatId from sessionStorage');
   }, [setMessages, setChatName, clearError]);
 
-  const handleDeleteChat = useCallback(async (chatId: string) => {
-    await deleteChat(chatId);
-    
-    // Если удалили активный чат - очищаем состояние
-    if (selectedChatId === chatId) {
-      setSelectedChatId(null);
-      setMessages([]);
-      setChatName(null);
-      sessionStorage.removeItem(CHAT_SESSION_KEY);
-      console.log('[ChatPage] Deleted active chat, cleared state');
-    }
-  }, [deleteChat, selectedChatId, setMessages, setChatName]);
+  const handleDeleteChat = useCallback(
+    async (chatId: string) => {
+      await deleteChat(chatId);
+
+      // Если удалили активный чат - очищаем состояние
+      if (selectedChatId === chatId) {
+        setSelectedChatId(null);
+        setMessages([]);
+        setChatName(null);
+        sessionStorage.removeItem(CHAT_SESSION_KEY);
+      }
+    },
+    [deleteChat, selectedChatId, setMessages, setChatName],
+  );
 
   const handleSend = useCallback(() => {
     if (!input.trim()) return;
@@ -192,7 +262,7 @@ export default function ChatPage() {
   if (loading || orgLoading || initialLoading) {
     return (
       <div className="flex h-full items-center justify-center">
-        <Spinner label="Загружаем чат..." color="primary" />
+        <Spinner color="primary" label="Загружаем чат..." />
       </div>
     );
   }
@@ -215,37 +285,37 @@ export default function ChatPage() {
           chatName={chatName}
           limits={limits}
           usageTokens={usageTokens}
-          onShowChatList={() => setShowChatListModal(true)}
           onCreateChat={handleCreateChat}
+          onShowChatList={() => setShowChatListModal(true)}
         />
 
-        <ChatWindow 
-          messages={messages} 
-          streamingMessage={streamingMessage} 
-          streamingToolCalls={streamingToolCalls}
+        <ChatWindow
+          chatId={selectedChatId}
           isStreaming={isStreaming}
           loadingMessages={loadingMessages}
-          chatId={selectedChatId}
+          messages={messages}
+          streamingMessage={streamingMessage}
+          streamingToolCalls={streamingToolCalls}
         />
 
         <ChatInput
+          disabled={false}
+          isStreaming={isStreaming}
           value={input}
           onChange={setInput}
           onSend={handleSend}
-          disabled={false}
-          isStreaming={isStreaming}
         />
       </Card>
 
       <ChatListModal
-        isOpen={showChatListModal}
-        onClose={() => setShowChatListModal(false)}
         chats={chats}
+        isOpen={showChatListModal}
+        loading={chatsLoading}
         selectedChatId={selectedChatId}
-        onSelectChat={handleSelectChat}
+        onClose={() => setShowChatListModal(false)}
         onCreateChat={handleCreateChat}
         onDeleteChat={handleDeleteChat}
-        loading={chatsLoading}
+        onSelectChat={handleSelectChat}
       />
     </div>
   );

@@ -11,14 +11,25 @@ import { AgentMemoryFact } from "@/api/api.agent.generated";
 import { useApiClients } from "@/api/client";
 import { useAuth } from "@/hooks/useAuth";
 import { useOrganization } from "@/hooks/useOrganization";
+import { useHasInvitation } from "@/hooks/useInvitationToken";
 import { useBackButton } from "@/hooks/useBackButton";
 
 type FactWithLoading = AgentMemoryFact & { deleting?: boolean };
 
 export default function MemoryPage() {
   const router = useRouter();
-  const { loading: authLoading, isAuthenticated, isNewUser, organizations } = useAuth();
-  const { currentOrg, loading: orgLoading, needsOrganization } = useOrganization({ organizations, authLoading });
+  const {
+    loading: authLoading,
+    isAuthenticated,
+    isNewUser,
+    organizations,
+  } = useAuth();
+  const {
+    currentOrg,
+    loading: orgLoading,
+    needsOrganization,
+  } = useOrganization({ organizations, authLoading });
+  const hasInvitation = useHasInvitation();
   const { agent } = useApiClients();
 
   const [facts, setFacts] = useState<FactWithLoading[]>([]);
@@ -34,10 +45,28 @@ export default function MemoryPage() {
   }, [isNewUser, authLoading, router]);
 
   useEffect(() => {
-    if (!authLoading && !orgLoading && isAuthenticated && !isNewUser && needsOrganization) {
-      router.replace("/organization/create");
+    if (
+      !authLoading &&
+      !orgLoading &&
+      isAuthenticated &&
+      !isNewUser &&
+      needsOrganization
+    ) {
+      if (hasInvitation) {
+        router.replace("/invitation");
+      } else {
+        router.replace("/organization/create");
+      }
     }
-  }, [authLoading, orgLoading, isAuthenticated, isNewUser, needsOrganization, router]);
+  }, [
+    authLoading,
+    orgLoading,
+    isAuthenticated,
+    isNewUser,
+    needsOrganization,
+    hasInvitation,
+    router,
+  ]);
 
   const loadFacts = useCallback(async () => {
     if (!currentOrg?.id) return;
@@ -45,7 +74,10 @@ export default function MemoryPage() {
     setInitialLoading(true);
     setError(null);
     try {
-      const response = await agent.v1.memoryServiceListMemoryFacts({ orgId: currentOrg.id });
+      const response = await agent.v1.memoryServiceListMemoryFacts({
+        orgId: currentOrg.id,
+      });
+
       setFacts(response.data.facts ?? []);
     } catch (e) {
       console.error("Failed to load memory facts", e);
@@ -68,7 +100,9 @@ export default function MemoryPage() {
     );
 
     try {
-      await agent.v1.memoryServiceDeleteMemoryFact(fact.id, { orgId: currentOrg.id });
+      await agent.v1.memoryServiceDeleteMemoryFact(fact.id, {
+        orgId: currentOrg.id,
+      });
       setFacts((prev) => prev.filter((f) => f.id !== fact.id));
     } catch (e) {
       console.error("Failed to delete fact", e);
@@ -105,7 +139,8 @@ export default function MemoryPage() {
             <p className="text-xl font-semibold">Память агента</p>
           </div>
           <p className="text-xs text-default-300">
-            Факты, которые агент будет использовать при общении с пользователями вашей организации.
+            Факты, которые агент будет использовать при общении с пользователями
+            вашей организации.
           </p>
         </CardHeader>
       </Card>
@@ -114,9 +149,12 @@ export default function MemoryPage() {
         <CardBody className="gap-2">
           {facts.length === 0 ? (
             <div className="flex flex-col h-full items-center justify-center py-12 gap-2">
-              <p className="text-default-400 text-center">Память агента пуста</p>
+              <p className="text-default-400 text-center">
+                Память агента пуста
+              </p>
               <p className="text-sm text-default-300 text-center max-w-md">
-                Общайтесь с вашим агентом в чате, и важные факты будут автоматически сохраняться здесь.
+                Общайтесь с вашим агентом в чате, и важные факты будут
+                автоматически сохраняться здесь.
               </p>
             </div>
           ) : (
@@ -127,15 +165,17 @@ export default function MemoryPage() {
                   className="flex flex-col gap-3 p-4 rounded-3xl bg-default-50/60 hover:bg-default-100/70 transition-colors"
                 >
                   <div className="flex-1 min-w-0">
-                    <p className="text-sm whitespace-pre-wrap">{fact.content}</p>
+                    <p className="text-sm whitespace-pre-wrap">
+                      {fact.content}
+                    </p>
                   </div>
                   <div className="flex gap-2 justify-end">
                     <Button
                       isIconOnly
-                      size="sm"
-                      variant="flat"
                       color="danger"
                       isLoading={fact.deleting}
+                      size="sm"
+                      variant="flat"
                       onPress={() => handleDelete(fact)}
                     >
                       <TrashIcon className="h-4 w-4" />
@@ -147,7 +187,6 @@ export default function MemoryPage() {
           )}
         </CardBody>
       </Card>
-
     </div>
   );
 }

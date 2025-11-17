@@ -19,6 +19,7 @@ export const useBackButton = (show: boolean = true, onClick?: () => void) => {
       // Монтируем BackButton если доступен
       if (!backButton.mount.isAvailable()) {
         console.warn("BackButton is not available");
+
         return;
       }
 

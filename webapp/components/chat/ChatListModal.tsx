@@ -1,9 +1,15 @@
 "use client";
 
-import { Drawer, DrawerContent, DrawerHeader, DrawerBody } from "@heroui/drawer";
+import {
+  Drawer,
+  DrawerContent,
+  DrawerHeader,
+  DrawerBody,
+} from "@heroui/drawer";
+
 import { ChatList } from "./ChatList";
+
 import { AgentChat } from "@/api/api.agent.generated";
-import { Divider } from "@heroui/divider";
 
 interface ChatListModalProps {
   isOpen: boolean;
@@ -38,15 +44,15 @@ export function ChatListModal({
 
   return (
     <Drawer
-      isOpen={isOpen}
-      onClose={onClose}
-      placement="bottom"
       backdrop="blur"
-      size="2xl"
       classNames={{
         base: "pb-safe",
         body: "px-4 pb-6 overflow-y-auto",
       }}
+      isOpen={isOpen}
+      placement="bottom"
+      size="2xl"
+      onClose={onClose}
     >
       <DrawerContent>
         <DrawerHeader className="flex flex-col gap-1 px-4 pt-4 pb-2 border-b border-default-200">
@@ -55,11 +61,11 @@ export function ChatListModal({
         <DrawerBody>
           <ChatList
             chats={chats}
+            loading={loading}
             selectedChatId={selectedChatId}
-            onSelectChat={handleSelectChat}
             onCreateChat={handleCreateChat}
             onDeleteChat={onDeleteChat}
-            loading={loading}
+            onSelectChat={handleSelectChat}
           />
         </DrawerBody>
       </DrawerContent>
