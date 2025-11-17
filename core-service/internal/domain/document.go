@@ -21,7 +21,7 @@ type Document struct {
 	FileType       string         `db:"file_type"`
 	FileSize       int64          `db:"file_size"`
 	Status         DocumentStatus `db:"status"`
-	ErrorMessage   string         `db:"error_message"`
+	ErrorMessage   *string        `db:"error_message"`
 	CreatedAt      time.Time      `db:"created_at"`
 	UpdatedAt      time.Time      `db:"updated_at"`
 }
@@ -43,7 +43,7 @@ func NewDocument(organizationID ID, name, s3Key, fileType string, fileSize int64
 }
 
 // UpdateStatus обновляет статус документа
-func (d *Document) UpdateStatus(status DocumentStatus, errorMessage string) {
+func (d *Document) UpdateStatus(status DocumentStatus, errorMessage *string) {
 	d.Status = status
 	d.ErrorMessage = errorMessage
 	d.UpdatedAt = time.Now()

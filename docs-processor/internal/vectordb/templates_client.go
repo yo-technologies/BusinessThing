@@ -140,13 +140,13 @@ func (c *TemplatesClient) IndexTemplate(ctx context.Context, template *domain.Te
 	defer span.Finish()
 
 	doc := IndexTemplateRequest{
-		TemplateID:   template.ID.String(),
-		Name:         template.Name,
-		Description:  template.Description,
-		TemplateType: template.TemplateType,
-		FieldsCount:  template.FieldsCount,
-		Embedding:    embedding,
-		CreatedAt:    template.CreatedAt.Format("2006-01-02T15:04:05Z07:00"),
+		TemplateID:     template.ID.String(),
+		Name:           template.Name,
+		Description:    template.Description,
+		TemplateType:   template.TemplateType,
+		FieldsCount:    template.FieldsCount,
+		Embedding:      embedding,
+		CreatedAt:      template.CreatedAt.Format("2006-01-02T15:04:05Z07:00"),
 	}
 
 	body, err := json.Marshal(doc)

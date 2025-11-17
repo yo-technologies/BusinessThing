@@ -114,7 +114,7 @@ func (r *PGXRepository) ListDocuments(ctx context.Context, organizationID domain
 }
 
 // UpdateDocumentStatus updates document status
-func (r *PGXRepository) UpdateDocumentStatus(ctx context.Context, id domain.ID, status domain.DocumentStatus, errorMessage string) error {
+func (r *PGXRepository) UpdateDocumentStatus(ctx context.Context, id domain.ID, status domain.DocumentStatus, errorMessage *string) error {
 	span, ctx := opentracing.StartSpanFromContext(ctx, "repository.UpdateDocumentStatus")
 	defer span.Finish()
 
