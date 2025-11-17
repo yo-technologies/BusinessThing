@@ -55,5 +55,5 @@ func (p *PDFParser) Parse(ctx context.Context, reader io.Reader) (string, error)
 }
 
 func (p *PDFParser) SupportsType(docType domain.DocumentType) bool {
-	return docType == domain.DocumentTypePDF
+	return docType == domain.DocumentTypePDF || docType == "application/pdf"
 }

@@ -209,7 +209,7 @@ export default function ChatPage() {
   }
 
   return (
-    <>
+    <div className="flex h-full px-4">
       <Card className="flex flex-1 flex-col rounded-4xl shadow-none py-0">
         <ChatHeader
           chatName={chatName}
@@ -247,6 +247,6 @@ export default function ChatPage() {
         onDeleteChat={handleDeleteChat}
         loading={chatsLoading}
       />
-    </>
+    </div>
   );
 }

@@ -192,6 +192,7 @@ export default function UsersPage() {
         selectedKey={activeTab}
         onSelectionChange={(key) => setActiveTab(key as TabType)}
         classNames={{
+          tabWrapper: "bg-default-100/60 rounded-full p-1",
           tabList: "w-full relative rounded-full p-0",
           cursor: "rounded-full",
           panel: "p-0",
@@ -205,7 +206,7 @@ export default function UsersPage() {
             <div className="flex items-center gap-2 rounded-full">
               <UsersIcon className="h-4 w-4" />
               <span>Пользователи</span>
-              <Chip size="sm" variant="flat" color="secondary">
+              <Chip size="sm" color="success">
                 {users.length}
               </Chip>
             </div>
@@ -278,7 +279,7 @@ export default function UsersPage() {
             <div className="flex items-center gap-2">
               <EnvelopeIcon className="h-4 w-4" />
               <span>Приглашения</span>
-              <Chip size="sm" variant="flat" color="warning">
+              <Chip size="sm" color="warning">
                 {invitations.length}
               </Chip>
             </div>
