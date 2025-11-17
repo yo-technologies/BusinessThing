@@ -5,6 +5,7 @@ BusinessThing предоставляет владельцу и команде м
 
 **📱 Telegram бот:** [Открыть](https://t.me/business_thing_bot)
 **📋 Техническое задание:** [Открыть](https://docs.google.com/document/d/129uhV9V3wJJ2HFG88s_8OzzRsO_g1PbeRN6mLtWn57k/edit?usp=sharing)
+**📋 User-flow:** [Открыть](https://docs.google.com/document/d/1H7cYwaE2WRLZJdFTDWhI5BJNqIqEJ-i2P8NxTVVISx0/edit?usp=sharing)
 
 ## 💼 Бизнес‑ценность
 
