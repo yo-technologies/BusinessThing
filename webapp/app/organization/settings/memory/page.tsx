@@ -45,12 +45,7 @@ export default function MemoryPage() {
   }, [isNewUser, authLoading, router]);
 
   useEffect(() => {
-    if (
-      !authLoading &&
-      !orgLoading &&
-      isAuthenticated &&
-      !isNewUser
-    ) {
+    if (!authLoading && !orgLoading && isAuthenticated && !isNewUser) {
       if (hasInvitation) {
         router.replace("/invitation");
       } else if (needsOrganization) {
@@ -163,12 +158,10 @@ export default function MemoryPage() {
                   key={fact.id}
                   className="flex flex-col gap-3 p-4 rounded-3xl bg-default-50/60 hover:bg-default-100/70 transition-colors"
                 >
-                  <div className="flex-1 min-w-0">
+                  <div className="flex flex-row gap-2 justify-center flex-1 min-w-0">
                     <p className="text-sm whitespace-pre-wrap">
                       {fact.content}
                     </p>
-                  </div>
-                  <div className="flex gap-2 justify-end">
                     <Button
                       isIconOnly
                       color="danger"

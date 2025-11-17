@@ -91,12 +91,7 @@ export default function OrganizationPage() {
   }, [isNewUser, authLoading, router]);
 
   useEffect(() => {
-    if (
-      !authLoading &&
-      !orgLoading &&
-      isAuthenticated &&
-      !isNewUser
-    ) {
+    if (!authLoading && !orgLoading && isAuthenticated && !isNewUser) {
       if (hasInvitation) {
         router.replace("/invitation");
       } else if (needsOrganization) {
@@ -164,12 +159,18 @@ export default function OrganizationPage() {
   }
 
   return (
-    <div className="flex flex-col pb-20 gap-4">
+    <div className="flex flex-col min-h-screen pb-20 gap-4 justify-start">
       {/* Заголовок организации */}
-      <Card className="rounded-4xl shadow-md p-5 gap-3">
-          <div className="flex items-start gap-2">
-            <div className="flex-1 min-w-0 gap-0.5 flex flex-col">
-              <h1 className="text-xl font-bold truncate">{organization.name || currentOrg.id}</h1>
+      <Card className="flex flex-row rounded-4xl shadow-md p-4 gap-3 min-h-fit">
+        <div className="flex flex-col justify-center h-full">
+          <BuildingOfficeIcon className="h-8 w-8 text-default-400 flex-shrink-0" />
+        </div>
+        <div className="flex flex-col gap-2 justify-center flex-1">
+          <div className="flex gap-2">
+            <div className="flex-1 min-w-0 flex flex-col">
+              <h1 className="text-xl font-bold truncate">
+                {organization.name || currentOrg.id}
+              </h1>
               {(organization.industry || organization.region) && (
                 <p className="text-xs text-default-400">
                   {organization.region}
@@ -184,7 +185,8 @@ export default function OrganizationPage() {
               {organization.description}
             </p>
           )}
-        </Card>
+        </div>
+      </Card>
 
       {/* Список разделов */}
       <div className="flex-1">

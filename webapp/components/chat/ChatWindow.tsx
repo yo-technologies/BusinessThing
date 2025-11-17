@@ -1,7 +1,7 @@
 "use client";
 
 import { useLayoutEffect, useRef } from "react";
-import { Card, CardBody } from "@heroui/card";
+import { Card } from "@heroui/card";
 import { Spinner } from "@heroui/spinner";
 
 import { ToolCallMessage } from "./ToolCallMessage";
@@ -48,17 +48,17 @@ export function ChatWindow({
   chatId,
 }: ChatWindowProps) {
   const messagesEndRef = useRef<HTMLDivElement>(null);
-  
+
   // Функция для скролла вниз
   const scrollToBottom = () => {
-    console.log(messagesEndRef.current)
-    if(messagesEndRef.current){
-        console.log(messagesEndRef.current.scrollHeight)
-        messagesEndRef.current.scrollTo({
-          top: messagesEndRef.current.scrollHeight*100,
-          behavior: 'smooth'
-        });
-      }
+    console.log(messagesEndRef.current);
+    if (messagesEndRef.current) {
+      console.log(messagesEndRef.current.scrollHeight);
+      messagesEndRef.current.scrollTo({
+        top: messagesEndRef.current.scrollHeight * 100,
+        behavior: "smooth",
+      });
+    }
   };
 
   // Скролл при открытии чата и при изменении сообщений
@@ -93,166 +93,162 @@ export function ChatWindow({
 
   return (
     <Card className="flex flex-1 flex-col border-none shadow-none py-0 border-t-none">
-        
-          {loadingMessages ? (
-              <div className="flex flex-1 flex-row h-full justify-center items-center">
-              <Spinner size="sm" label="Загружаем сообщения..." color="primary" />
-            </div>
-          ) : messages.length === 0 && !streamingMessage && (!streamingToolCalls || streamingToolCalls.size === 0) ? (
-              <div className="flex flex-1 flex-row h-full justify-center items-center">
-                  <span className="text-center text-small text-default-400 h-fit p-4">
-                  Пока сообщений нет. Напиши что-нибудь, чтобы начать диалог.
-                  </span>
-              </div>
-          ) : (
-            <div className="flex flex-col gap-3 pb-20 h-full overflow-auto px-4 pt-10" ref={messagesEndRef}>
-                {messages.map((message, index) => {
-                // Пропускаем системные сообщения и сообщения типа tool
-                if (
-                    message.role === AgentMessageRole.MESSAGE_ROLE_SYSTEM ||
-                    message.role === AgentMessageRole.MESSAGE_ROLE_TOOL
-                ) {
-                    return null;
-                }
+      {loadingMessages ? (
+        <div className="flex flex-1 flex-row h-full justify-center items-center">
+          <Spinner color="primary" label="Загружаем сообщения..." size="sm" />
+        </div>
+      ) : messages.length === 0 &&
+        !streamingMessage &&
+        (!streamingToolCalls || streamingToolCalls.size === 0) ? (
+        <div className="flex flex-1 flex-row h-full justify-center items-center">
+          <span className="text-center text-small text-default-400 h-fit p-4">
+            Пока сообщений нет. Напиши что-нибудь, чтобы начать диалог.
+          </span>
+        </div>
+      ) : (
+        <div
+          ref={messagesEndRef}
+          className="flex flex-col gap-3 pb-20 h-full overflow-auto px-4 pt-10"
+        >
+          {messages.map((message, index) => {
+            // Пропускаем системные сообщения и сообщения типа tool
+            if (
+              message.role === AgentMessageRole.MESSAGE_ROLE_SYSTEM ||
+              message.role === AgentMessageRole.MESSAGE_ROLE_TOOL
+            ) {
+              return null;
+            }
 
-              const isUser =
-                message.role === AgentMessageRole.MESSAGE_ROLE_USER;
-              const isAssistant =
-                message.role === AgentMessageRole.MESSAGE_ROLE_ASSISTANT;
+            const isUser = message.role === AgentMessageRole.MESSAGE_ROLE_USER;
+            const isAssistant =
+              message.role === AgentMessageRole.MESSAGE_ROLE_ASSISTANT;
 
-              // Находим предыдущее отображаемое сообщение (не system и не tool)
-              let prevVisibleMessage = null;
+            // Находим предыдущее отображаемое сообщение (не system и не tool)
+            let prevVisibleMessage = null;
 
-              for (let i = index - 1; i >= 0; i--) {
-                const prevMsg = messages[i];
+            for (let i = index - 1; i >= 0; i--) {
+              const prevMsg = messages[i];
 
-                if (
-                  prevMsg.role !== AgentMessageRole.MESSAGE_ROLE_SYSTEM &&
-                  prevMsg.role !== AgentMessageRole.MESSAGE_ROLE_TOOL
-                ) {
-                  prevVisibleMessage = prevMsg;
-                  break;
-                }
+              if (
+                prevMsg.role !== AgentMessageRole.MESSAGE_ROLE_SYSTEM &&
+                prevMsg.role !== AgentMessageRole.MESSAGE_ROLE_TOOL
+              ) {
+                prevVisibleMessage = prevMsg;
+                break;
               }
+            }
 
-              // Определяем, нужно ли показывать заголовок для сообщений агента
-              const showAssistantHeader =
-                isAssistant &&
-                (!prevVisibleMessage ||
-                  prevVisibleMessage.role !==
-                    AgentMessageRole.MESSAGE_ROLE_ASSISTANT ||
-                  prevVisibleMessage.sender !== message.sender);
+            // Определяем, нужно ли показывать заголовок для сообщений агента
+            const showAssistantHeader =
+              isAssistant &&
+              (!prevVisibleMessage ||
+                prevVisibleMessage.role !==
+                  AgentMessageRole.MESSAGE_ROLE_ASSISTANT ||
+                prevVisibleMessage.sender !== message.sender);
 
-              return (
-                <div key={message.id} className="flex flex-col gap-2">
-                  {/* Заголовок агента (только для первого сообщения в последовательности от этого агента) */}
-                  {showAssistantHeader && (
-                    <div className="text-sm font-medium text-default-400">
-                      {getAgentName(message.sender)}
-                    </div>
-                  )}
-
-                  {/* Отображаем текст сообщения */}
-                  {message.content && (
-                    <div
-                      className={
-                        isUser
-                          ? "ml-auto max-w-[80%] rounded-xl bg-secondary text-secondary-foreground px-3 py-2 text-small"
-                          : "w-full text-small"
-                      }
-                    >
-                      <MarkdownWrapper content={message.content} />
-                    </div>
-                  )}
-
-                  {/* Отображаем tool calls сообщения, если есть */}
-                  {message.toolCalls && message.toolCalls.length > 0 && (
-                    <div className="flex flex-col gap-2">
-                      {message.toolCalls.map((toolCall) => (
-                        <ToolCallMessage
-                          key={toolCall.id}
-                          toolCall={toolCall}
-                        />
-                      ))}
-                    </div>
-                  )}
-                </div>
-              );
-            })}
-
-            {/* Отображаем streaming tool calls */}
-            {streamingToolCalls && streamingToolCalls.size > 0 && (
-              <div className="flex flex-col gap-2">
-                {Array.from(streamingToolCalls.values()).map(
-                  (toolCallEvent) => (
-                    <ToolCallMessage
-                      key={`${toolCallEvent.toolCallId}-${toolCallEvent.status}`}
-                      toolCall={convertStreamingToolCall(toolCallEvent)}
-                    />
-                  ),
+            return (
+              <div key={message.id} className="flex flex-col gap-2">
+                {/* Заголовок агента (только для первого сообщения в последовательности от этого агента) */}
+                {showAssistantHeader && (
+                  <div className="text-sm font-medium text-default-400">
+                    {getAgentName(message.sender)}
+                  </div>
                 )}
+
+                {/* Отображаем текст сообщения */}
+                {message.content && (
+                  <div
+                    className={
+                      isUser
+                        ? "ml-auto max-w-[80%] rounded-xl bg-secondary text-secondary-foreground px-3 py-2 text-small"
+                        : "w-full text-small"
+                    }
+                  >
+                    <MarkdownWrapper content={message.content} />
+                  </div>
+                )}
+
+                {/* Отображаем tool calls сообщения, если есть */}
+                {message.toolCalls && message.toolCalls.length > 0 && (
+                  <div className="flex flex-col gap-2">
+                    {message.toolCalls.map((toolCall) => (
+                      <ToolCallMessage key={toolCall.id} toolCall={toolCall} />
+                    ))}
+                  </div>
+                )}
+              </div>
+            );
+          })}
+
+          {/* Отображаем streaming tool calls */}
+          {streamingToolCalls && streamingToolCalls.size > 0 && (
+            <div className="flex flex-col gap-2">
+              {Array.from(streamingToolCalls.values()).map((toolCallEvent) => (
+                <ToolCallMessage
+                  key={`${toolCallEvent.toolCallId}-${toolCallEvent.status}`}
+                  toolCall={convertStreamingToolCall(toolCallEvent)}
+                />
+              ))}
+            </div>
+          )}
+
+          {/* Индикатор загрузки, когда стриминг активен но сообщение пустое */}
+          {isStreaming &&
+            !streamingMessage &&
+            (!streamingToolCalls || streamingToolCalls.size === 0) && (
+              <div className="flex flex-col gap-2">
+                <div className="text-sm font-medium text-default-400">
+                  Ассистент
+                </div>
+                <div className="flex items-center gap-2">
+                  <Spinner
+                    classNames={{ wrapper: "w-4 h-4" }}
+                    color="primary"
+                    size="sm"
+                  />
+                  <span className="text-xs text-default-400">Думаю...</span>
+                </div>
               </div>
             )}
 
-            {/* Индикатор загрузки, когда стриминг активен но сообщение пустое */}
-            {isStreaming &&
-              !streamingMessage &&
-              (!streamingToolCalls || streamingToolCalls.size === 0) && (
-                <div className="flex flex-col gap-2">
+          {/* Отображаем streaming message */}
+          {streamingMessage && (
+            <div className="flex flex-col gap-2">
+              {/* Заголовок для streaming сообщения агента, если последнее видимое сообщение не от ассистента */}
+              {(() => {
+                // Находим последнее видимое сообщение
+                for (let i = messages.length - 1; i >= 0; i--) {
+                  const msg = messages[i];
+
+                  if (
+                    msg.role !== AgentMessageRole.MESSAGE_ROLE_SYSTEM &&
+                    msg.role !== AgentMessageRole.MESSAGE_ROLE_TOOL
+                  ) {
+                    // Показываем заголовок, если последнее сообщение не от ассистента
+                    return msg.role !==
+                      AgentMessageRole.MESSAGE_ROLE_ASSISTANT ? (
+                      <div className="text-sm font-medium text-default-400">
+                        Ассистент
+                      </div>
+                    ) : null;
+                  }
+                }
+
+                // Если нет видимых сообщений, показываем заголовок
+                return (
                   <div className="text-sm font-medium text-default-400">
                     Ассистент
                   </div>
-                  <div className="flex items-center gap-2">
-                    <Spinner
-                      classNames={{ wrapper: "w-4 h-4" }}
-                      color="primary"
-                      size="sm"
-                    />
-                    <span className="text-xs text-default-400">Думаю...</span>
-                  </div>
-                </div>
-              )}
-
-            {/* Отображаем streaming message */}
-            {streamingMessage && (
-              <div className="flex flex-col gap-2">
-                {/* Заголовок для streaming сообщения агента, если последнее видимое сообщение не от ассистента */}
-                {(() => {
-                  // Находим последнее видимое сообщение
-                  for (let i = messages.length - 1; i >= 0; i--) {
-                    const msg = messages[i];
-
-                    if (
-                      msg.role !== AgentMessageRole.MESSAGE_ROLE_SYSTEM &&
-                      msg.role !== AgentMessageRole.MESSAGE_ROLE_TOOL
-                    ) {
-                      // Показываем заголовок, если последнее сообщение не от ассистента
-                      return msg.role !==
-                        AgentMessageRole.MESSAGE_ROLE_ASSISTANT ? (
-                        <div className="text-sm font-medium text-default-400">
-                          Ассистент
-                        </div>
-                      ) : null;
-                    }
-                  }
-
-                  // Если нет видимых сообщений, показываем заголовок
-                  return (
-                    <div className="text-sm font-medium text-default-400">
-                      Ассистент
-                    </div>
-                  );
-                })()}
-                <div className="w-full text-small">
-                  <MarkdownWrapper content={streamingMessage} />
-                  {isStreaming && <span className="ml-1 animate-pulse">▍</span>}
-                </div>
+                );
+              })()}
+              <div className="w-full text-small">
+                <MarkdownWrapper content={streamingMessage} />
+                {isStreaming && <span className="ml-1 animate-pulse">▍</span>}
               </div>
-            )}
-                
             </div>
           )}
-        
+        </div>
+      )}
     </Card>
   );
 }

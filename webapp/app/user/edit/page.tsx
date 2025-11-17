@@ -26,6 +26,7 @@ export default function EditUserPage() {
       if (userInfo?.userId) {
         try {
           const response = await core.v1.userServiceGetUser(userInfo.userId);
+
           if (response.data.user) {
             setFirstName(response.data.user.firstName || "");
             setLastName(response.data.user.lastName || "");
@@ -47,6 +48,7 @@ export default function EditUserPage() {
   const handleSave = async () => {
     if (!userInfo?.userId) {
       setError("Ошибка: ID пользователя не найден.");
+
       return;
     }
 
@@ -89,25 +91,29 @@ export default function EditUserPage() {
             </div>
           )}
           <Input
+            isDisabled={isSaving}
             label="Имя"
+            placeholder="Введите ваше имя"
             value={firstName}
             onValueChange={setFirstName}
-            placeholder="Введите ваше имя"
-            isDisabled={isSaving}
           />
           <Input
+            isDisabled={isSaving}
             label="Фамилия"
+            placeholder="Введите вашу фамилию"
             value={lastName}
             onValueChange={setLastName}
-            placeholder="Введите вашу фамилию"
-            isDisabled={isSaving}
           />
         </CardBody>
         <CardFooter className="flex justify-end gap-2">
-          <Button variant="flat" onClick={() => router.back()} disabled={isSaving}>
+          <Button
+            disabled={isSaving}
+            variant="flat"
+            onClick={() => router.back()}
+          >
             Отмена
           </Button>
-          <Button color="primary" onClick={handleSave} disabled={isSaving}>
+          <Button color="primary" disabled={isSaving} onClick={handleSave}>
             {isSaving ? <Spinner color="white" size="sm" /> : "Сохранить"}
           </Button>
         </CardFooter>

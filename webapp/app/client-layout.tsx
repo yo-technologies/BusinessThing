@@ -23,15 +23,18 @@ export function ClientLayout({ children }: { children: React.ReactNode }) {
         )}
       >
         <Providers themeProps={{ attribute: "class", defaultTheme: "dark" }}>
-          <div className="fixed t-0 w-screen z-100 h-15 flex place-content-center place-items-center">
+          <div className={clsx(
+            "fixed w-screen z-100 h-15 flex place-content-center place-items-center",
+            isFullscreen ? "top-12" : "top-0",
+          )}>
             <OrganizationSwitcher />
           </div>
           <div className="flex h-screen flex-col">
             <main className="flex-1 overflow-auto">
               <div
                 className={clsx(
-                  "mx-auto flex h-full max-w-4xl flex-col px-4 pb-22",
-                  isFullscreen ? "pt-22" : "pt-15",
+                  "mx-auto flex h-full max-w-4xl flex-col pb-22",
+                  isFullscreen ? "pt-26" : "pt-15",
                 )}
               >
                 {children}

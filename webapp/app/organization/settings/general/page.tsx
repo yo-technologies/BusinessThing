@@ -54,12 +54,7 @@ export default function GeneralSettingsPage() {
   }, [isNewUser, authLoading, router]);
 
   useEffect(() => {
-    if (
-      !authLoading &&
-      !orgLoading &&
-      isAuthenticated &&
-      !isNewUser
-    ) {
+    if (!authLoading && !orgLoading && isAuthenticated && !isNewUser) {
       if (hasInvitation) {
         router.replace("/invitation");
       } else if (needsOrganization) {
@@ -154,7 +149,8 @@ export default function GeneralSettingsPage() {
     );
   }
 
-  if (error && !saving) { // Do not show full page error while saving
+  if (error && !saving) {
+    // Do not show full page error while saving
     return (
       <Card className="max-w-xl mx-auto mt-8 rounded-4xl shadow-sm border border-danger-200/60">
         <CardBody>
@@ -264,18 +260,22 @@ export default function GeneralSettingsPage() {
 
       {isAdmin && hasChanges && (
         <div className="fixed bottom-18 left-0 right-0 z-50 p-4">
-            <div className="max-w-[80%] mx-auto">
-                <Button
-                    color="success"
-                    fullWidth
-                    onPress={handleSave}
-                    isDisabled={saving}
-                    radius="full"
-                    className="backdrop-blur-sm bg-secondary/30"
-                >
-                    {saving ? <Spinner color="white" size="sm" /> : "Сохранить изменения"}
-                </Button>
-            </div>
+          <div className="max-w-[80%] mx-auto">
+            <Button
+              fullWidth
+              className="backdrop-blur-sm bg-secondary/30"
+              color="success"
+              isDisabled={saving}
+              radius="full"
+              onPress={handleSave}
+            >
+              {saving ? (
+                <Spinner color="white" size="sm" />
+              ) : (
+                "Сохранить изменения"
+              )}
+            </Button>
+          </div>
         </div>
       )}
     </div>

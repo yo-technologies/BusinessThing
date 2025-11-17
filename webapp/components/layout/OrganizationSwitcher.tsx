@@ -81,10 +81,11 @@ export const OrganizationSwitcher = () => {
   if (organizations.length <= 1) {
     return (
       <Button
-        className="gap-2 backdrop-blur-xs"
+        className="gap-2 backdrop-blur-xs h-7"
         size="sm"
         startContent={<BuildingOfficeIcon className="h-4 w-4" />}
         variant="flat"
+        radius="full"
       >
         <span className="max-w-[150px] truncate">{orgName}</span>
       </Button>
@@ -92,12 +93,12 @@ export const OrganizationSwitcher = () => {
   }
 
   return (
-    <Dropdown>
+    <Dropdown radius="full" className="h-7">
       <DropdownTrigger>
         <Button
-          radius="full"
-          className="gap-2 backdrop-blur-xs"
+          className="gap-2 backdrop-blur-xs h-7"
           endContent={<ChevronDownIcon className="h-4 w-4" />}
+          radius="full"
           size="sm"
           startContent={<BuildingOfficeIcon className="h-4 w-4" />}
           variant="flat"
@@ -120,7 +121,7 @@ export const OrganizationSwitcher = () => {
       >
         {detailedOrgs.map((org) => (
           <DropdownItem key={org.id} textValue={org.details?.name || org.id}>
-            <div className="flex flex-col">
+            <div className="flex flex-col h-7">
               <span className="font-medium">{org.details?.name || org.id}</span>
               <span className="text-xs text-default-400">{org.role}</span>
             </div>

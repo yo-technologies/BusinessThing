@@ -1,6 +1,5 @@
 "use client";
 
-import { useAuth } from "@/hooks/useAuth";
 import { Avatar } from "@heroui/avatar";
 import { Card, CardBody } from "@heroui/card";
 import {
@@ -13,6 +12,8 @@ import { Spinner } from "@heroui/spinner";
 import { Divider } from "@heroui/divider";
 import { initData, User } from "@telegram-apps/sdk";
 import { useEffect, useState } from "react";
+
+import { useAuth } from "@/hooks/useAuth";
 import { useApiClients } from "@/api/client";
 import { CoreUser } from "@/api/api.core.generated";
 
@@ -56,6 +57,7 @@ export default function UserPage() {
       if (userInfo?.userId) {
         try {
           const response = await core.v1.userServiceGetUser(userInfo.userId);
+
           if (response.data.user) {
             setDetailedUser(response.data.user);
           }
@@ -73,7 +75,7 @@ export default function UserPage() {
   if (isLoading) {
     return (
       <div className="flex h-full items-center justify-center">
-        <Spinner label="Загрузка..." color="primary" />
+        <Spinner color="primary" label="Загрузка..." />
       </div>
     );
   }
@@ -88,10 +90,8 @@ export default function UserPage() {
 
   return (
     <div className="flex flex-col items-center pt-12 px-4">
-      <Avatar src={photoUrl || ""} className="w-24 h-24 text-large" />
-      <h1 className="text-2xl font-bold mt-4">
-        {displayName || "Профиль"}
-      </h1>
+      <Avatar className="w-24 h-24 text-large" src={photoUrl || ""} />
+      <h1 className="text-2xl font-bold mt-4">{displayName || "Профиль"}</h1>
       <Divider className="mt-2" />
       <div className="w-full max-w-md mt-8">
         <div className="flex flex-col gap-3">

@@ -59,12 +59,7 @@ export default function KnowledgePage() {
   }, [isNewUser, authLoading, router]);
 
   useEffect(() => {
-    if (
-      !authLoading &&
-      !orgLoading &&
-      isAuthenticated &&
-      !isNewUser
-    ) {
+    if (!authLoading && !orgLoading && isAuthenticated && !isNewUser) {
       if (hasInvitation) {
         router.replace("/invitation");
       } else if (needsOrganization) {
