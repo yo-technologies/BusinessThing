@@ -3,104 +3,114 @@
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { Button } from "@heroui/button";
-import { Card, CardBody, CardHeader } from "@heroui/card";
 import { Input } from "@heroui/input";
+import { Spinner } from "@heroui/spinner";
+import { Card, CardBody, CardHeader, CardFooter } from "@heroui/card";
 
-import { CoreCompleteRegistrationRequest } from "@/api/api.core.generated";
-import { refreshAuthToken, useApiClients } from "@/api/client";
 import { useAuth } from "@/hooks/useAuth";
-import { useBackButton } from "@/hooks/useBackButton";
+import { useApiClients } from "@/api/client";
 
-export default function UserEditPage() {
+export default function EditUserPage() {
   const router = useRouter();
-  const { user, loading } = useAuth();
+  const { userInfo, loading: authLoading } = useAuth();
   const { core } = useApiClients();
 
   const [firstName, setFirstName] = useState("");
   const [lastName, setLastName] = useState("");
-  const [submitting, setSubmitting] = useState(false);
-
-  useBackButton(true);
+  const [isLoading, setIsLoading] = useState(true);
+  const [isSaving, setIsSaving] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
-    if (!loading && user) {
-      setFirstName(user.firstName ?? "");
-      setLastName(user.lastName ?? "");
+    const fetchUser = async () => {
+      if (userInfo?.userId) {
+        try {
+          const response = await core.v1.userServiceGetUser(userInfo.userId);
+          if (response.data.user) {
+            setFirstName(response.data.user.firstName || "");
+            setLastName(response.data.user.lastName || "");
+          }
+        } catch (err) {
+          console.error("Failed to fetch user for editing", err);
+          setError("Не удалось загрузить данные пользователя.");
+        } finally {
+          setIsLoading(false);
+        }
+      }
+    };
+
+    if (!authLoading) {
+      fetchUser();
     }
-  }, [loading, user]);
+  }, [userInfo, authLoading, core.v1]);
 
-  const handleUpdate = async () => {
-    if (!firstName.trim() || !lastName.trim() || !user?.id) return;
+  const handleSave = async () => {
+    if (!userInfo?.userId) {
+      setError("Ошибка: ID пользователя не найден.");
+      return;
+    }
 
-    setSubmitting(true);
+    setIsSaving(true);
+    setError(null);
+
     try {
-      const payload: CoreCompleteRegistrationRequest = {
-        userId: user.id,
-        firstName: firstName.trim(),
-        lastName: lastName.trim(),
-      };
-
-      await core.v1.authServiceCompleteRegistration(payload);
-
-      // Refresh the token to get updated user info in the JWT
-      await refreshAuthToken();
-
-      // Redirect back to the user profile page
+      await core.v1.authServiceCompleteRegistration({
+        userId: userInfo.userId,
+        firstName,
+        lastName,
+      });
+      // Navigate back to the user page to see the changes
       router.push("/user");
-    } catch (error) {
-      console.error("Failed to update user information:", error);
-      // Optionally, show an error message to the user
-    } finally {
-      setSubmitting(false);
+    } catch (err) {
+      console.error("Failed to update user", err);
+      setError("Не удалось сохранить изменения. Попробуйте снова.");
+      setIsSaving(false);
     }
   };
 
-  if (loading) {
+  if (isLoading || authLoading) {
     return (
       <div className="flex h-full items-center justify-center">
-        <p>Loading user data...</p>
+        <Spinner label="Загрузка профиля..." />
       </div>
     );
   }
 
   return (
-    <div className="flex h-full flex-col items-center justify-center px-2">
-      <Card className="w-full max-w-md border-none bg-content1/80 shadow-md">
-        <CardHeader className="flex flex-col items-start gap-1 pb-2">
-          <h1 className="text-xl font-semibold">Редактировать профиль</h1>
+    <div className="flex justify-center items-start pt-12 px-4 h-full">
+      <Card className="w-full max-w-md">
+        <CardHeader>
+          <h1 className="text-xl font-bold">Редактировать профиль</h1>
         </CardHeader>
-        <CardBody className="space-y-4">
+        <CardBody className="flex flex-col gap-4">
+          {error && (
+            <div className="bg-danger-100 border border-danger-400 text-danger-700 px-4 py-3 rounded-lg">
+              {error}
+            </div>
+          )}
           <Input
             label="Имя"
-            placeholder="Иван"
             value={firstName}
-            onChange={(e) => setFirstName(e.target.value)}
-            variant="bordered"
-            radius="lg"
-            isRequired
+            onValueChange={setFirstName}
+            placeholder="Введите ваше имя"
+            isDisabled={isSaving}
           />
-
           <Input
             label="Фамилия"
-            placeholder="Иванов"
             value={lastName}
-            onChange={(e) => setLastName(e.target.value)}
-            variant="bordered"
-            radius="lg"
-            isRequired
+            onValueChange={setLastName}
+            placeholder="Введите вашу фамилию"
+            isDisabled={isSaving}
           />
-
-          <Button
-            color="success"
-            radius="lg"
-            className="w-full mt-2"
-            isDisabled={!firstName.trim() || !lastName.trim() || submitting}
-            isLoading={submitting}
-            onPress={handleUpdate}
-          >
-            Сохранить
-          </Button>
         </CardBody>
+        <CardFooter className="flex justify-end gap-2">
+          <Button variant="flat" onClick={() => router.back()} disabled={isSaving}>
+            Отмена
+          </Button>
+          <Button color="primary" onClick={handleSave} disabled={isSaving}>
+            {isSaving ? <Spinner color="white" size="sm" /> : "Сохранить"}
+          </Button>
+        </CardFooter>
       </Card>
     </div>
   );
