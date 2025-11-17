@@ -93,68 +93,7 @@ BusinessThing предоставляет владельцу и команде м
 
 ## 🏛 Архитектура
 
-```mermaid
-graph TB
-    subgraph Client["Клиентский слой"]
-        WebApp["Telegram Web App<br/>(React/Next.js)"]
-    end
-
-    subgraph Backend["Бэкенд сервисы"]
-        
-        CoreBackend["core-backend<br/>• HTTP/gRPC API<br/>• Аутентификация<br/>• Роли, CRUD"]
-        
-        LLMService["LLM Service<br/>• Prompt library<br/>• RAG orchestrator<br/>• Subagent router<br/>• Legal doc generator"]
-        
-        DocProcessing["Document Processing<br/>• Парсинг PDF/DOCX<br/>• Чанки + embeddings<br/>• Индексация"]
-        
-        RabbitMQ["RabbitMQ<br/>очередь обработки<br/>документов"]
-    end
-
-    subgraph Storage["Хранилища данных"]
-        PostgreSQL[(PostgreSQL<br/>core entities)]
-        VectorDB[(Vector DB<br/>OpenSearch)]
-        Redis[(Redis<br/>cache, rate limiting)]
-        S3[("S3 Storage<br/>документы, PDF")]
-        PostgreSQL-llm[(PostgreSQL<br/>LLM chats)]
-    end
-
-    subgraph External["Внешние интеграции"]
-        AmoCRM["amoCRM MCP Server"]
-        WebSearch["Web Search Providers"]
-    end
-
-    WebApp -->|API requests| CoreBackend
-    WebApp -->|LLM requests| LLMService
-    WebApp -->|Upload files| S3
-    
-    CoreBackend --> PostgreSQL
-    CoreBackend -->|publish jobs| RabbitMQ
-    
-    LLMService -->|query embeddings| VectorDB
-    LLMService -.->|интеграция| AmoCRM
-    LLMService -.->|поиск| WebSearch
-    LLMService --> |сохранение документов| S3
-    LLMService --> PostgreSQL-llm
-    
-    RabbitMQ -->|consume jobs| DocProcessing
-    DocProcessing -->|write embeddings| VectorDB
-    DocProcessing --> |read files| S3
-    
-    CoreBackend -.-> Redis
-
-    style WebApp fill:#e1f5ff
-    style CoreBackend fill:#fff4e1
-    style LLMService fill:#fff4e1
-    style DocProcessing fill:#fff4e1
-    style PostgreSQL fill:#e8f5e9
-    style PostgreSQL-llm fill:#e8f5e9
-    style VectorDB fill:#e8f5e9
-    style Redis fill:#e8f5e9
-    style S3 fill:#e8f5e9
-    style RabbitMQ fill:#f3e5f5
-    style AmoCRM fill:#fce4ec
-    style WebSearch fill:#fce4ec
-```
+![Архитектура BusinessThing](diag.svg)
 
 **Мониторинг и логирование:**
 - Jaeger (distributed tracing)
