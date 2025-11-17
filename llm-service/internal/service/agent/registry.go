@@ -150,7 +150,6 @@ var LegalAgent = &domain.AgentDefinition{
 - Разбор правовых споров и рисков
 - Помощь в формулировании правовых позиций`,
 	AllowedTools: []domain.ToolName{
-		domain.ToolNameWebSearch,
 		domain.ToolNameSaveOrganizationNote,
 		domain.ToolNameSearchContractTemplates,
 		domain.ToolNameGenerateContract,
