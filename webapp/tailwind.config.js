@@ -140,7 +140,7 @@ const config = {
           "700": "#cfcfd2",
           "800": "#e7e7e9",
           "900": "#ffffff",
-          "foreground": "#000",
+          "foreground": "#fff",
           "DEFAULT": "#87878f"
         },
         "primary": {
@@ -154,7 +154,7 @@ const config = {
           "700": "#f79d97",
           "800": "#fac1bd",
           "900": "#fde5e4",
-          "foreground": "#000",
+          "foreground": "#fff",
           "DEFAULT": "#ef3124"
         },
         "secondary": {
@@ -168,7 +168,7 @@ const config = {
           "700": "#86beff",
           "800": "#b3d6ff",
           "900": "#dfeeff",
-          "foreground": "#000",
+          "foreground": "#fff",
           "DEFAULT": "#0077ff"
         },
         "success": {
@@ -182,8 +182,8 @@ const config = {
           "700": "#d6ff86",
           "800": "#e5ffb3",
           "900": "#f4ffdf",
-          "foreground": "#000",
-          "DEFAULT": "#a8ff00"
+          "foreground": "#fff",
+          "DEFAULT": "#88ca03ff"
         },
         "warning": {
           "50": "#4d4400",
@@ -196,7 +196,7 @@ const config = {
           "700": "#fff286",
           "800": "#fff7b3",
           "900": "#fffcdf",
-          "foreground": "#000",
+          "foreground": "#fff",
           "DEFAULT": "#ffe400"
         },
         "danger": {
@@ -210,7 +210,7 @@ const config = {
           "700": "#ff8d86",
           "800": "#ffb7b3",
           "900": "#ffe1df",
-          "foreground": "#000",
+          "foreground": "#fff",
           "DEFAULT": "#ff1000"
         },
         "background": "#000000",
