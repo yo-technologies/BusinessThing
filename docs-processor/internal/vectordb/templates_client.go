@@ -145,7 +145,6 @@ func (c *TemplatesClient) IndexTemplate(ctx context.Context, template *domain.Te
 
 	doc := IndexTemplateRequest{
 		TemplateID:     template.ID.String(),
-		OrganizationID: template.OrganizationID.String(),
 		Name:           template.Name,
 		Description:    template.Description,
 		TemplateType:   template.TemplateType,
