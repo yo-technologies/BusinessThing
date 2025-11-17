@@ -37,6 +37,9 @@ services:
     depends_on:
       opensearch:
         condition: service_healthy
+    env_file:
+      - .env
+    restart: unless-stopped
 
 volumes:
   opensearch-data:
