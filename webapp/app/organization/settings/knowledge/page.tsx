@@ -184,7 +184,7 @@ export default function KnowledgePage() {
   }
 
   return (
-    <div className="flex flex-col gap-4 flex-1">
+    <div className="flex flex-col min-h-full gap-4 flex-1">
       <input
         ref={fileInputRef}
         type="file"
@@ -193,7 +193,7 @@ export default function KnowledgePage() {
         accept=".pdf,.doc,.docx,.txt,.md"
       />
 
-      <Card className="rounded-4xl shadow-none">
+      <Card className="rounded-4xl shadow-none min-h-fit">
         <CardHeader className="flex flex-col gap-1 px-5 py-4">
           <div className="flex items-center gap-2 w-full">
             <BookOpenIcon className="h-6 w-6 flex-shrink-0 text-primary" />
@@ -213,7 +213,7 @@ export default function KnowledgePage() {
         </Card>
       )}
 
-      <Card className="flex-1 rounded-4xl shadow-none ">
+      <Card className="flex-1 rounded-4xl shadow-none">
         <CardBody className="gap-4">
           {documents.length === 0 ? (
             <div className="flex flex-col h-full items-center justify-center py-12 gap-2">
