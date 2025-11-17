@@ -86,7 +86,12 @@ func (p *DocumentProcessor) ProcessDocument(ctx context.Context, job *domain.Pro
 	}
 
 	logger.Info(ctx, "Document parsed", "text_length", len(text))
-	logger.Info(ctx, "Document", "text", text[:400])
+
+	textPreview := text
+	if len(text) > 400 {
+		textPreview = text[:400]
+	}
+	logger.Info(ctx, "Document", "text", textPreview)
 
 	var chunks []*domain.Chunk
 	chunks, err = p.chunker.ChunkText(ctx, job.DocumentID, text)
