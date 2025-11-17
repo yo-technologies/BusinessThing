@@ -1,16 +1,19 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { useRouter } from "next/navigation";
 import { Button } from "@heroui/button";
 import {
   Dropdown,
   DropdownItem,
   DropdownMenu,
+  DropdownSection,
   DropdownTrigger,
 } from "@heroui/dropdown";
 import {
   ChevronDownIcon,
   BuildingOfficeIcon,
+  PlusIcon,
 } from "@heroicons/react/24/outline";
 
 import { useAuth } from "@/hooks/useAuth";
@@ -23,6 +26,7 @@ import { Organization } from "@/utils/jwt";
 type DetailedOrganization = Organization & { details?: CoreOrganization };
 
 export const OrganizationSwitcher = () => {
+  const router = useRouter();
   const { organizations, loading: authLoading } = useAuth();
   const { currentOrg, switchOrganization } = useOrganization({
     organizations,
@@ -77,21 +81,6 @@ export const OrganizationSwitcher = () => {
     return null;
   }
 
-  // If only one org, just display the name without a dropdown
-  if (organizations.length <= 1) {
-    return (
-      <Button
-        className="gap-2 backdrop-blur-xs h-7"
-        size="sm"
-        startContent={<BuildingOfficeIcon className="h-4 w-4" />}
-        variant="flat"
-        radius="full"
-      >
-        <span className="max-w-[150px] truncate">{orgName}</span>
-      </Button>
-    );
-  }
-
   return (
     <Dropdown radius="full" className="h-7">
       <DropdownTrigger>
@@ -113,20 +102,35 @@ export const OrganizationSwitcher = () => {
         onSelectionChange={(keys) => {
           const key = Array.from(keys)[0] as string;
 
-          if (key) {
+          if (key === "new-organization") {
+            router.push("/organization/create");
+          } else if (key) {
             switchOrganization(key);
           }
         }}
-        // isLoading={isLoading}
       >
-        {detailedOrgs.map((org) => (
-          <DropdownItem key={org.id} textValue={org.details?.name || org.id}>
-            <div className="flex flex-col h-7">
-              <span className="font-medium">{org.details?.name || org.id}</span>
-              <span className="text-xs text-default-400">{org.role}</span>
-            </div>
+        <DropdownSection title="Ваши организации" showDivider>
+          {detailedOrgs.map((org) => (
+            <DropdownItem key={org.id} textValue={org.details?.name || org.id} color="default">
+              <div className="flex flex-col">
+                <span className="font-medium">
+                  {org.details?.name || org.id}
+                </span>
+                <span className="text-xs text-default-600">{org.role}</span>
+              </div>
+            </DropdownItem>
+          ))}
+        </DropdownSection>
+        <DropdownSection>
+          <DropdownItem
+            key="new-organization"
+            startContent={<PlusIcon className="h-8 w-5" />}
+            className="text-success"
+            color="success"
+          >
+            Создать организацию
           </DropdownItem>
-        ))}
+        </DropdownSection>
       </DropdownMenu>
     </Dropdown>
   );
