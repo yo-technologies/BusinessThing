@@ -16,12 +16,12 @@ export const OrganizationSwitcher = () => {
   }
 
   return (
-    <Dropdown placement="bottom-start">
+    <Dropdown>
       <DropdownTrigger>
         <Button
           variant="flat"
           size="sm"
-          className="gap-2"
+          className="gap-2 backdrop-blur-xs"
           endContent={<ChevronDownIcon className="h-4 w-4" />}
           startContent={<BuildingOfficeIcon className="h-4 w-4" />}
         >
