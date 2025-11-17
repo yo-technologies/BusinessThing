@@ -6,7 +6,7 @@ import * as React from "react";
 import { HeroUIProvider } from "@heroui/system";
 import { useRouter } from "next/navigation";
 import { ThemeProvider as NextThemesProvider } from "next-themes";
-import { init, swipeBehavior, miniApp } from "@telegram-apps/sdk-react";
+import { init, swipeBehavior, miniApp, viewport } from "@telegram-apps/sdk-react";
 
 export interface ProvidersProps {
   children: React.ReactNode;
@@ -28,6 +28,14 @@ function TelegramMiniAppProvider({ children }: ProvidersProps) {
       swipeBehavior.mount();
       swipeBehavior.disableVertical.ifAvailable();
       miniApp.ready();
+      
+      // Переходим в полноэкранный режим
+      if (viewport.mount.isAvailable()) {
+        viewport.mount();
+        if (viewport.requestFullscreen.isAvailable()) {
+          viewport.requestFullscreen();
+        }
+      }
     } catch (e) {
       console.log("Error while initializing Telegram Mini App SDK");
       console.log(e);

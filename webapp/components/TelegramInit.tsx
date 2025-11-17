@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { init, miniApp, retrieveLaunchParams } from "@telegram-apps/sdk-react";
+import { init, miniApp, retrieveLaunchParams, viewport } from "@telegram-apps/sdk-react";
 
 /**
  * Компонент для инициализации Telegram SDK.
@@ -47,10 +47,17 @@ export function TelegramInit() {
         console.log("Telegram Mini App is ready");
       }
 
-      // Разворачиваем viewport
+      // Разворачиваем viewport и переходим в полноэкранный режим
       if (miniApp.mount.isAvailable()) {
         miniApp.setHeaderColor("#000000");
         miniApp.setBackgroundColor("#000000");
+      }
+
+      if (viewport.mount.isAvailable()) {
+        viewport.mount();
+        if (viewport.requestFullscreen.isAvailable()) {
+          viewport.requestFullscreen();
+        }
       }
 
       setInitialized(true);
