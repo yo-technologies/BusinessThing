@@ -211,9 +211,10 @@ export default function UsersPage() {
               </Chip>
             </div>
           }
+          className="h-full"
         >
           {users.length === 0 ? (
-            <div className="flex flex-col items-center justify-center py-12 gap-2">
+            <div className="flex flex-col h-full items-center justify-center py-12 gap-2">
               <UserIcon className="h-16 w-16 text-default-300" />
               <p className="text-default-400 text-center">Нет сотрудников</p>
             </div>
@@ -284,9 +285,10 @@ export default function UsersPage() {
               </Chip>
             </div>
           }
+          className="h-full"
         >
           {invitations.length === 0 ? (
-            <div className="flex flex-col items-center justify-center py-12 gap-2">
+            <div className="flex flex-col h-full items-center justify-center py-12 gap-2">
               <EnvelopeIcon className="h-16 w-16 text-default-300" />
               <p className="text-default-400 text-center">Нет активных приглашений</p>
               <p className="text-xs text-default-300 text-center max-w-xs">
