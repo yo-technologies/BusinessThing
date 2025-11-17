@@ -34,9 +34,16 @@ const getAgentName = (sender?: string): string => {
 export function ChatWindow({ messages, streamingMessage, streamingToolCalls, isStreaming, loadingMessages, chatId }: ChatWindowProps) {
   const messagesEndRef = useRef<HTMLDivElement>(null);
   
-  // Функция для скролла вниз
+  //Функция для скролла вниз
   const scrollToBottom = () => {
-    messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
+    console.log(messagesEndRef.current)
+    if(messagesEndRef.current){
+        console.log(messagesEndRef.current.scrollHeight)
+        messagesEndRef.current.scrollTo({
+          top: messagesEndRef.current.scrollHeight*100,
+          behavior: 'smooth'
+        });
+      }
   };
   
   // Скролл при открытии чата и при изменении сообщений
@@ -67,7 +74,7 @@ export function ChatWindow({ messages, streamingMessage, streamingToolCalls, isS
 
   return (
     <Card className="flex flex-1 flex-col border-none shadow-none py-0 border-t-none">
-        <CardBody className="flex flex-1 flex-col pb-0 px-4">
+        <CardBody className="flex flex-1 flex-col pb-0 px-4" ref={messagesEndRef}>
           {loadingMessages ? (
               <div className="flex flex-1 flex-row h-full justify-center items-center">
               <Spinner size="sm" label="Загружаем сообщения..." color="primary" />
@@ -173,7 +180,7 @@ export function ChatWindow({ messages, streamingMessage, streamingToolCalls, isS
                 
                 {/* Отображаем streaming message */}
                 {streamingMessage && (
-                <div className="flex flex-col gap-2">
+                <div className="flex flex-col gap-2" ref={messagesEndRef}>
                     {/* Заголовок для streaming сообщения агента, если последнее видимое сообщение не от ассистента */}
                     {(() => {
                     // Находим последнее видимое сообщение
@@ -204,8 +211,7 @@ export function ChatWindow({ messages, streamingMessage, streamingToolCalls, isS
                     </div>
                 </div>
                 )}
-                {/* Невидимый элемент для авто-скролла */}
-                <div ref={messagesEndRef} />
+                
             </div>
           )}
         </CardBody>

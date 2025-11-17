@@ -5,17 +5,12 @@ import clsx from "clsx";
 
 import { Providers } from "./providers";
 
-import { siteConfig } from "@/config/site";
 import { fontSans } from "@/config/fonts";
 import { BottomNavbar } from "@/components/layout/BottomNavbar";
 import { OrganizationSwitcher } from "@/components/layout/OrganizationSwitcher";
 import { useTelegramViewport } from "@/hooks/useTelegramViewport";
 
-export function ClientLayout({
-  children,
-}: {
-  children: React.ReactNode;
-}) {
+export function ClientLayout({ children }: { children: React.ReactNode }) {
   const { isFullscreen } = useTelegramViewport();
 
   return (
@@ -23,7 +18,7 @@ export function ClientLayout({
       <head />
       <body
         className={clsx(
-          "h-screen bg-background font-sans antialiased text-foreground",
+          "bg-background font-sans antialiased text-foreground",
           fontSans.variable,
         )}
       >
@@ -33,10 +28,10 @@ export function ClientLayout({
           </div>
           <div className="flex h-screen flex-col">
             <main className="flex-1 overflow-auto">
-              <div 
+              <div
                 className={clsx(
                   "mx-auto flex h-full max-w-4xl flex-col px-4 pb-22",
-                  isFullscreen ? "pt-22" : "pt-15"
+                  isFullscreen ? "pt-22" : "pt-15",
                 )}
               >
                 {children}
