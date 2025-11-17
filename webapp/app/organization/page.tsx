@@ -2,12 +2,11 @@
 
 import { useCallback, useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
-import { Card, CardBody, CardHeader } from "@heroui/card";
+import { Card, CardBody } from "@heroui/card";
 import { Spinner } from "@heroui/spinner";
 import {
   BookOpenIcon,
   DocumentTextIcon,
-  BriefcaseIcon,
   UsersIcon,
   Cog6ToothIcon,
   ArrowRightIcon,
@@ -17,6 +16,7 @@ import {
 
 import { useAuth } from "@/hooks/useAuth";
 import { useOrganization } from "@/hooks/useOrganization";
+import { useHasInvitation } from "@/hooks/useInvitationToken";
 import { CoreOrganization } from "@/api/api.core.generated";
 import { useApiClients } from "@/api/client";
 
@@ -65,11 +65,23 @@ const sections = [
 
 export default function OrganizationPage() {
   const router = useRouter();
-  const { loading: authLoading, isAuthenticated, isNewUser, organizations } = useAuth();
-  const { currentOrg, loading: orgLoading, needsOrganization } = useOrganization({ organizations, authLoading });
+  const {
+    loading: authLoading,
+    isAuthenticated,
+    isNewUser,
+    organizations,
+  } = useAuth();
+  const {
+    currentOrg,
+    loading: orgLoading,
+    needsOrganization,
+  } = useOrganization({ organizations, authLoading });
+  const hasInvitation = useHasInvitation();
   const { core } = useApiClients();
 
-  const [organization, setOrganization] = useState<CoreOrganization | null>(null);
+  const [organization, setOrganization] = useState<CoreOrganization | null>(
+    null,
+  );
   const [loadingOrg, setLoadingOrg] = useState(true);
 
   useEffect(() => {
@@ -79,17 +91,37 @@ export default function OrganizationPage() {
   }, [isNewUser, authLoading, router]);
 
   useEffect(() => {
-    if (!authLoading && !orgLoading && isAuthenticated && !isNewUser && needsOrganization) {
-      router.replace("/organization/create");
+    if (
+      !authLoading &&
+      !orgLoading &&
+      isAuthenticated &&
+      !isNewUser
+    ) {
+      if (hasInvitation) {
+        router.replace("/invitation");
+      } else if (needsOrganization) {
+        router.replace("/organization/create");
+      }
     }
-  }, [authLoading, orgLoading, isAuthenticated, isNewUser, needsOrganization, router]);
+  }, [
+    authLoading,
+    orgLoading,
+    isAuthenticated,
+    isNewUser,
+    needsOrganization,
+    hasInvitation,
+    router,
+  ]);
 
   const loadOrganization = useCallback(async () => {
     if (!currentOrg?.id) return;
 
     setLoadingOrg(true);
     try {
-      const response = await core.v1.organizationServiceGetOrganization(currentOrg.id);
+      const response = await core.v1.organizationServiceGetOrganization(
+        currentOrg.id,
+      );
+
       setOrganization(response.data.organization || null);
     } catch (e) {
       console.error("Failed to load organization", e);
@@ -101,7 +133,13 @@ export default function OrganizationPage() {
   useEffect(() => {
     if (!isAuthenticated || authLoading || isNewUser || !currentOrg?.id) return;
     void loadOrganization();
-  }, [isAuthenticated, authLoading, isNewUser, currentOrg?.id, loadOrganization]);
+  }, [
+    isAuthenticated,
+    authLoading,
+    isNewUser,
+    currentOrg?.id,
+    loadOrganization,
+  ]);
 
   if (authLoading || orgLoading || loadingOrg) {
     return (
@@ -116,7 +154,9 @@ export default function OrganizationPage() {
       <div className="flex items-center justify-center min-h-screen p-4">
         <Card className="w-full max-w-sm">
           <CardBody>
-            <p className="text-default-400 text-center">Организация не найдена</p>
+            <p className="text-default-400 text-center">
+              Организация не найдена
+            </p>
           </CardBody>
         </Card>
       </div>
@@ -133,7 +173,9 @@ export default function OrganizationPage() {
         <div className="flex flex-col gap-2 justify-center flex-1">
           <div className="flex gap-2">
             <div className="flex-1 min-w-0 flex flex-col">
-              <h1 className="text-xl font-bold truncate">{organization.name || currentOrg.id}</h1>
+              <h1 className="text-xl font-bold truncate">
+                {organization.name || currentOrg.id}
+              </h1>
               {(organization.industry || organization.region) && (
                 <p className="text-xs text-default-400">
                   {organization.region}
@@ -144,7 +186,9 @@ export default function OrganizationPage() {
             </div>
           </div>
           {organization.description && (
-            <p className="text-xs text-default-400 font-semibold min-h-fit">{organization.description}</p>
+            <p className="text-xs text-default-400 font-semibold min-h-fit">
+              {organization.description}
+            </p>
           )}
         </div>
       </Card>
@@ -173,7 +217,9 @@ export default function OrganizationPage() {
                     </div>
                     <div className="flex flex-col flex-1 min-w-0 gap-1">
                       <p className="font-semibold text-base">{section.title}</p>
-                      <p className="text-xs text-default-400">{section.description}</p>
+                      <p className="text-xs text-default-400">
+                        {section.description}
+                      </p>
                     </div>
                     <ArrowRightIcon className="h-5 w-5 text-default-400 flex-shrink-0" />
                   </div>

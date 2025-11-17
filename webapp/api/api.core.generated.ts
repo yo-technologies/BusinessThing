@@ -9,15 +9,6 @@
  * ---------------------------------------------------------------
  */
 
-export interface ContractTemplateServiceCreateTemplateBody {
-  name?: string;
-  description?: string;
-  templateType?: string;
-  /** JSON с полями шаблона */
-  fieldsSchema?: string;
-  s3TemplateKey?: string;
-}
-
 export interface ContractTemplateServiceUpdateTemplateBody {
   name?: string;
   description?: string;
@@ -98,7 +89,6 @@ export interface CoreCompleteRegistrationResponse {
 
 export interface CoreContractTemplate {
   id?: string;
-  organizationId?: string;
   name?: string;
   description?: string;
   templateType?: string;
@@ -125,6 +115,15 @@ export interface CoreCreateOrganizationRequest {
 
 export interface CoreCreateOrganizationResponse {
   organization?: CoreOrganization;
+}
+
+export interface CoreCreateTemplateRequest {
+  name?: string;
+  description?: string;
+  templateType?: string;
+  /** JSON с полями шаблона */
+  fieldsSchema?: string;
+  s3TemplateKey?: string;
 }
 
 export interface CoreCreateTemplateResponse {
@@ -675,6 +674,24 @@ export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDa
       }),
 
     /**
+     * No description
+     *
+     * @tags UserService
+     * @name UserServiceDeleteInvitation
+     * @summary Удалить/отозвать приглашение
+     * @request DELETE:/v1/invitations/{id}
+     * @secure
+     */
+    userServiceDeleteInvitation: (id: string, params: RequestParams = {}) =>
+      this.request<UserServiceAcceptInvitationBody, RpcStatus>({
+        path: `/v1/invitations/${id}`,
+        method: "DELETE",
+        secure: true,
+        format: "json",
+        ...params,
+      }),
+
+    /**
  * No description
  *
  * @tags UserService
@@ -1017,58 +1034,6 @@ export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDa
     /**
      * No description
      *
-     * @tags ContractTemplateService
-     * @name ContractTemplateServiceListTemplates
-     * @summary Список шаблонов организации
-     * @request GET:/v1/organizations/{organizationId}/templates
-     * @secure
-     */
-    contractTemplateServiceListTemplates: (
-      organizationId: string,
-      query?: {
-        /** @format int32 */
-        page?: number;
-        /** @format int32 */
-        pageSize?: number;
-      },
-      params: RequestParams = {},
-    ) =>
-      this.request<CoreListTemplatesResponse, RpcStatus>({
-        path: `/v1/organizations/${organizationId}/templates`,
-        method: "GET",
-        query: query,
-        secure: true,
-        format: "json",
-        ...params,
-      }),
-
-    /**
-     * No description
-     *
-     * @tags ContractTemplateService
-     * @name ContractTemplateServiceCreateTemplate
-     * @summary Создать шаблон договора
-     * @request POST:/v1/organizations/{organizationId}/templates
-     * @secure
-     */
-    contractTemplateServiceCreateTemplate: (
-      organizationId: string,
-      body: ContractTemplateServiceCreateTemplateBody,
-      params: RequestParams = {},
-    ) =>
-      this.request<CoreCreateTemplateResponse, RpcStatus>({
-        path: `/v1/organizations/${organizationId}/templates`,
-        method: "POST",
-        body: body,
-        secure: true,
-        type: ContentType.Json,
-        format: "json",
-        ...params,
-      }),
-
-    /**
-     * No description
-     *
      * @tags UserService
      * @name UserServiceListUsers
      * @summary Список пользователей организации
@@ -1146,6 +1111,53 @@ export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDa
     storageServiceGenerateUploadUrl: (body: CoreGenerateUploadURLRequest, params: RequestParams = {}) =>
       this.request<CoreGenerateUploadURLResponse, RpcStatus>({
         path: `/v1/storage/upload-url`,
+        method: "POST",
+        body: body,
+        secure: true,
+        type: ContentType.Json,
+        format: "json",
+        ...params,
+      }),
+
+    /**
+     * No description
+     *
+     * @tags ContractTemplateService
+     * @name ContractTemplateServiceListTemplates
+     * @summary Список шаблонов организации
+     * @request GET:/v1/templates
+     * @secure
+     */
+    contractTemplateServiceListTemplates: (
+      query?: {
+        /** @format int32 */
+        page?: number;
+        /** @format int32 */
+        pageSize?: number;
+      },
+      params: RequestParams = {},
+    ) =>
+      this.request<CoreListTemplatesResponse, RpcStatus>({
+        path: `/v1/templates`,
+        method: "GET",
+        query: query,
+        secure: true,
+        format: "json",
+        ...params,
+      }),
+
+    /**
+     * No description
+     *
+     * @tags ContractTemplateService
+     * @name ContractTemplateServiceCreateTemplate
+     * @summary Создать шаблон договора
+     * @request POST:/v1/templates
+     * @secure
+     */
+    contractTemplateServiceCreateTemplate: (body: CoreCreateTemplateRequest, params: RequestParams = {}) =>
+      this.request<CoreCreateTemplateResponse, RpcStatus>({
+        path: `/v1/templates`,
         method: "POST",
         body: body,
         secure: true,

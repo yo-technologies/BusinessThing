@@ -1,6 +1,5 @@
 "use client";
 
-import { Chip } from "@heroui/chip";
 import { AgentToolCallStatus } from "@/api/api.agent.generated";
 
 interface ToolCallStatusProps {

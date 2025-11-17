@@ -17,14 +17,30 @@ export function TelegramInit() {
 
     try {
       console.log("Initializing Telegram Mini App SDK...");
-      
+
       // Получаем параметры запуска
       const params = retrieveLaunchParams();
+
       console.log("Launch params retrieved:", params);
+
+      // startParam может быть в params.startParam или в params.tgWebAppData.start_param
+      const startParam =
+        params.startParam || (params as any).tgWebAppData?.start_param;
+
+      // Проверяем и логируем приглашение
+      if (startParam) {
+        const startParamStr = String(startParam);
+
+        console.log("StartParam as string:", startParamStr);
+        if (startParamStr.startsWith("invitation_")) {
+          const token = startParamStr.replace("invitation_", "");
+        } else {
+        }
+      }
 
       // Инициализируем все компоненты SDK
       init();
-      
+
       // Сигнализируем, что приложение готово
       if (miniApp.mount.isAvailable()) {
         miniApp.ready();
@@ -33,10 +49,10 @@ export function TelegramInit() {
 
       // Разворачиваем viewport
       if (miniApp.mount.isAvailable()) {
-        miniApp.setHeaderColor('#000000');
-        miniApp.setBackgroundColor('#000000');
+        miniApp.setHeaderColor("#000000");
+        miniApp.setBackgroundColor("#000000");
       }
-      
+
       setInitialized(true);
     } catch (error) {
       console.error("Failed to initialize Telegram SDK:", error);

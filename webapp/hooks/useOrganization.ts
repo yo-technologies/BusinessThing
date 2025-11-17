@@ -18,7 +18,10 @@ interface UseOrganizationProps {
   authLoading?: boolean; // Добавляем флаг загрузки авторизации
 }
 
-export const useOrganization = ({ organizations, authLoading = false }: UseOrganizationProps) => {
+export const useOrganization = ({
+  organizations,
+  authLoading = false,
+}: UseOrganizationProps) => {
   const [state, setState] = useState<OrganizationState>({
     currentOrg: null,
     organizations: [],
@@ -39,13 +42,17 @@ export const useOrganization = ({ organizations, authLoading = false }: UseOrgan
         loading: false,
         needsOrganization: true,
       });
+
       return;
     }
 
     // Пытаемся взять из localStorage
-    const storedOrgId = typeof window !== "undefined" ? localStorage.getItem(ORG_STORAGE_KEY) : null;
+    const storedOrgId =
+      typeof window !== "undefined"
+        ? localStorage.getItem(ORG_STORAGE_KEY)
+        : null;
     let currentOrg = storedOrgId
-      ? organizations.find((org) => org.id === storedOrgId) ?? null
+      ? (organizations.find((org) => org.id === storedOrgId) ?? null)
       : null;
 
     // Если не нашли или нет в storage, берём первую
@@ -67,6 +74,7 @@ export const useOrganization = ({ organizations, authLoading = false }: UseOrgan
   const switchOrganization = useCallback(
     (orgId: string) => {
       const org = organizations.find((o) => o.id === orgId);
+
       if (org) {
         setState((prev) => ({ ...prev, currentOrg: org }));
         if (typeof window !== "undefined") {

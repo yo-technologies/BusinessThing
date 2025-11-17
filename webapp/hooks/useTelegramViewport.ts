@@ -16,9 +16,10 @@ export function useTelegramViewport() {
       if (viewport.mount.isAvailable()) {
         viewport.mount();
         setIsMounted(true);
-        
+
         // Получаем текущее состояние fullscreen
         const currentState = viewport.isFullscreen();
+
         setIsFullscreen(currentState);
 
         // Подписываемся на изменения fullscreen

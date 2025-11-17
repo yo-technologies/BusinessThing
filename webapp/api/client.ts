@@ -20,6 +20,7 @@ const tokenUpdateListeners = new Set<() => void>();
 
 export const onTokenUpdate = (listener: () => void) => {
   tokenUpdateListeners.add(listener);
+
   return () => tokenUpdateListeners.delete(listener);
 };
 
@@ -52,6 +53,7 @@ export const refreshAuthToken = async (): Promise<{
   const response = await coreApi.v1.authServiceRefreshToken();
 
   const newToken = response.data.accessToken || "";
+
   if (newToken) {
     setAuthToken(newToken);
   }
@@ -80,6 +82,7 @@ const createCoreApi = () => {
 
   // Добавляем интерсептор для обработки 401 ошибок
   const originalRequest = api.request.bind(api);
+
   api.request = async <T = any, E = any>(params: any): Promise<any> => {
     try {
       return await originalRequest<T, E>(params);
@@ -112,6 +115,7 @@ const createAgentApi = () => {
 
   // Добавляем интерсептор для обработки 401 ошибок
   const originalRequest = api.request.bind(api);
+
   api.request = async <T = any, E = any>(params: any): Promise<any> => {
     try {
       return await originalRequest<T, E>(params);

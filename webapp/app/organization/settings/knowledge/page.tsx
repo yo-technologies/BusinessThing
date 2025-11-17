@@ -20,14 +20,28 @@ import { CoreDocument, CoreDocumentStatus } from "@/api/api.core.generated";
 import { useApiClients } from "@/api/client";
 import { useAuth } from "@/hooks/useAuth";
 import { useOrganization } from "@/hooks/useOrganization";
+import { useHasInvitation } from "@/hooks/useInvitationToken";
 import { useBackButton } from "@/hooks/useBackButton";
 
-type DocumentWithLoading = CoreDocument & { deleting?: boolean; uploading?: boolean };
+type DocumentWithLoading = CoreDocument & {
+  deleting?: boolean;
+  uploading?: boolean;
+};
 
 export default function KnowledgePage() {
   const router = useRouter();
-  const { loading: authLoading, isAuthenticated, isNewUser, organizations } = useAuth();
-  const { currentOrg, loading: orgLoading, needsOrganization } = useOrganization({ organizations, authLoading });
+  const {
+    loading: authLoading,
+    isAuthenticated,
+    isNewUser,
+    organizations,
+  } = useAuth();
+  const {
+    currentOrg,
+    loading: orgLoading,
+    needsOrganization,
+  } = useOrganization({ organizations, authLoading });
+  const hasInvitation = useHasInvitation();
   const { core } = useApiClients();
   const fileInputRef = useRef<HTMLInputElement>(null);
 
@@ -45,10 +59,27 @@ export default function KnowledgePage() {
   }, [isNewUser, authLoading, router]);
 
   useEffect(() => {
-    if (!authLoading && !orgLoading && isAuthenticated && !isNewUser && needsOrganization) {
-      router.replace("/organization/create");
+    if (
+      !authLoading &&
+      !orgLoading &&
+      isAuthenticated &&
+      !isNewUser
+    ) {
+      if (hasInvitation) {
+        router.replace("/invitation");
+      } else if (needsOrganization) {
+        router.replace("/organization/create");
+      }
     }
-  }, [authLoading, orgLoading, isAuthenticated, isNewUser, needsOrganization, router]);
+  }, [
+    authLoading,
+    orgLoading,
+    isAuthenticated,
+    isNewUser,
+    needsOrganization,
+    hasInvitation,
+    router,
+  ]);
 
   const loadData = useCallback(async () => {
     if (!currentOrg?.id) return;
@@ -56,7 +87,11 @@ export default function KnowledgePage() {
     setInitialLoading(true);
     setError(null);
     try {
-      const response = await core.v1.documentServiceListDocuments(currentOrg.id, { pageSize: 100 });
+      const response = await core.v1.documentServiceListDocuments(
+        currentOrg.id,
+        { pageSize: 100 },
+      );
+
       setDocuments(response.data.documents ?? []);
     } catch (e) {
       console.error("Failed to load documents", e);
@@ -93,8 +128,11 @@ export default function KnowledgePage() {
     fileInputRef.current?.click();
   };
 
-  const handleFileSelect = async (event: React.ChangeEvent<HTMLInputElement>) => {
+  const handleFileSelect = async (
+    event: React.ChangeEvent<HTMLInputElement>,
+  ) => {
     const file = event.target.files?.[0];
+
     if (!file || !currentOrg?.id) return;
 
     setUploading(true);
@@ -128,15 +166,19 @@ export default function KnowledgePage() {
       }
 
       // 3. Зарегистрировать документ в базе
-      const registerResponse = await core.v1.documentServiceRegisterDocument(currentOrg.id, {
-        name: file.name,
-        s3Key,
-        fileType: file.type || "application/octet-stream",
-        fileSize: file.size.toString(),
-      });
+      const registerResponse = await core.v1.documentServiceRegisterDocument(
+        currentOrg.id,
+        {
+          name: file.name,
+          s3Key,
+          fileType: file.type || "application/octet-stream",
+          fileSize: file.size.toString(),
+        },
+      );
 
       // 4. Добавить документ в список
       const newDocument = registerResponse.data.document;
+
       if (newDocument) {
         setDocuments((prev) => [newDocument, ...prev]);
       }
@@ -155,13 +197,29 @@ export default function KnowledgePage() {
   const getStatusLabel = (status?: CoreDocumentStatus) => {
     switch (status) {
       case CoreDocumentStatus.DOCUMENT_STATUS_INDEXED:
-        return { label: "Готов", color: "success" as const, icon: CheckCircleIcon };
+        return {
+          label: "Готов",
+          color: "success" as const,
+          icon: CheckCircleIcon,
+        };
       case CoreDocumentStatus.DOCUMENT_STATUS_PROCESSING:
-        return { label: "Обработка", color: "warning" as const, icon: ClockIcon };
+        return {
+          label: "Обработка",
+          color: "warning" as const,
+          icon: ClockIcon,
+        };
       case CoreDocumentStatus.DOCUMENT_STATUS_FAILED:
-        return { label: "Ошибка", color: "danger" as const, icon: ExclamationCircleIcon };
+        return {
+          label: "Ошибка",
+          color: "danger" as const,
+          icon: ExclamationCircleIcon,
+        };
       default:
-        return { label: "В очереди", color: "default" as const, icon: ClockIcon };
+        return {
+          label: "В очереди",
+          color: "default" as const,
+          icon: ClockIcon,
+        };
     }
   };
 
@@ -187,10 +245,10 @@ export default function KnowledgePage() {
     <div className="flex flex-col min-h-full gap-4 flex-1">
       <input
         ref={fileInputRef}
-        type="file"
-        className="hidden"
-        onChange={handleFileSelect}
         accept=".pdf,.doc,.docx,.txt,.md"
+        className="hidden"
+        type="file"
+        onChange={handleFileSelect}
       />
 
       <Card className="rounded-4xl shadow-none min-h-fit">
@@ -218,7 +276,9 @@ export default function KnowledgePage() {
           {documents.length === 0 ? (
             <div className="flex flex-col h-full items-center justify-center py-12 gap-2">
               <DocumentIcon className="h-16 w-16 text-default-300" />
-              <p className="text-default-400 text-center">Документы отсутствуют</p>
+              <p className="text-default-400 text-center">
+                Документы отсутствуют
+              </p>
               <p className="text-sm text-default-300 text-center max-w-md">
                 Загрузите документы, чтобы агент мог использовать их в работе
               </p>
@@ -239,13 +299,15 @@ export default function KnowledgePage() {
                       <p className="font-medium truncate">{doc.name}</p>
                       <div className="flex items-center gap-2 mt-1">
                         <p className="text-sm text-default-400">
-                          {doc.fileSize ? `${(Number(doc.fileSize) / 1024).toFixed(1)} KB` : ""}
+                          {doc.fileSize
+                            ? `${(Number(doc.fileSize) / 1024).toFixed(1)} KB`
+                            : ""}
                         </p>
                         <Chip
                           color={status.color}
-                          variant="flat"
                           size="sm"
                           startContent={<StatusIcon className="h-4 w-4" />}
+                          variant="flat"
                         >
                           {status.label}
                         </Chip>
@@ -253,10 +315,10 @@ export default function KnowledgePage() {
                     </div>
                     <Button
                       isIconOnly
-                      size="sm"
-                      variant="light"
                       color="danger"
                       isLoading={doc.deleting}
+                      size="sm"
+                      variant="light"
                       onPress={() => handleDeleteDocument(doc)}
                     >
                       <TrashIcon className="h-4 w-4" />
@@ -271,14 +333,14 @@ export default function KnowledgePage() {
 
       <Button
         isIconOnly
-        color="secondary"
-        size="lg"
-        radius="full"
         className="fixed right-6 bottom-24 z-50 shadow-lg"
-        onPress={handleUploadClick}
-        isLoading={uploading}
+        color="secondary"
         isDisabled={uploading}
-        spinner={<Spinner size="sm" color="success" />}
+        isLoading={uploading}
+        radius="full"
+        size="lg"
+        spinner={<Spinner color="success" size="sm" />}
+        onPress={handleUploadClick}
       >
         <PlusIcon className="h-6 w-6" />
       </Button>
