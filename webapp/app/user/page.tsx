@@ -28,7 +28,7 @@ const userSections = [
     title: "Мои организации",
     description: "Просмотр и управление",
     icon: BuildingOfficeIcon,
-    path: "/organization",
+    path: "/user/organizations", // Changed path to /organizations
     color: "text-secondary",
   },
 ];

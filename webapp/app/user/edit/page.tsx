@@ -9,6 +9,7 @@ import { Input } from "@heroui/input";
 import { CoreCompleteRegistrationRequest } from "@/api/api.core.generated";
 import { refreshAuthToken, useApiClients } from "@/api/client";
 import { useAuth } from "@/hooks/useAuth";
+import { useBackButton } from "@/hooks/useBackButton";
 
 export default function UserEditPage() {
   const router = useRouter();
@@ -18,6 +19,8 @@ export default function UserEditPage() {
   const [firstName, setFirstName] = useState("");
   const [lastName, setLastName] = useState("");
   const [submitting, setSubmitting] = useState(false);
+
+  useBackButton(true);
 
   useEffect(() => {
     if (!loading && user) {
@@ -88,7 +91,7 @@ export default function UserEditPage() {
           />
 
           <Button
-            color="primary"
+            color="success"
             radius="lg"
             className="w-full mt-2"
             isDisabled={!firstName.trim() || !lastName.trim() || submitting}
