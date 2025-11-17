@@ -93,7 +93,6 @@ func (s *GeneratorService) GenerateContract(
 	return &GeneratedContract{
 		ContractID:   contract.ID,
 		Name:         contract.Name,
-		DownloadURL:  fmt.Sprintf("/api/v1/contracts/%s/download", contract.ID),
 		S3Key:        s3Key,
 		CreatedAt:    time.Now(),
 		TemplateName: template.Name,
@@ -145,8 +144,8 @@ func (s *GeneratorService) ListContracts(ctx context.Context, organizationID str
 			Name:         c.Name,
 			TemplateName: templateName,
 			TemplateID:   c.TemplateID,
+			S3Key:        c.S3Key,
 			CreatedAt:    c.CreatedAt,
-			DownloadURL:  fmt.Sprintf("/api/v1/contracts/%s/download", c.ID),
 		})
 	}
 

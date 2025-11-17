@@ -25,7 +25,6 @@ type TemplateField struct {
 type GeneratedContract struct {
 	ContractID   string    `json:"contract_id"`
 	Name         string    `json:"name"`
-	DownloadURL  string    `json:"download_url"`
 	S3Key        string    `json:"s3_key"`
 	CreatedAt    time.Time `json:"created_at"`
 	TemplateName string    `json:"template_name"`
@@ -36,6 +35,6 @@ type ContractListItem struct {
 	Name         string    `json:"name"`
 	TemplateName string    `json:"template_name"`
 	TemplateID   string    `json:"template_id"`
+	S3Key        string    `json:"s3_key"`
 	CreatedAt    time.Time `json:"created_at"`
-	DownloadURL  string    `json:"download_url"`
 }
