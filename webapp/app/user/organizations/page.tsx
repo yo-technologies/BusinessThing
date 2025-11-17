@@ -20,6 +20,7 @@ import {
   ShieldCheckIcon,
   UserIcon,
   ArrowUpRightIcon,
+  PlusIcon,
 } from "@heroicons/react/24/outline";
 
 import { useAuth } from "@/hooks/useAuth";
@@ -137,6 +138,17 @@ export default function OrganizationsListPage() {
   return (
     <div className="p-4">
       <h1 className="text-2xl font-bold mb-4">Мои организации</h1>
+      <div className="mb-4">
+        <Button
+          color="success"
+          variant="flat"
+          fullWidth
+          startContent={<PlusIcon className="h-5 w-5" />}
+          onPress={() => router.push('/organization/create')}
+        >
+          Создать новую организацию
+        </Button>
+      </div>
       <div className="flex flex-col gap-3">
         {detailedOrgs.map((org) => {
           const role = getRoleLabel(org.role);

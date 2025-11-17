@@ -3,7 +3,7 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { Button } from "@heroui/button";
-import { Card, CardBody, CardHeader } from "@heroui/card";
+import { Card } from "@heroui/card";
 import { Input, Textarea } from "@heroui/input";
 
 import { CoreCreateOrganizationRequest } from "@/api/api.core.generated";
@@ -44,10 +44,7 @@ export default function CreateOrganizationPage() {
         );
       }
 
-      // Синхронно обновляем токен с актуальным списком организаций
       await refreshAuthToken();
-
-      // Переходим на главную страницу (токен уже обновлен)
       router.push("/chat");
     } catch (e) {
       console.error("Failed to create organization", e);
@@ -60,13 +57,14 @@ export default function CreateOrganizationPage() {
   return (
     <div className="flex h-full flex-col items-center justify-center px-2">
       <Card className="w-full max-w-md border-none bg-content1/80 shadow-md">
-        <CardHeader className="flex flex-col items-start gap-1 pb-2">
-          <span className="text-tiny font-medium uppercase text-secondary">
-            Первый шаг
-          </span>
-          <h1 className="text-xl font-semibold">Создай организацию</h1>
-        </CardHeader>
-        <CardBody className="space-y-4">
+        <div className="space-y-4 overflow-auto p-4">
+          <div className="flex flex-col items-start gap-1">
+            <span className="text-tiny font-medium uppercase text-secondary">
+              Первый шаг
+            </span>
+            <h1 className="text-xl font-semibold">Создай организацию</h1>
+          </div>
+
           <p className="text-small text-default-400">
             Для работы с системой нужна организация. Укажи название компании и
             основную информацию.
@@ -116,6 +114,7 @@ export default function CreateOrganizationPage() {
           <Button
             className="mt-2 w-full"
             color="success"
+            size="lg"
             isDisabled={!name.trim()}
             isLoading={submitting}
             radius="lg"
@@ -123,7 +122,7 @@ export default function CreateOrganizationPage() {
           >
             Создать организацию
           </Button>
-        </CardBody>
+        </div>
       </Card>
     </div>
   );
