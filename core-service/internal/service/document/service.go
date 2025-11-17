@@ -3,7 +3,6 @@ package document
 import (
 	"context"
 	"core-service/internal/domain"
-	"encoding/json"
 	"strings"
 	"time"
 
@@ -146,10 +145,5 @@ func (s *Service) publishProcessingJob(ctx context.Context, doc domain.Document)
 		CreatedAt:      doc.CreatedAt,
 	}
 
-	body, err := json.Marshal(job)
-	if err != nil {
-		return err
-	}
-
-	return s.queue.PublishMessage(ctx, body)
+	return s.queue.PublishMessage(ctx, job)
 }
