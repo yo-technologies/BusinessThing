@@ -30,5 +30,6 @@ func (p *DOCXParser) Parse(ctx context.Context, reader io.Reader) (string, error
 }
 
 func (p *DOCXParser) SupportsType(docType domain.DocumentType) bool {
-	return docType == domain.DocumentTypeDOCX
+	return docType == domain.DocumentTypeDOCX || 
+		docType == "application/vnd.openxmlformats-officedocument.wordprocessingml.document"
 }

@@ -29,5 +29,5 @@ func (p *TXTParser) Parse(ctx context.Context, reader io.Reader) (string, error)
 }
 
 func (p *TXTParser) SupportsType(docType domain.DocumentType) bool {
-	return docType == domain.DocumentTypeTXT
+	return docType == domain.DocumentTypeTXT || docType == "text/plain"
 }

@@ -32,10 +32,10 @@ export function ClientLayout({
             <header className="shrink-0 px-3 py-2">
               <OrganizationSwitcher />
             </header>
-            <main className="flex-1 overflow-hidden">
+            <main className="flex-1 overflow-y-auto">
               <div 
                 className={clsx(
-                  "mx-auto flex h-full max-w-4xl flex-col px-4 pb-22",
+                  "mx-auto flex h-full max-w-4xl flex-col pb-22",
                   isFullscreen && "pt-22"
                 )}
               >
