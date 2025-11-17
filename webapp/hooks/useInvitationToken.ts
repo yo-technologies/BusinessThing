@@ -17,9 +17,13 @@ export const useHasInvitation = () => {
 
     // Проверяем, не было ли уже обработано приглашение в этой сессии
     const processed = sessionStorage.getItem(INVITATION_PROCESSED_KEY);
+
     if (processed) {
-      console.log("[useHasInvitation] Invitation already processed in this session");
+      console.log(
+        "[useHasInvitation] Invitation already processed in this session",
+      );
       setHasInvitation(false);
+
       return;
     }
 
@@ -79,7 +83,9 @@ export const markInvitationAsProcessed = () => {
  */
 export const clearInvitationProcessed = () => {
   if (typeof window !== "undefined") {
-    console.log("[clearInvitationProcessed] Clearing invitation processed flag");
+    console.log(
+      "[clearInvitationProcessed] Clearing invitation processed flag",
+    );
     sessionStorage.removeItem(INVITATION_PROCESSED_KEY);
   }
 };

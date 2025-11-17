@@ -91,12 +91,7 @@ export default function UsersPage() {
   }, [isNewUser, authLoading, router]);
 
   useEffect(() => {
-    if (
-      !authLoading &&
-      !orgLoading &&
-      isAuthenticated &&
-      !isNewUser
-    ) {
+    if (!authLoading && !orgLoading && isAuthenticated && !isNewUser) {
       if (hasInvitation) {
         router.replace("/invitation");
       } else if (needsOrganization) {

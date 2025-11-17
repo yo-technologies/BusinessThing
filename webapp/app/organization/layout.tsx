@@ -5,5 +5,9 @@ export default function SettingsLayout({
 }: {
   children: React.ReactNode;
 }) {
-  return <div className="flex flex-col min-h-full px-4">{children}</div>;
+  return (
+    <div className="flex flex-col h-full px-4">
+      {children}
+    </div>
+  );
 }

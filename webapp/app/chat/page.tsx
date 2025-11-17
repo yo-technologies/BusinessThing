@@ -97,12 +97,7 @@ export default function ChatPage() {
 
   // Проверяем наличие приглашения перед редиректом на создание организации
   useEffect(() => {
-    if (
-      !loading &&
-      !orgLoading &&
-      isAuthenticated &&
-      !isNewUser
-    ) {
+    if (!loading && !orgLoading && isAuthenticated && !isNewUser) {
       // Приоритет - приглашение (даже если у пользователя уже есть организации)
       if (hasInvitation) {
         router.replace("/invitation");

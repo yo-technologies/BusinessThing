@@ -79,6 +79,7 @@ export const useOrganization = ({
         setState((prev) => ({ ...prev, currentOrg: org }));
         if (typeof window !== "undefined") {
           localStorage.setItem(ORG_STORAGE_KEY, orgId);
+          window.location.reload(); // Revert to full page reload
         }
       }
     },

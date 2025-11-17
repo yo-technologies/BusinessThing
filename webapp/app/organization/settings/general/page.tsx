@@ -4,6 +4,7 @@ import { useCallback, useEffect, useState } from "react";
 import { Card, CardBody, CardHeader } from "@heroui/card";
 import { Spinner } from "@heroui/spinner";
 import { Input, Textarea } from "@heroui/input";
+import { Button } from "@heroui/button";
 import { Cog6ToothIcon } from "@heroicons/react/24/outline";
 import { useRouter } from "next/navigation";
 
@@ -53,12 +54,7 @@ export default function GeneralSettingsPage() {
   }, [isNewUser, authLoading, router]);
 
   useEffect(() => {
-    if (
-      !authLoading &&
-      !orgLoading &&
-      isAuthenticated &&
-      !isNewUser
-    ) {
+    if (!authLoading && !orgLoading && isAuthenticated && !isNewUser) {
       if (hasInvitation) {
         router.replace("/invitation");
       } else if (needsOrganization) {
@@ -153,7 +149,8 @@ export default function GeneralSettingsPage() {
     );
   }
 
-  if (error) {
+  if (error && !saving) {
+    // Do not show full page error while saving
     return (
       <Card className="max-w-xl mx-auto mt-8 rounded-4xl shadow-sm border border-danger-200/60">
         <CardBody>
@@ -174,7 +171,7 @@ export default function GeneralSettingsPage() {
   }
 
   return (
-    <div className="flex flex-col gap-4 flex-1">
+    <div className="flex flex-col gap-4 flex-1 pb-24">
       <Card className="rounded-4xl shadow-none">
         <CardHeader className="flex flex-col gap-1 px-5 py-4">
           <div className="flex items-start gap-2 w-full">
@@ -260,6 +257,27 @@ export default function GeneralSettingsPage() {
           </div>
         </CardBody>
       </Card>
+
+      {isAdmin && hasChanges && (
+        <div className="fixed bottom-18 left-0 right-0 z-50 p-4">
+          <div className="max-w-[80%] mx-auto">
+            <Button
+              fullWidth
+              className="backdrop-blur-sm bg-secondary/30"
+              color="success"
+              isDisabled={saving}
+              radius="full"
+              onPress={handleSave}
+            >
+              {saving ? (
+                <Spinner color="white" size="sm" />
+              ) : (
+                "Сохранить изменения"
+              )}
+            </Button>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
