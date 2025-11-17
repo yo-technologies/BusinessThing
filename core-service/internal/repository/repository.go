@@ -52,7 +52,7 @@ type DocumentRepository interface {
 	CreateDocument(ctx context.Context, doc domain.Document) (domain.Document, error)
 	GetDocument(ctx context.Context, id domain.ID) (domain.Document, error)
 	ListDocuments(ctx context.Context, organizationID domain.ID, status *domain.DocumentStatus, limit, offset int) ([]domain.Document, int, error)
-	UpdateDocumentStatus(ctx context.Context, id domain.ID, status domain.DocumentStatus, errorMessage string) error
+	UpdateDocumentStatus(ctx context.Context, id domain.ID, status domain.DocumentStatus, errorMessage *string) error
 	DeleteDocument(ctx context.Context, id domain.ID) error
 }
 

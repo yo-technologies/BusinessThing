@@ -35,17 +35,25 @@ export const useAuth = (): AuthState => {
     // Проверяем наличие токена при инициализации
     const existingToken = getAuthToken();
     if (existingToken) {
-      const organizations = getOrganizationsFromToken(existingToken);
-      const payload = existingToken ? require('@/utils/jwt').decodeJWT(existingToken) : null;
-      const userInfo = payload ? { userId: payload.sub, role: organizations[0]?.role || '' } : null;
-      return {
-        isAuthenticated: true,
-        loading: false, // если токен есть, считаем что загрузка завершена
-        user: null,
-        isNewUser: false,
-        organizations,
-        userInfo,
-      };
+      // Проверяем срок действия токена
+      const payload = require('@/utils/jwt').decodeJWT(existingToken);
+      const isExpired = payload ? payload.exp * 1000 < Date.now() : true;
+      
+      if (!isExpired && payload) {
+        const organizations = getOrganizationsFromToken(existingToken);
+        const userInfo = { userId: payload.sub, role: organizations[0]?.role || '' };
+        return {
+          isAuthenticated: true,
+          loading: false,
+          user: null,
+          isNewUser: false,
+          organizations,
+          userInfo,
+        };
+      } else {
+        // Токен истек, очищаем его
+        setAuthToken(null);
+      }
     }
     return {
       isAuthenticated: false,
@@ -108,11 +116,19 @@ export const useAuth = (): AuthState => {
   useEffect(() => {
     let cancelled = false;
 
-    // Если токен уже есть, не нужно заново аутентифицироваться
+    // Если токен уже есть и не истек, не нужно заново аутентифицироваться
     const existingToken = getAuthToken();
     if (existingToken) {
-      console.log("useAuth: Token already exists, skipping authentication");
-      return;
+      const payload = require('@/utils/jwt').decodeJWT(existingToken);
+      const isExpired = payload ? payload.exp * 1000 < Date.now() : true;
+      
+      if (!isExpired) {
+        console.log("useAuth: Token already exists and valid, skipping authentication");
+        return;
+      } else {
+        console.log("useAuth: Token expired, re-authenticating");
+        setAuthToken(null);
+      }
     }
 
     authenticate().catch((err) => {
@@ -140,13 +156,32 @@ export const useAuth = (): AuthState => {
           isAuthenticated: true,
           userInfo,
         }));
+      } else {
+        // Токен был очищен (например, из-за 401), переходим в состояние загрузки и пытаемся заново аутентифицироваться
+        setState((prev) => ({
+          ...prev,
+          isAuthenticated: false,
+          loading: true,
+          organizations: [],
+          userInfo: null,
+        }));
+        
+        // Пытаемся заново аутентифицироваться
+        if (initData) {
+          authenticate().catch((err) => {
+            console.error("Re-authentication failed", err);
+            setState((prev) => ({ ...prev, loading: false }));
+          });
+        } else {
+          setState((prev) => ({ ...prev, loading: false }));
+        }
       }
     });
 
     return () => {
       unsubscribe();
     };
-  }, []);
+  }, [initData]);
 
   return state;
 };

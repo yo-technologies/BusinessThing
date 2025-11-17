@@ -64,8 +64,8 @@ export const refreshAuthToken = async (): Promise<{
   };
 };
 
-const createCoreApi = () =>
-  new CoreApi({
+const createCoreApi = () => {
+  const api = new CoreApi({
     baseURL: "https://core.businessthing.ru/api",
     securityWorker: () =>
       authToken
@@ -78,8 +78,26 @@ const createCoreApi = () =>
     secure: true,
   });
 
-const createAgentApi = () =>
-  new AgentApi({
+  // Добавляем интерсептор для обработки 401 ошибок
+  const originalRequest = api.request.bind(api);
+  api.request = async <T = any, E = any>(params: any): Promise<any> => {
+    try {
+      return await originalRequest<T, E>(params);
+    } catch (error: any) {
+      // Если получили 401, очищаем токен
+      if (error?.status === 401 || error?.response?.status === 401) {
+        console.warn("Received 401, clearing invalid token");
+        setAuthToken(null);
+      }
+      throw error;
+    }
+  };
+
+  return api;
+};
+
+const createAgentApi = () => {
+  const api = new AgentApi({
     baseURL: "https://agent.businessthing.ru/api",
     securityWorker: () =>
       authToken
@@ -91,6 +109,24 @@ const createAgentApi = () =>
         : {},
     secure: true,
   });
+
+  // Добавляем интерсептор для обработки 401 ошибок
+  const originalRequest = api.request.bind(api);
+  api.request = async <T = any, E = any>(params: any): Promise<any> => {
+    try {
+      return await originalRequest<T, E>(params);
+    } catch (error: any) {
+      // Если получили 401, очищаем токен
+      if (error?.status === 401 || error?.response?.status === 401) {
+        console.warn("Received 401, clearing invalid token");
+        setAuthToken(null);
+      }
+      throw error;
+    }
+  };
+
+  return api;
+};
 
 export const useApiClients = () => {
   const core = useMemo(() => createCoreApi(), []);
