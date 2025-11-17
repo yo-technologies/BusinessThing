@@ -3,7 +3,6 @@ package service
 import (
 	"context"
 
-	"docs-processor/internal/domain"
 	pb "docs-processor/pkg/document"
 
 	"github.com/opentracing/opentracing-go"
@@ -24,17 +23,12 @@ func (s *TemplateSearchService) SearchTemplates(ctx context.Context, req *pb.Sea
 	span, ctx := opentracing.StartSpanFromContext(ctx, "service.SearchTemplates")
 	defer span.Finish()
 
-	orgID, err := domain.ParseID(req.OrganizationId)
-	if err != nil {
-		return nil, domain.ErrInvalidArgument
-	}
-
 	limit := int(req.Limit)
 	if limit <= 0 || limit > 100 {
 		limit = 10
 	}
 
-	results, err := s.templateProcessor.SearchTemplates(ctx, orgID, req.Query, limit)
+	results, err := s.templateProcessor.SearchTemplates(ctx, req.Query, limit)
 	if err != nil {
 		return nil, err
 	}

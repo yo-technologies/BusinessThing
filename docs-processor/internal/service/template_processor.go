@@ -39,7 +39,6 @@ func (p *TemplateProcessor) IndexTemplate(ctx context.Context, job *domain.Proce
 
 	logger.Info(ctx, "Indexing template",
 		"template_id", job.TemplateID.String(),
-		"organization_id", job.OrganizationID.String(),
 		"name", *job.TemplateName,
 	)
 
@@ -56,13 +55,12 @@ func (p *TemplateProcessor) IndexTemplate(ctx context.Context, job *domain.Proce
 	}
 
 	template := &domain.Template{
-		ID:             *job.TemplateID,
-		OrganizationID: job.OrganizationID,
-		Name:           *job.TemplateName,
-		Description:    *job.Description,
-		TemplateType:   lo.FromPtr(job.TemplateType),
-		FieldsCount:    lo.FromPtr(job.FieldsCount),
-		CreatedAt:      time.Now(),
+		ID:           *job.TemplateID,
+		Name:         *job.TemplateName,
+		Description:  *job.Description,
+		TemplateType: lo.FromPtr(job.TemplateType),
+		FieldsCount:  lo.FromPtr(job.FieldsCount),
+		CreatedAt:    time.Now(),
 	}
 
 	if err := p.templatesDB.IndexTemplate(ctx, template, embedding); err != nil {
@@ -101,7 +99,7 @@ func (p *TemplateProcessor) DeleteTemplate(ctx context.Context, job *domain.Proc
 	return nil
 }
 
-func (p *TemplateProcessor) SearchTemplates(ctx context.Context, organizationID domain.ID, query string, limit int) ([]*vectordb.TemplateSearchResult, error) {
+func (p *TemplateProcessor) SearchTemplates(ctx context.Context, query string, limit int) ([]*vectordb.TemplateSearchResult, error) {
 	span, ctx := opentracing.StartSpanFromContext(ctx, "service.TemplateProcessor.SearchTemplates")
 	defer span.Finish()
 
@@ -110,7 +108,7 @@ func (p *TemplateProcessor) SearchTemplates(ctx context.Context, organizationID 
 		return nil, fmt.Errorf("failed to get query embedding: %w", err)
 	}
 
-	results, err := p.templatesDB.SearchTemplates(ctx, organizationID, embedding, limit)
+	results, err := p.templatesDB.SearchTemplates(ctx, embedding, limit)
 	if err != nil {
 		return nil, fmt.Errorf("failed to search templates: %w", err)
 	}

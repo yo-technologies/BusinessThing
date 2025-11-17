@@ -419,8 +419,6 @@ func (m *SearchTemplatesRequest) validate(all bool) error {
 
 	// no validation rules for Query
 
-	// no validation rules for OrganizationId
-
 	// no validation rules for Limit
 
 	if len(errors) > 0 {

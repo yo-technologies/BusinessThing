@@ -5647,17 +5647,6 @@ func (m *CreateTemplateRequest) validate(all bool) error {
 
 	var errors []error
 
-	if utf8.RuneCountInString(m.GetOrganizationId()) < 1 {
-		err := CreateTemplateRequestValidationError{
-			field:  "OrganizationId",
-			reason: "value length must be at least 1 runes",
-		}
-		if !all {
-			return err
-		}
-		errors = append(errors, err)
-	}
-
 	if l := utf8.RuneCountInString(m.GetName()); l < 1 || l > 200 {
 		err := CreateTemplateRequestValidationError{
 			field:  "Name",
@@ -6153,17 +6142,6 @@ func (m *ListTemplatesRequest) validate(all bool) error {
 	}
 
 	var errors []error
-
-	if utf8.RuneCountInString(m.GetOrganizationId()) < 1 {
-		err := ListTemplatesRequestValidationError{
-			field:  "OrganizationId",
-			reason: "value length must be at least 1 runes",
-		}
-		if !all {
-			return err
-		}
-		errors = append(errors, err)
-	}
 
 	// no validation rules for Page
 
@@ -8378,8 +8356,6 @@ func (m *ContractTemplate) validate(all bool) error {
 	var errors []error
 
 	// no validation rules for Id
-
-	// no validation rules for OrganizationId
 
 	// no validation rules for Name
 

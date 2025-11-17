@@ -77,8 +77,8 @@ message DocumentChunk {
 message SearchTemplatesRequest {
   // query - текст запроса для поиска шаблона
   string query = 1;
-  // organization_id - ID организации для фильтрации шаблонов
-  string organization_id = 2;
+  reserved 2;
+  reserved "organization_id";
   // limit - максимальное количество результатов
   int32 limit = 3;
 }

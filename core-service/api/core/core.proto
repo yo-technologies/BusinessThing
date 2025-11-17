@@ -240,7 +240,7 @@ service ContractTemplateService {
     // Создать шаблон договора
     rpc CreateTemplate(CreateTemplateRequest) returns (CreateTemplateResponse) {
         option (google.api.http) = {
-            post: "/v1/organizations/{organization_id}/templates"
+            post: "/v1/templates"
             body: "*"
         };
     }
@@ -255,7 +255,7 @@ service ContractTemplateService {
     // Список шаблонов организации
     rpc ListTemplates(ListTemplatesRequest) returns (ListTemplatesResponse) {
         option (google.api.http) = {
-            get: "/v1/organizations/{organization_id}/templates"
+            get: "/v1/templates"
         };
     }
 
@@ -561,7 +561,9 @@ message DeleteNoteRequest {
 // ===== Contract Template Messages =====
 
 message CreateTemplateRequest {
-    string organization_id = 1 [(validate.rules).string.min_len = 1];
+    reserved 1;
+    reserved "organization_id";
+
     string name = 2 [(validate.rules).string = {min_len: 1, max_len: 200}];
     string description = 3;
     string template_type = 4;
@@ -583,7 +585,9 @@ message GetTemplateResponse {
 }
 
 message ListTemplatesRequest {
-    string organization_id = 1 [(validate.rules).string.min_len = 1];
+    reserved 1;
+    reserved "organization_id";
+
     int32 page = 2;
     int32 page_size = 3 [(validate.rules).int32 = {gte: 1, lte: 100}];
 }
@@ -722,7 +726,9 @@ message Note {
 
 message ContractTemplate {
     string id = 1;
-    string organization_id = 2;
+    reserved 2;
+    reserved "organization_id";
+
     string name = 3;
     string description = 4;
     string template_type = 5;
