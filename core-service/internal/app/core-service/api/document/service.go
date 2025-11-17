@@ -19,7 +19,7 @@ type DocumentService interface {
 	RegisterDocument(ctx context.Context, organizationID domain.ID, name, s3Key, fileType string, fileSize int64) (domain.Document, error)
 	GetDocument(ctx context.Context, id domain.ID) (domain.Document, error)
 	ListDocumentsByOrganization(ctx context.Context, organizationID domain.ID, status *domain.DocumentStatus) ([]domain.Document, error)
-	UpdateDocumentStatus(ctx context.Context, id domain.ID, status domain.DocumentStatus, errorMessage string) error
+	UpdateDocumentStatus(ctx context.Context, id domain.ID, status domain.DocumentStatus, errorMessage *string) error
 	DeleteDocument(ctx context.Context, id domain.ID) error
 }
 
@@ -30,6 +30,10 @@ func NewService(docService DocumentService) *Service {
 }
 
 func documentToProto(doc domain.Document) *pb.Document {
+	var errorMessage string
+	if doc.ErrorMessage != nil {
+		errorMessage = *doc.ErrorMessage
+	}
 	return &pb.Document{
 		Id:             doc.ID.String(),
 		OrganizationId: doc.OrganizationID.String(),
@@ -38,7 +42,7 @@ func documentToProto(doc domain.Document) *pb.Document {
 		FileType:       doc.FileType,
 		FileSize:       doc.FileSize,
 		Status:         documentStatusToProto(doc.Status),
-		ErrorMessage:   doc.ErrorMessage,
+		ErrorMessage:   errorMessage,
 		CreatedAt:      timestamppb.New(doc.CreatedAt),
 		UpdatedAt:      timestamppb.New(doc.UpdatedAt),
 	}
@@ -153,12 +157,7 @@ func (s *Service) UpdateDocumentStatus(ctx context.Context, req *pb.UpdateDocume
 
 	status := documentStatusFromProto(req.Status)
 
-	errorMsg := ""
-	if req.ErrorMessage != nil {
-		errorMsg = *req.ErrorMessage
-	}
-
-	err = s.docService.UpdateDocumentStatus(ctx, id, status, errorMsg)
+	err = s.docService.UpdateDocumentStatus(ctx, id, status, req.ErrorMessage)
 	if err != nil {
 		return nil, err
 	}

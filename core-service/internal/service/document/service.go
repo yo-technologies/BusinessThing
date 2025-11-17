@@ -13,7 +13,7 @@ type repository interface {
 	CreateDocument(ctx context.Context, doc domain.Document) (domain.Document, error)
 	GetDocument(ctx context.Context, id domain.ID) (domain.Document, error)
 	ListDocuments(ctx context.Context, organizationID domain.ID, status *domain.DocumentStatus, limit, offset int) ([]domain.Document, int, error)
-	UpdateDocumentStatus(ctx context.Context, id domain.ID, status domain.DocumentStatus, errorMessage string) error
+	UpdateDocumentStatus(ctx context.Context, id domain.ID, status domain.DocumentStatus, errorMessage *string) error
 	DeleteDocument(ctx context.Context, id domain.ID) error
 }
 
@@ -111,7 +111,7 @@ func (s *Service) ListDocumentsByOrganization(ctx context.Context, organizationI
 }
 
 // UpdateDocumentStatus updates document processing status
-func (s *Service) UpdateDocumentStatus(ctx context.Context, id domain.ID, status domain.DocumentStatus, errorMessage string) error {
+func (s *Service) UpdateDocumentStatus(ctx context.Context, id domain.ID, status domain.DocumentStatus, errorMessage *string) error {
 	span, ctx := opentracing.StartSpanFromContext(ctx, "service.document.UpdateDocumentStatus")
 	defer span.Finish()
 
