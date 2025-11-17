@@ -44,18 +44,17 @@ func NewProcessingJob(documentID, organizationID ID, s3Key string, docType Docum
 	}
 }
 
-func NewTemplateIndexJob(templateID, organizationID ID, name, description, templateType string, fieldsCount int) *ProcessingJob {
+func NewTemplateIndexJob(templateID ID, name, description, templateType string, fieldsCount int) *ProcessingJob {
 	return &ProcessingJob{
-		JobType:        JobTypeTemplateIndex,
-		OrganizationID: organizationID,
-		TemplateID:     &templateID,
-		TemplateName:   &name,
-		Description:    &description,
-		TemplateType:   &templateType,
-		FieldsCount:    &fieldsCount,
-		RetryCount:     0,
-		MaxRetries:     3,
-		CreatedAt:      time.Now(),
+		JobType:      JobTypeTemplateIndex,
+		TemplateID:   &templateID,
+		TemplateName: &name,
+		Description:  &description,
+		TemplateType: &templateType,
+		FieldsCount:  &fieldsCount,
+		RetryCount:   0,
+		MaxRetries:   3,
+		CreatedAt:    time.Now(),
 	}
 }
 

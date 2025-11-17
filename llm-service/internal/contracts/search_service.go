@@ -27,15 +27,14 @@ func NewSearchService(
 }
 
 // SearchTemplates ищет подходящие шаблоны договоров
-func (s *SearchService) SearchTemplates(ctx context.Context, organizationID, query string, limit int) ([]*TemplateSearchResult, error) {
+func (s *SearchService) SearchTemplates(ctx context.Context, query string, limit int) ([]*TemplateSearchResult, error) {
 	span, ctx := opentracing.StartSpanFromContext(ctx, "contracts.SearchService.SearchTemplates")
 	defer span.Finish()
 
 	// Поиск через docs-processor
 	resp, err := s.docsProcessorClient.SearchTemplates(ctx, &docsproc.SearchTemplatesRequest{
-		Query:          query,
-		OrganizationId: organizationID,
-		Limit:          int32(limit),
+		Query: query,
+		Limit: int32(limit),
 	})
 	if err != nil {
 		return nil, fmt.Errorf("failed to search templates: %w", err)

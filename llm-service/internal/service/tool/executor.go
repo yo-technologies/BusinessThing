@@ -283,7 +283,7 @@ func (e *Executor) executeSearchContractTemplates(
 	}
 
 	// Выполняем поиск
-	result, err := e.contractSearchService.SearchTemplates(ctx, execCtx.OrganizationID.String(), query, limit)
+	result, err := e.contractSearchService.SearchTemplates(ctx, query, limit)
 	if err != nil {
 		return nil, err
 	}

@@ -16,11 +16,11 @@ type Service struct {
 }
 
 type TemplateService interface {
-	CreateTemplate(ctx context.Context, organizationID domain.ID, name, description, templateType, fieldsSchema, s3TemplateKey string) (domain.ContractTemplate, error)
+	CreateTemplate(ctx context.Context, name, description, templateType, fieldsSchema, s3TemplateKey string) (domain.ContractTemplate, error)
 	GetTemplate(ctx context.Context, id domain.ID) (domain.ContractTemplate, error)
 	UpdateTemplate(ctx context.Context, id domain.ID, name, description, fieldsSchema, s3TemplateKey *string) (domain.ContractTemplate, error)
 	DeleteTemplate(ctx context.Context, id domain.ID) error
-	ListTemplatesByOrganization(ctx context.Context, organizationID domain.ID) ([]domain.ContractTemplate, error)
+	ListTemplates(ctx context.Context, page, pageSize int) ([]domain.ContractTemplate, int, error)
 }
 
 func NewService(templateService TemplateService) *Service {
@@ -31,15 +31,14 @@ func NewService(templateService TemplateService) *Service {
 
 func templateToProto(template domain.ContractTemplate) *pb.ContractTemplate {
 	return &pb.ContractTemplate{
-		Id:             template.ID.String(),
-		OrganizationId: template.OrganizationID.String(),
-		Name:           template.Name,
-		Description:    template.Description,
-		TemplateType:   template.TemplateType,
-		FieldsSchema:   template.FieldsSchema,
-		S3TemplateKey:  template.S3TemplateKey,
-		CreatedAt:      timestamppb.New(template.CreatedAt),
-		UpdatedAt:      timestamppb.New(template.UpdatedAt),
+		Id:            template.ID.String(),
+		Name:          template.Name,
+		Description:   template.Description,
+		TemplateType:  template.TemplateType,
+		FieldsSchema:  template.FieldsSchema,
+		S3TemplateKey: template.S3TemplateKey,
+		CreatedAt:     timestamppb.New(template.CreatedAt),
+		UpdatedAt:     timestamppb.New(template.UpdatedAt),
 	}
 }
 
@@ -47,12 +46,7 @@ func (s *Service) CreateTemplate(ctx context.Context, req *pb.CreateTemplateRequ
 	span, ctx := opentracing.StartSpanFromContext(ctx, "api.CreateTemplate")
 	defer span.Finish()
 
-	orgID, err := domain.ParseID(req.OrganizationId)
-	if err != nil {
-		return nil, domain.ErrInvalidArgument
-	}
-
-	template, err := s.templateService.CreateTemplate(ctx, orgID, req.Name, req.Description, req.TemplateType, req.FieldsSchema, req.S3TemplateKey)
+	template, err := s.templateService.CreateTemplate(ctx, req.Name, req.Description, req.TemplateType, req.FieldsSchema, req.S3TemplateKey)
 	if err != nil {
 		return nil, err
 	}
@@ -121,12 +115,16 @@ func (s *Service) ListTemplates(ctx context.Context, req *pb.ListTemplatesReques
 	span, ctx := opentracing.StartSpanFromContext(ctx, "api.ListTemplates")
 	defer span.Finish()
 
-	orgID, err := domain.ParseID(req.OrganizationId)
-	if err != nil {
-		return nil, domain.ErrInvalidArgument
+	page := int(req.GetPage())
+	if page < 1 {
+		page = 1
+	}
+	pageSize := int(req.GetPageSize())
+	if pageSize < 1 || pageSize > 100 {
+		pageSize = 20
 	}
 
-	templates, err := s.templateService.ListTemplatesByOrganization(ctx, orgID)
+	templates, total, err := s.templateService.ListTemplates(ctx, page, pageSize)
 	if err != nil {
 		return nil, err
 	}
@@ -138,5 +136,8 @@ func (s *Service) ListTemplates(ctx context.Context, req *pb.ListTemplatesReques
 
 	return &pb.ListTemplatesResponse{
 		Templates: pbTemplates,
+		Total:     int32(total),
+		Page:      int32(page),
+		PageSize:  int32(pageSize),
 	}, nil
 }

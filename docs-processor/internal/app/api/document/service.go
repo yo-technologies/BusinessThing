@@ -69,17 +69,12 @@ func (s *Service) SearchTemplates(ctx context.Context, req *desc.SearchTemplates
 	span, ctx := opentracing.StartSpanFromContext(ctx, "api.document.Service.SearchTemplates")
 	defer span.Finish()
 
-	organizationID, err := domain.ParseID(req.GetOrganizationId())
-	if err != nil {
-		return nil, fmt.Errorf("invalid organization_id: %w", err)
-	}
-
 	limit := int(req.Limit)
 	if limit <= 0 || limit > 100 {
 		limit = 10
 	}
 
-	results, err := s.templateProcessor.SearchTemplates(ctx, organizationID, req.Query, limit)
+	results, err := s.templateProcessor.SearchTemplates(ctx, req.Query, limit)
 	if err != nil {
 		return nil, err
 	}

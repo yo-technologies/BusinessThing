@@ -170,10 +170,6 @@
           "type": "string",
           "title": "query - текст запроса для поиска шаблона"
         },
-        "organizationId": {
-          "type": "string",
-          "title": "organization_id - ID организации для фильтрации шаблонов"
-        },
         "limit": {
           "type": "integer",
           "format": "int32",

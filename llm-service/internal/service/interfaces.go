@@ -164,7 +164,7 @@ type OrganizationMemoryService interface {
 // ContractSearchService - сервис для поиска шаблонов контрактов
 type ContractSearchService interface {
 	// SearchTemplates ищет подходящие шаблоны договоров
-	SearchTemplates(ctx context.Context, organizationID, query string, limit int) ([]*contracts.TemplateSearchResult, error)
+	SearchTemplates(ctx context.Context, query string, limit int) ([]*contracts.TemplateSearchResult, error)
 }
 
 // ContractGeneratorService - сервис для генерации контрактов

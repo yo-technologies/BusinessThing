@@ -18,15 +18,14 @@ func (r *PGXRepository) CreateTemplate(ctx context.Context, template domain.Cont
 
 	engine := r.engineFactory.Get(ctx)
 	query := `
-        INSERT INTO contract_templates (id, organization_id, name, description, template_type, fields_schema, s3_template_key, created_at, updated_at)
-        VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9)
-        RETURNING id, organization_id, name, description, template_type, fields_schema, s3_template_key, created_at, updated_at
+        INSERT INTO contract_templates (id, name, description, template_type, fields_schema, s3_template_key, created_at, updated_at)
+        VALUES ($1, $2, $3, $4, $5, $6, $7, $8)
+        RETURNING id, name, description, template_type, fields_schema, s3_template_key, created_at, updated_at
     `
 
 	var created domain.ContractTemplate
 	err := pgxscan.Get(ctx, engine, &created, query,
 		uuidToPgtype(template.ID),
-		uuidToPgtype(template.OrganizationID),
 		template.Name,
 		template.Description,
 		template.TemplateType,
@@ -50,7 +49,7 @@ func (r *PGXRepository) GetTemplate(ctx context.Context, id domain.ID) (domain.C
 
 	engine := r.engineFactory.Get(ctx)
 	query := `
-        SELECT id, organization_id, name, description, template_type, fields_schema, s3_template_key, created_at, updated_at
+        SELECT id, name, description, template_type, fields_schema, s3_template_key, created_at, updated_at
         FROM contract_templates
         WHERE id = $1
     `
@@ -69,16 +68,16 @@ func (r *PGXRepository) GetTemplate(ctx context.Context, id domain.ID) (domain.C
 }
 
 // ListTemplates retrieves templates with pagination
-func (r *PGXRepository) ListTemplates(ctx context.Context, organizationID domain.ID, limit, offset int) ([]domain.ContractTemplate, int, error) {
+func (r *PGXRepository) ListTemplates(ctx context.Context, limit, offset int) ([]domain.ContractTemplate, int, error) {
 	span, ctx := opentracing.StartSpanFromContext(ctx, "repository.ListTemplates")
 	defer span.Finish()
 
 	engine := r.engineFactory.Get(ctx)
 
 	// Get total count
-	countQuery := `SELECT COUNT(*) FROM contract_templates WHERE organization_id = $1`
+	countQuery := `SELECT COUNT(*) FROM contract_templates`
 	var total int
-	err := pgxscan.Get(ctx, engine, &total, countQuery, uuidToPgtype(organizationID))
+	err := pgxscan.Get(ctx, engine, &total, countQuery)
 	if err != nil {
 		logger.Errorf(ctx, "failed to count templates: %v", err)
 		return nil, 0, err
@@ -86,15 +85,14 @@ func (r *PGXRepository) ListTemplates(ctx context.Context, organizationID domain
 
 	// Get templates
 	query := `
-        SELECT id, organization_id, name, description, template_type, fields_schema, s3_template_key, created_at, updated_at
+        SELECT id, name, description, template_type, fields_schema, s3_template_key, created_at, updated_at
         FROM contract_templates
-        WHERE organization_id = $1
         ORDER BY created_at DESC
-        LIMIT $2 OFFSET $3
+        LIMIT $1 OFFSET $2
     `
 
 	var templates []domain.ContractTemplate
-	err = pgxscan.Select(ctx, engine, &templates, query, uuidToPgtype(organizationID), limit, offset)
+	err = pgxscan.Select(ctx, engine, &templates, query, limit, offset)
 	if err != nil {
 		logger.Errorf(ctx, "failed to list templates: %v", err)
 		return nil, 0, err
@@ -113,7 +111,7 @@ func (r *PGXRepository) UpdateTemplate(ctx context.Context, template domain.Cont
         UPDATE contract_templates
         SET name = $2, description = $3, fields_schema = $4, s3_template_key = $5, updated_at = $6
         WHERE id = $1
-        RETURNING id, organization_id, name, description, template_type, fields_schema, s3_template_key, created_at, updated_at
+        RETURNING id, name, description, template_type, fields_schema, s3_template_key, created_at, updated_at
     `
 
 	var updated domain.ContractTemplate
