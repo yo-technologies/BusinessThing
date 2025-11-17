@@ -21,8 +21,10 @@ type repository interface {
 	DeactivateUser(ctx context.Context, id domain.ID) error
 	CreateInvitation(ctx context.Context, invitation domain.Invitation) (domain.Invitation, error)
 	GetInvitationByToken(ctx context.Context, token string) (domain.Invitation, error)
+	GetInvitationByID(ctx context.Context, id domain.ID) (domain.Invitation, error)
 	ListInvitations(ctx context.Context, organizationID domain.ID, limit, offset int) ([]domain.Invitation, int, error)
 	MarkInvitationAsUsed(ctx context.Context, id domain.ID) error
+	DeleteInvitation(ctx context.Context, id domain.ID) error
 	CreateOrganizationMember(ctx context.Context, member domain.OrganizationMember) (domain.OrganizationMember, error)
 	GetOrganizationMember(ctx context.Context, userID, organizationID domain.ID) (*domain.OrganizationMember, error)
 	UpdateOrganizationMember(ctx context.Context, member domain.OrganizationMember) (domain.OrganizationMember, error)
@@ -201,6 +203,32 @@ func (s *Service) ListInvitations(ctx context.Context, organizationID domain.ID,
 	defer span.Finish()
 
 	return s.repo.ListInvitations(ctx, organizationID, limit, offset)
+}
+
+// DeleteInvitation deletes an invitation
+func (s *Service) DeleteInvitation(ctx context.Context, invitationID domain.ID, userID domain.ID) error {
+	span, ctx := opentracing.StartSpanFromContext(ctx, "service.user.DeleteInvitation")
+	defer span.Finish()
+
+	// Get invitation
+	invitation, err := s.repo.GetInvitationByID(ctx, invitationID)
+	if err != nil {
+		return err
+	}
+
+	// Check if user is member of the organization
+	member, err := s.repo.GetOrganizationMember(ctx, userID, invitation.OrganizationID)
+	if err != nil {
+		return domain.NewForbiddenError("you don't have access to this organization")
+	}
+
+	// Check if user is admin
+	if member.Role != domain.UserRoleAdmin {
+		return domain.NewForbiddenError("only admins can delete invitations")
+	}
+
+	// Delete invitation
+	return s.repo.DeleteInvitation(ctx, invitationID)
 }
 
 // generateToken generates a secure random token
