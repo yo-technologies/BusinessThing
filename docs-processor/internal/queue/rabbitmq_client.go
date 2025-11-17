@@ -132,17 +132,41 @@ func (c *RabbitMQClient) handleMessage(ctx context.Context, msg amqp.Delivery, h
 	span, ctx := opentracing.StartSpanFromContext(ctx, "queue.RabbitMQClient.handleMessage")
 	defer span.Finish()
 
+	logger.Info(ctx, "Received message", "body", string(msg.Body))
+
 	var job domain.ProcessingJob
 	if err := json.Unmarshal(msg.Body, &job); err != nil {
-		logger.Error(ctx, "Failed to unmarshal job", "error", err)
+		logger.Error(ctx, "Failed to unmarshal job",
+			"error", err,
+			"error_type", fmt.Sprintf("%T", err),
+			"message_body", string(msg.Body),
+			"body_length", len(msg.Body))
+
+		// Попытка извлечь document_id для обновления статуса
+		var rawJob map[string]interface{}
+		if unmarshalErr := json.Unmarshal(msg.Body, &rawJob); unmarshalErr == nil {
+			if docID, ok := rawJob["document_id"].(string); ok && docID != "" {
+				logger.Error(ctx, "Unmarshal failed for document", "document_id", docID)
+			}
+		}
+
 		msg.Nack(false, false)
 		return
 	}
 
-	logger.Info(ctx, "Processing job", "document_id", job.DocumentID, "retry_count", job.RetryCount)
+	logger.Info(ctx, "Processing job",
+		"job_type", job.JobType,
+		"document_id", job.DocumentID,
+		"organization_id", job.OrganizationID,
+		"s3_key", job.S3Key,
+		"retry_count", job.RetryCount)
 
 	if err := handler(ctx, &job); err != nil {
-		logger.Error(ctx, "Job processing failed", "error", err, "document_id", job.DocumentID)
+		logger.Error(ctx, "Job processing failed",
+			"error", err,
+			"error_type", fmt.Sprintf("%T", err),
+			"document_id", job.DocumentID,
+			"job_type", job.JobType)
 
 		if job.CanRetry() {
 			job.IncrementRetry()
@@ -152,7 +176,9 @@ func (c *RabbitMQClient) handleMessage(ctx context.Context, msg amqp.Delivery, h
 				logger.Info(ctx, "Job requeued", "document_id", job.DocumentID, "retry_count", job.RetryCount)
 			}
 		} else {
-			logger.Error(ctx, "Job exceeded max retries", "document_id", job.DocumentID)
+			logger.Error(ctx, "Job exceeded max retries",
+				"document_id", job.DocumentID,
+				"final_error", err.Error())
 		}
 
 		msg.Nack(false, false)

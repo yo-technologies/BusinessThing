@@ -6,22 +6,30 @@ import (
 
 	"docs-processor/internal/domain"
 	"docs-processor/internal/logger"
+	pb "docs-processor/pkg/core"
 
 	"github.com/opentracing/opentracing-go"
 )
 
+type coreClient interface {
+	UpdateDocumentStatus(ctx context.Context, documentID string, status pb.DocumentStatus, errorMessage string) error
+}
+
 type JobProcessor struct {
 	documentProcessor *DocumentProcessor
 	templateProcessor *TemplateProcessor
+	coreClient        coreClient
 }
 
 func NewJobProcessor(
 	documentProcessor *DocumentProcessor,
 	templateProcessor *TemplateProcessor,
+	coreClient coreClient,
 ) *JobProcessor {
 	return &JobProcessor{
 		documentProcessor: documentProcessor,
 		templateProcessor: templateProcessor,
+		coreClient:        coreClient,
 	}
 }
 
