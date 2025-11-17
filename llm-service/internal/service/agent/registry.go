@@ -88,6 +88,7 @@ var MarketingAgent = &domain.AgentDefinition{
 }
 
 var LegalAgent = &domain.AgentDefinition{
+	Key:         "legal_agent",
 	Name:        "Legal Advisor",
 	Description: "Правовой консультант",
 	SystemPrompt: `Ты — профессиональный юрист и правовой консультант. Твоя задача — помогать пользователю разбираться в юридических вопросах, подготавливать документы и формулировать правовые позиции понятным языком.
