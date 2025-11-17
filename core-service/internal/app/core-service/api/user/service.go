@@ -23,6 +23,7 @@ type UserService interface {
 	AcceptInvitation(ctx context.Context, userID domain.ID, token string) (*domain.User, error)
 	ListUsersByOrganization(ctx context.Context, organizationID domain.ID) ([]*domain.UserWithMembership, error)
 	ListInvitations(ctx context.Context, organizationID domain.ID, limit, offset int) ([]domain.Invitation, int, error)
+	DeleteInvitation(ctx context.Context, invitationID domain.ID, userID domain.ID) error
 	GetUser(ctx context.Context, id domain.ID) (*domain.User, error)
 	UpdateUserRole(ctx context.Context, id domain.ID, role domain.UserRole) (*domain.User, error)
 	DeactivateUser(ctx context.Context, id domain.ID) error
@@ -262,6 +263,29 @@ func (s *Service) ListInvitations(ctx context.Context, req *pb.ListInvitationsRe
 		Total:       int32(total),
 		Page:        int32(page),
 	}, nil
+}
+
+func (s *Service) DeleteInvitation(ctx context.Context, req *pb.DeleteInvitationRequest) (*emptypb.Empty, error) {
+	span, ctx := opentracing.StartSpanFromContext(ctx, "api.DeleteInvitation")
+	defer span.Finish()
+
+	invitationID, err := domain.ParseID(req.Id)
+	if err != nil {
+		return nil, domain.ErrInvalidArgument
+	}
+
+	// Get user ID from JWT context
+	userID, err := interceptors.UserIDFromContext(ctx)
+	if err != nil {
+		return nil, err
+	}
+
+	err = s.userService.DeleteInvitation(ctx, invitationID, userID)
+	if err != nil {
+		return nil, err
+	}
+
+	return &emptypb.Empty{}, nil
 }
 
 func invitationToProto(inv *domain.Invitation) *pb.Invitation {

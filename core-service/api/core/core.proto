@@ -161,6 +161,13 @@ service UserService {
             get: "/v1/organizations/{organization_id}/invitations"
         };
     }
+
+    // Удалить/отозвать приглашение
+    rpc DeleteInvitation(DeleteInvitationRequest) returns (google.protobuf.Empty) {
+        option (google.api.http) = {
+            delete: "/v1/invitations/{id}"
+        };
+    }
 }
 
 // ===== Document Service =====
@@ -468,6 +475,10 @@ message ListInvitationsResponse {
     repeated Invitation invitations = 1;
     int32 total = 2;
     int32 page = 3;
+}
+
+message DeleteInvitationRequest {
+    string id = 1 [(validate.rules).string.min_len = 1];
 }
 
 message Invitation {

@@ -43,8 +43,10 @@ type UserRepository interface {
 type InvitationRepository interface {
 	CreateInvitation(ctx context.Context, invitation domain.Invitation) (domain.Invitation, error)
 	GetInvitationByToken(ctx context.Context, token string) (domain.Invitation, error)
+	GetInvitationByID(ctx context.Context, id domain.ID) (domain.Invitation, error)
 	ListInvitations(ctx context.Context, organizationID domain.ID, limit, offset int) ([]domain.Invitation, int, error)
 	MarkInvitationAsUsed(ctx context.Context, id domain.ID) error
+	DeleteInvitation(ctx context.Context, id domain.ID) error
 }
 
 // DocumentRepository defines methods for document data access
