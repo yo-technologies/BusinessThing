@@ -102,6 +102,7 @@ func (a *App) setupGRPC() {
 		"/core.api.core.AuthService/CompleteRegistration",
 		"/core.api.core.ContractTemplateService/GetTemplate",
 		"/core.api.core.DocumentService/UpdateDocumentStatus",
+		"/core.api.core.GeneratedContractService/RegisterContract",
 	}
 
 	// Setup interceptors
