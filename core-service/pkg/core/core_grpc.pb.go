@@ -485,6 +485,7 @@ const (
 	UserService_UpdateUserRole_FullMethodName   = "/core.api.core.UserService/UpdateUserRole"
 	UserService_DeactivateUser_FullMethodName   = "/core.api.core.UserService/DeactivateUser"
 	UserService_ListInvitations_FullMethodName  = "/core.api.core.UserService/ListInvitations"
+	UserService_DeleteInvitation_FullMethodName = "/core.api.core.UserService/DeleteInvitation"
 )
 
 // UserServiceClient is the client API for UserService service.
@@ -508,6 +509,8 @@ type UserServiceClient interface {
 	DeactivateUser(ctx context.Context, in *DeactivateUserRequest, opts ...grpc.CallOption) (*emptypb.Empty, error)
 	// Список приглашений организации
 	ListInvitations(ctx context.Context, in *ListInvitationsRequest, opts ...grpc.CallOption) (*ListInvitationsResponse, error)
+	// Удалить/отозвать приглашение
+	DeleteInvitation(ctx context.Context, in *DeleteInvitationRequest, opts ...grpc.CallOption) (*emptypb.Empty, error)
 }
 
 type userServiceClient struct {
@@ -588,6 +591,16 @@ func (c *userServiceClient) ListInvitations(ctx context.Context, in *ListInvitat
 	return out, nil
 }
 
+func (c *userServiceClient) DeleteInvitation(ctx context.Context, in *DeleteInvitationRequest, opts ...grpc.CallOption) (*emptypb.Empty, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(emptypb.Empty)
+	err := c.cc.Invoke(ctx, UserService_DeleteInvitation_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 // UserServiceServer is the server API for UserService service.
 // All implementations must embed UnimplementedUserServiceServer
 // for forward compatibility.
@@ -609,6 +622,8 @@ type UserServiceServer interface {
 	DeactivateUser(context.Context, *DeactivateUserRequest) (*emptypb.Empty, error)
 	// Список приглашений организации
 	ListInvitations(context.Context, *ListInvitationsRequest) (*ListInvitationsResponse, error)
+	// Удалить/отозвать приглашение
+	DeleteInvitation(context.Context, *DeleteInvitationRequest) (*emptypb.Empty, error)
 	mustEmbedUnimplementedUserServiceServer()
 }
 
@@ -639,6 +654,9 @@ func (UnimplementedUserServiceServer) DeactivateUser(context.Context, *Deactivat
 }
 func (UnimplementedUserServiceServer) ListInvitations(context.Context, *ListInvitationsRequest) (*ListInvitationsResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method ListInvitations not implemented")
+}
+func (UnimplementedUserServiceServer) DeleteInvitation(context.Context, *DeleteInvitationRequest) (*emptypb.Empty, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method DeleteInvitation not implemented")
 }
 func (UnimplementedUserServiceServer) mustEmbedUnimplementedUserServiceServer() {}
 func (UnimplementedUserServiceServer) testEmbeddedByValue()                     {}
@@ -787,6 +805,24 @@ func _UserService_ListInvitations_Handler(srv interface{}, ctx context.Context, 
 	return interceptor(ctx, in, info, handler)
 }
 
+func _UserService_DeleteInvitation_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(DeleteInvitationRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(UserServiceServer).DeleteInvitation(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: UserService_DeleteInvitation_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(UserServiceServer).DeleteInvitation(ctx, req.(*DeleteInvitationRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 // UserService_ServiceDesc is the grpc.ServiceDesc for UserService service.
 // It's only intended for direct use with grpc.RegisterService,
 // and not to be introspected or modified (even as a copy)
@@ -821,6 +857,10 @@ var UserService_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "ListInvitations",
 			Handler:    _UserService_ListInvitations_Handler,
+		},
+		{
+			MethodName: "DeleteInvitation",
+			Handler:    _UserService_DeleteInvitation_Handler,
 		},
 	},
 	Streams:  []grpc.StreamDesc{},

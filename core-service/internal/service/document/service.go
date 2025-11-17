@@ -3,8 +3,8 @@ package document
 import (
 	"context"
 	"core-service/internal/domain"
-	"encoding/json"
 	"strings"
+	"time"
 
 	"github.com/opentracing/opentracing-go"
 )
@@ -13,7 +13,7 @@ type repository interface {
 	CreateDocument(ctx context.Context, doc domain.Document) (domain.Document, error)
 	GetDocument(ctx context.Context, id domain.ID) (domain.Document, error)
 	ListDocuments(ctx context.Context, organizationID domain.ID, status *domain.DocumentStatus, limit, offset int) ([]domain.Document, int, error)
-	UpdateDocumentStatus(ctx context.Context, id domain.ID, status domain.DocumentStatus, errorMessage string) error
+	UpdateDocumentStatus(ctx context.Context, id domain.ID, status domain.DocumentStatus, errorMessage *string) error
 	DeleteDocument(ctx context.Context, id domain.ID) error
 }
 
@@ -37,10 +37,15 @@ func New(repo repository, queue queueClient, queueName string) *Service {
 
 // DocumentProcessingJob represents a job for document processing
 type DocumentProcessingJob struct {
-	DocumentID     string `json:"document_id"`
-	OrganizationID string `json:"organization_id"`
-	S3Key          string `json:"s3_key"`
-	FileType       string `json:"file_type"`
+	JobType        string    `json:"job_type"`
+	DocumentID     domain.ID `json:"document_id"`
+	OrganizationID domain.ID `json:"organization_id"`
+	S3Key          string    `json:"s3_key"`
+	DocumentType   string    `json:"document_type"`
+	DocumentName   string    `json:"document_name"`
+	RetryCount     int       `json:"retry_count"`
+	MaxRetries     int       `json:"max_retries"`
+	CreatedAt      time.Time `json:"created_at"`
 }
 
 // RegisterDocument registers a new document and publishes processing job
@@ -111,7 +116,7 @@ func (s *Service) ListDocumentsByOrganization(ctx context.Context, organizationI
 }
 
 // UpdateDocumentStatus updates document processing status
-func (s *Service) UpdateDocumentStatus(ctx context.Context, id domain.ID, status domain.DocumentStatus, errorMessage string) error {
+func (s *Service) UpdateDocumentStatus(ctx context.Context, id domain.ID, status domain.DocumentStatus, errorMessage *string) error {
 	span, ctx := opentracing.StartSpanFromContext(ctx, "service.document.UpdateDocumentStatus")
 	defer span.Finish()
 
@@ -129,16 +134,16 @@ func (s *Service) DeleteDocument(ctx context.Context, id domain.ID) error {
 // publishProcessingJob publishes a document processing job to RabbitMQ
 func (s *Service) publishProcessingJob(ctx context.Context, doc domain.Document) error {
 	job := DocumentProcessingJob{
-		DocumentID:     doc.ID.String(),
-		OrganizationID: doc.OrganizationID.String(),
+		JobType:        "document",
+		DocumentID:     doc.ID,
+		OrganizationID: doc.OrganizationID,
 		S3Key:          doc.S3Key,
-		FileType:       doc.FileType,
+		DocumentType:   doc.FileType,
+		DocumentName:   doc.Name,
+		RetryCount:     0,
+		MaxRetries:     3,
+		CreatedAt:      doc.CreatedAt,
 	}
 
-	body, err := json.Marshal(job)
-	if err != nil {
-		return err
-	}
-
-	return s.queue.PublishMessage(ctx, body)
+	return s.queue.PublishMessage(ctx, job)
 }

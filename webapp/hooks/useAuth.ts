@@ -5,8 +5,13 @@ import { useEffect, useState } from "react";
 import { useRawInitData } from "@telegram-apps/sdk-react";
 
 import { CoreAuthenticateWithTelegramRequest } from "@/api/api.core.generated";
-import { setAuthToken, useApiClients, onTokenUpdate, getAuthToken } from "@/api/client";
-import { getOrganizationsFromToken, getUserIdFromToken, Organization } from "@/utils/jwt"; // Import getUserIdFromToken
+import {
+  setAuthToken,
+  useApiClients,
+  onTokenUpdate,
+  getAuthToken,
+} from "@/api/client";
+import { getOrganizationsFromToken, Organization } from "@/utils/jwt";
 
 interface AuthUser {
   id?: string;
@@ -34,19 +39,33 @@ export const useAuth = (): AuthState => {
   const [state, setState] = useState<AuthState>(() => {
     // Проверяем наличие токена при инициализации
     const existingToken = getAuthToken();
+
     if (existingToken) {
-      const organizations = getOrganizationsFromToken(existingToken);
-      const payload = existingToken ? require('@/utils/jwt').decodeJWT(existingToken) : null;
-      const userInfo = payload ? { userId: payload.sub, role: organizations[0]?.role || '' } : null;
-      return {
-        isAuthenticated: true,
-        loading: false, // если токен есть, считаем что загрузка завершена
-        user: null,
-        isNewUser: false,
-        organizations,
-        userInfo,
-      };
+      // Проверяем срок действия токена
+      const payload = require("@/utils/jwt").decodeJWT(existingToken);
+      const isExpired = payload ? payload.exp * 1000 < Date.now() : true;
+
+      if (!isExpired && payload) {
+        const organizations = getOrganizationsFromToken(existingToken);
+        const userInfo = {
+          userId: payload.sub,
+          role: organizations[0]?.role || "",
+        };
+
+        return {
+          isAuthenticated: true,
+          loading: false,
+          user: null,
+          isNewUser: false,
+          organizations,
+          userInfo,
+        };
+      } else {
+        // Токен истек, очищаем его
+        setAuthToken(null);
+      }
     }
+
     return {
       isAuthenticated: false,
       loading: true,
@@ -60,23 +79,30 @@ export const useAuth = (): AuthState => {
   const authenticate = async () => {
     if (typeof window === "undefined") {
       console.log("useAuth: SSR mode, skipping auth");
+
       return;
     }
-    
+
     if (!initData) {
-      console.warn("useAuth: initData is not available. Make sure the app is opened from Telegram.");
+      console.warn(
+        "useAuth: initData is not available. Make sure the app is opened from Telegram.",
+      );
       setState((prev) => ({ ...prev, loading: false }));
+
       return;
     }
 
     try {
       console.log("Authenticating with initData:", initData);
-      
+
       const requestPayload: CoreAuthenticateWithTelegramRequest = { initData };
 
-      const response = await core.v1.authServiceAuthenticateWithTelegram(requestPayload, {
-        secure: false,
-      });
+      const response = await core.v1.authServiceAuthenticateWithTelegram(
+        requestPayload,
+        {
+          secure: false,
+        },
+      );
 
       const { accessToken, user, isNewUser } = response.data;
 
@@ -87,8 +113,12 @@ export const useAuth = (): AuthState => {
         organizations = getOrganizationsFromToken(accessToken);
       }
 
-      const payload = accessToken ? require('@/utils/jwt').decodeJWT(accessToken) : null;
-      const userInfo = payload ? { userId: payload.sub, role: organizations[0]?.role || '' } : null;
+      const payload = accessToken
+        ? require("@/utils/jwt").decodeJWT(accessToken)
+        : null;
+      const userInfo = payload
+        ? { userId: payload.sub, role: organizations[0]?.role || "" }
+        : null;
 
       setState((prev) => ({
         ...prev,
@@ -108,11 +138,23 @@ export const useAuth = (): AuthState => {
   useEffect(() => {
     let cancelled = false;
 
-    // Если токен уже есть, не нужно заново аутентифицироваться
+    // Если токен уже есть и не истек, не нужно заново аутентифицироваться
     const existingToken = getAuthToken();
+
     if (existingToken) {
-      console.log("useAuth: Token already exists, skipping authentication");
-      return;
+      const payload = require("@/utils/jwt").decodeJWT(existingToken);
+      const isExpired = payload ? payload.exp * 1000 < Date.now() : true;
+
+      if (!isExpired) {
+        console.log(
+          "useAuth: Token already exists and valid, skipping authentication",
+        );
+
+        return;
+      } else {
+        console.log("useAuth: Token expired, re-authenticating");
+        setAuthToken(null);
+      }
     }
 
     authenticate().catch((err) => {
@@ -130,23 +172,46 @@ export const useAuth = (): AuthState => {
   useEffect(() => {
     const unsubscribe = onTokenUpdate(() => {
       const token = getAuthToken();
+
       if (token) {
         const organizations = getOrganizationsFromToken(token);
-        const payload = require('@/utils/jwt').decodeJWT(token);
-        const userInfo = payload ? { userId: payload.sub, role: organizations[0]?.role || '' } : null;
+        const payload = require("@/utils/jwt").decodeJWT(token);
+        const userInfo = payload
+          ? { userId: payload.sub, role: organizations[0]?.role || "" }
+          : null;
+
         setState((prev) => ({
           ...prev,
           organizations,
           isAuthenticated: true,
           userInfo,
         }));
+      } else {
+        // Токен был очищен (например, из-за 401), переходим в состояние загрузки и пытаемся заново аутентифицироваться
+        setState((prev) => ({
+          ...prev,
+          isAuthenticated: false,
+          loading: true,
+          organizations: [],
+          userInfo: null,
+        }));
+
+        // Пытаемся заново аутентифицироваться
+        if (initData) {
+          authenticate().catch((err) => {
+            console.error("Re-authentication failed", err);
+            setState((prev) => ({ ...prev, loading: false }));
+          });
+        } else {
+          setState((prev) => ({ ...prev, loading: false }));
+        }
       }
     });
 
     return () => {
       unsubscribe();
     };
-  }, []);
+  }, [initData]);
 
   return state;
 };

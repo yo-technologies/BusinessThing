@@ -10,6 +10,8 @@ import (
 	"time"
 
 	"github.com/opentracing/opentracing-go"
+
+	"docs-processor/internal/logger"
 )
 
 type Client struct {
@@ -25,7 +27,7 @@ func NewClient(baseURL, apiKey, model string) *Client {
 		apiKey:  apiKey,
 		model:   model,
 		httpClient: &http.Client{
-			Timeout: 2 * time.Second,
+			Timeout: 60 * time.Second,
 		},
 	}
 }
@@ -50,6 +52,8 @@ func (c *Client) GenerateEmbeddings(ctx context.Context, texts []string) ([][]fl
 		return [][]float32{}, nil
 	}
 
+	logger.Info(ctx, "generating embeddings", "texts_count", len(texts))
+
 	reqBody := embeddingRequest{
 		Input: texts,
 		Model: c.model,
@@ -57,30 +61,48 @@ func (c *Client) GenerateEmbeddings(ctx context.Context, texts []string) ([][]fl
 
 	jsonData, err := json.Marshal(reqBody)
 	if err != nil {
+		logger.Error(ctx, "failed to marshal embeddings request", "error", err)
 		return nil, fmt.Errorf("failed to marshal embeddings request: %w", err)
 	}
 
 	req, err := http.NewRequestWithContext(ctx, "POST", c.baseURL+"/embeddings", bytes.NewBuffer(jsonData))
 	if err != nil {
+		logger.Error(ctx, "failed to create embeddings request", "error", err)
 		return nil, fmt.Errorf("failed to create embeddings request: %w", err)
 	}
 
 	req.Header.Set("Content-Type", "application/json")
 	req.Header.Set("Authorization", "Bearer "+c.apiKey)
 
+	start := time.Now()
 	resp, err := c.httpClient.Do(req)
+	duration := time.Since(start)
+
 	if err != nil {
+		logger.Error(ctx, "failed to send embeddings request",
+			"error", err,
+			"duration", duration,
+			"texts_count", len(texts))
 		return nil, fmt.Errorf("failed to send embeddings request: %w", err)
 	}
 	defer resp.Body.Close()
 
+	logger.Info(ctx, "embeddings request completed",
+		"status_code", resp.StatusCode,
+		"duration", duration,
+		"texts_count", len(texts))
+
 	if resp.StatusCode != http.StatusOK {
 		body, _ := io.ReadAll(resp.Body)
+		logger.Error(ctx, "embeddings API error",
+			"status_code", resp.StatusCode,
+			"response_body", string(body))
 		return nil, fmt.Errorf("embeddings API error (status %d): %s", resp.StatusCode, string(body))
 	}
 
 	var embResp embeddingResponse
 	if err := json.NewDecoder(resp.Body).Decode(&embResp); err != nil {
+		logger.Error(ctx, "failed to decode embeddings response", "error", err)
 		return nil, fmt.Errorf("failed to decode embeddings response: %w", err)
 	}
 
@@ -90,6 +112,10 @@ func (c *Client) GenerateEmbeddings(ctx context.Context, texts []string) ([][]fl
 			embeddings[data.Index] = data.Embedding
 		}
 	}
+
+	logger.Info(ctx, "embeddings generated successfully",
+		"embeddings_count", len(embeddings),
+		"total_duration", duration)
 
 	return embeddings, nil
 }

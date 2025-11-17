@@ -60,7 +60,7 @@ func (s *GeneratorService) GenerateContract(
 
 	templateReader, err := s.s3Client.GetObject(ctx, template.S3TemplateKey)
 	if err != nil {
-		return nil, fmt.Errorf("failed to get template from S3: %w", err)
+		return nil, fmt.Errorf("failed to get template from S3(%s): %w", template.S3TemplateKey, err)
 	}
 	defer templateReader.Close()
 

@@ -13,7 +13,7 @@ import (
 type repository interface {
 	CreateTemplate(ctx context.Context, template domain.ContractTemplate) (domain.ContractTemplate, error)
 	GetTemplate(ctx context.Context, id domain.ID) (domain.ContractTemplate, error)
-	ListTemplates(ctx context.Context, organizationID domain.ID, limit, offset int) ([]domain.ContractTemplate, int, error)
+	ListTemplates(ctx context.Context, limit, offset int) ([]domain.ContractTemplate, int, error)
 	UpdateTemplate(ctx context.Context, template domain.ContractTemplate) (domain.ContractTemplate, error)
 	DeleteTemplate(ctx context.Context, id domain.ID) error
 }
@@ -37,7 +37,7 @@ func New(repo repository, queue queuePublisher, tx *db.ContextManager) *Service 
 }
 
 // CreateTemplate creates a new contract template
-func (s *Service) CreateTemplate(ctx context.Context, organizationID domain.ID, name, description, templateType, fieldsSchema, s3TemplateKey string) (domain.ContractTemplate, error) {
+func (s *Service) CreateTemplate(ctx context.Context, name, description, templateType, fieldsSchema, s3TemplateKey string) (domain.ContractTemplate, error) {
 	span, ctx := opentracing.StartSpanFromContext(ctx, "service.template.CreateTemplate")
 	defer span.Finish()
 
@@ -49,7 +49,7 @@ func (s *Service) CreateTemplate(ctx context.Context, organizationID domain.ID, 
 		return domain.ContractTemplate{}, domain.NewInvalidArgumentError("s3_template_key is required")
 	}
 
-	template := domain.NewContractTemplate(organizationID, name, description, templateType, fieldsSchema, "", s3TemplateKey)
+	template := domain.NewContractTemplate(name, description, templateType, fieldsSchema, "", s3TemplateKey)
 
 	var created domain.ContractTemplate
 	err := s.tx.Do(ctx, func(txCtx context.Context) error {
@@ -63,7 +63,7 @@ func (s *Service) CreateTemplate(ctx context.Context, organizationID domain.ID, 
 		fieldsCount := countFieldsInSchema(fieldsSchema)
 
 		// Отправить задачу на индексацию
-		indexJob := domain.NewTemplateIndexJob(created.ID, created.OrganizationID, created.Name, created.Description, created.TemplateType, fieldsCount)
+		indexJob := domain.NewTemplateIndexJob(created.ID, created.Name, created.Description, created.TemplateType, fieldsCount)
 		err = s.queue.PublishMessage(ctx, indexJob)
 		if err != nil {
 			return fmt.Errorf("failed to publish template index job: %w", err)
@@ -86,8 +86,8 @@ func (s *Service) GetTemplate(ctx context.Context, id domain.ID) (domain.Contrac
 	return s.repo.GetTemplate(ctx, id)
 }
 
-// ListTemplates retrieves templates for an organization
-func (s *Service) ListTemplates(ctx context.Context, organizationID domain.ID, page, pageSize int) ([]domain.ContractTemplate, int, error) {
+// ListTemplates retrieves templates with pagination
+func (s *Service) ListTemplates(ctx context.Context, page, pageSize int) ([]domain.ContractTemplate, int, error) {
 	span, ctx := opentracing.StartSpanFromContext(ctx, "service.template.ListTemplates")
 	defer span.Finish()
 
@@ -100,16 +100,7 @@ func (s *Service) ListTemplates(ctx context.Context, organizationID domain.ID, p
 
 	offset := (page - 1) * pageSize
 
-	return s.repo.ListTemplates(ctx, organizationID, pageSize, offset)
-}
-
-// ListTemplatesByOrganization retrieves all templates for an organization (without pagination)
-func (s *Service) ListTemplatesByOrganization(ctx context.Context, organizationID domain.ID) ([]domain.ContractTemplate, error) {
-	span, ctx := opentracing.StartSpanFromContext(ctx, "service.template.ListTemplatesByOrganization")
-	defer span.Finish()
-
-	templates, _, err := s.repo.ListTemplates(ctx, organizationID, 1000, 0)
-	return templates, err
+	return s.repo.ListTemplates(ctx, pageSize, offset)
 }
 
 // UpdateTemplate updates an existing template

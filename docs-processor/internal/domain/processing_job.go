@@ -11,23 +11,25 @@ const (
 )
 
 type ProcessingJob struct {
-	JobType        JobType
-	DocumentID     ID
-	OrganizationID ID
-	S3Key          string
-	DocumentType   DocumentType
-	DocumentName   string
+	JobType JobType `json:"job_type"`
+	S3Key   string  `json:"s3_key,omitempty"`
+
+	// Для документов
+	DocumentID     ID           `json:"document_id,omitempty"`
+	DocumentType   DocumentType `json:"document_type,omitempty"`
+	DocumentName   string       `json:"document_name,omitempty"`
+	OrganizationID ID           `json:"organization_id,omitempty"`
 
 	// Для шаблонов
-	TemplateID   *ID
-	TemplateName *string
-	Description  *string
-	TemplateType *string
-	FieldsCount  *int
+	TemplateID   *ID     `json:"template_id,omitempty"`
+	TemplateName *string `json:"template_name,omitempty"`
+	Description  *string `json:"description,omitempty"`
+	TemplateType *string `json:"template_type,omitempty"`
+	FieldsCount  *int    `json:"fields_count,omitempty"`
 
-	RetryCount int
-	MaxRetries int
-	CreatedAt  time.Time
+	RetryCount int       `json:"retry_count"`
+	MaxRetries int       `json:"max_retries"`
+	CreatedAt  time.Time `json:"created_at"`
 }
 
 func NewProcessingJob(documentID, organizationID ID, s3Key string, docType DocumentType, docName string) *ProcessingJob {
@@ -44,18 +46,17 @@ func NewProcessingJob(documentID, organizationID ID, s3Key string, docType Docum
 	}
 }
 
-func NewTemplateIndexJob(templateID, organizationID ID, name, description, templateType string, fieldsCount int) *ProcessingJob {
+func NewTemplateIndexJob(templateID ID, name, description, templateType string, fieldsCount int) *ProcessingJob {
 	return &ProcessingJob{
-		JobType:        JobTypeTemplateIndex,
-		OrganizationID: organizationID,
-		TemplateID:     &templateID,
-		TemplateName:   &name,
-		Description:    &description,
-		TemplateType:   &templateType,
-		FieldsCount:    &fieldsCount,
-		RetryCount:     0,
-		MaxRetries:     3,
-		CreatedAt:      time.Now(),
+		JobType:      JobTypeTemplateIndex,
+		TemplateID:   &templateID,
+		TemplateName: &name,
+		Description:  &description,
+		TemplateType: &templateType,
+		FieldsCount:  &fieldsCount,
+		RetryCount:   0,
+		MaxRetries:   3,
+		CreatedAt:    time.Now(),
 	}
 }
 

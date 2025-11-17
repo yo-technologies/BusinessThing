@@ -4,7 +4,14 @@ import { useCallback, useEffect, useState } from "react";
 import { Button } from "@heroui/button";
 import { Card, CardBody, CardHeader } from "@heroui/card";
 import { Spinner } from "@heroui/spinner";
-import { Modal, ModalBody, ModalContent, ModalFooter, ModalHeader, useDisclosure } from "@heroui/modal";
+import {
+  Modal,
+  ModalBody,
+  ModalContent,
+  ModalFooter,
+  ModalHeader,
+  useDisclosure,
+} from "@heroui/modal";
 import {
   DocumentTextIcon,
   TrashIcon,
@@ -16,20 +23,32 @@ import { CoreGeneratedContract } from "@/api/api.core.generated";
 import { useApiClients } from "@/api/client";
 import { useAuth } from "@/hooks/useAuth";
 import { useOrganization } from "@/hooks/useOrganization";
+import { useHasInvitation } from "@/hooks/useInvitationToken";
 import { useBackButton } from "@/hooks/useBackButton";
 
 type ContractWithLoading = CoreGeneratedContract & { deleting?: boolean };
 
 export default function ContractsPage() {
   const router = useRouter();
-  const { loading: authLoading, isAuthenticated, isNewUser, organizations } = useAuth();
-  const { currentOrg, loading: orgLoading, needsOrganization } = useOrganization({ organizations, authLoading });
+  const {
+    loading: authLoading,
+    isAuthenticated,
+    isNewUser,
+    organizations,
+  } = useAuth();
+  const {
+    currentOrg,
+    loading: orgLoading,
+    needsOrganization,
+  } = useOrganization({ organizations, authLoading });
+  const hasInvitation = useHasInvitation();
   const { core } = useApiClients();
 
   const [contracts, setContracts] = useState<ContractWithLoading[]>([]);
   const [initialLoading, setInitialLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [selectedContract, setSelectedContract] = useState<CoreGeneratedContract | null>(null);
+  const [selectedContract, setSelectedContract] =
+    useState<CoreGeneratedContract | null>(null);
 
   const { isOpen, onOpen, onClose } = useDisclosure();
 
@@ -42,10 +61,27 @@ export default function ContractsPage() {
   }, [isNewUser, authLoading, router]);
 
   useEffect(() => {
-    if (!authLoading && !orgLoading && isAuthenticated && !isNewUser && needsOrganization) {
-      router.replace("/organization/create");
+    if (
+      !authLoading &&
+      !orgLoading &&
+      isAuthenticated &&
+      !isNewUser
+    ) {
+      if (hasInvitation) {
+        router.replace("/invitation");
+      } else if (needsOrganization) {
+        router.replace("/organization/create");
+      }
     }
-  }, [authLoading, orgLoading, isAuthenticated, isNewUser, needsOrganization, router]);
+  }, [
+    authLoading,
+    orgLoading,
+    isAuthenticated,
+    isNewUser,
+    needsOrganization,
+    hasInvitation,
+    router,
+  ]);
 
   const loadContracts = useCallback(async () => {
     if (!currentOrg?.id) return;
@@ -53,9 +89,13 @@ export default function ContractsPage() {
     setInitialLoading(true);
     setError(null);
     try {
-      const response = await core.v1.generatedContractServiceListContracts(currentOrg.id, {
-        pageSize: 100,
-      });
+      const response = await core.v1.generatedContractServiceListContracts(
+        currentOrg.id,
+        {
+          pageSize: 100,
+        },
+      );
+
       setContracts(response.data.contracts ?? []);
     } catch (e) {
       console.error("Failed to load contracts", e);
@@ -138,7 +178,9 @@ export default function ContractsPage() {
           {contracts.length === 0 ? (
             <div className="flex flex-col h-full items-center justify-center py-12 gap-2">
               <DocumentTextIcon className="h-16 w-16 text-default-300" />
-              <p className="text-default-400 text-center">Нет сгенерированных документов</p>
+              <p className="text-default-400 text-center">
+                Нет сгенерированных документов
+              </p>
               <p className="text-sm text-default-300 text-center">
                 Документы будут отображаться здесь после генерации через агента
               </p>
@@ -153,7 +195,9 @@ export default function ContractsPage() {
                   <div className="flex items-start gap-3 flex-1">
                     <DocumentTextIcon className="h-6 w-6 flex-shrink-0 text-success mt-1" />
                     <div className="flex-1 min-w-0">
-                      <p className="font-medium line-clamp-2">{contract.name}</p>
+                      <p className="font-medium line-clamp-2">
+                        {contract.name}
+                      </p>
                       {contract.createdAt && (
                         <p className="text-xs text-default-400 mt-1">
                           {new Date(contract.createdAt).toLocaleString("ru-RU")}
@@ -163,21 +207,21 @@ export default function ContractsPage() {
                   </div>
                   <div className="flex gap-2 mt-3">
                     <Button
-                      size="sm"
-                      variant="flat"
-                      color="secondary"
                       fullWidth
+                      color="secondary"
+                      size="sm"
                       startContent={<ArrowDownTrayIcon className="h-4 w-4" />}
+                      variant="flat"
                       onPress={() => handleDownload(contract)}
                     >
                       Скачать
                     </Button>
                     <Button
                       isIconOnly
-                      size="sm"
-                      variant="flat"
                       color="danger"
                       isLoading={contract.deleting}
+                      size="sm"
+                      variant="flat"
                       onPress={() => openDeleteModal(contract)}
                     >
                       <TrashIcon className="h-4 w-4" />
@@ -194,8 +238,13 @@ export default function ContractsPage() {
         <ModalContent>
           <ModalHeader>Удалить документ</ModalHeader>
           <ModalBody>
-            <p>Вы уверены, что хотите удалить документ &quot;{selectedContract?.name}&quot;?</p>
-            <p className="text-sm text-default-400">Это действие нельзя отменить.</p>
+            <p>
+              Вы уверены, что хотите удалить документ &quot;
+              {selectedContract?.name}&quot;?
+            </p>
+            <p className="text-sm text-default-400">
+              Это действие нельзя отменить.
+            </p>
           </ModalBody>
           <ModalFooter>
             <Button variant="light" onPress={onClose}>

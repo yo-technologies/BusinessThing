@@ -43,8 +43,8 @@ func contractToProto(contract domain.GeneratedContract) *pb.GeneratedContract {
 	}
 }
 
-func (s *Service) RegisterGeneratedContract(ctx context.Context, req *pb.RegisterContractRequest) (*pb.RegisterContractResponse, error) {
-	span, ctx := opentracing.StartSpanFromContext(ctx, "api.RegisterGeneratedContract")
+func (s *Service) RegisterContract(ctx context.Context, req *pb.RegisterContractRequest) (*pb.RegisterContractResponse, error) {
+	span, ctx := opentracing.StartSpanFromContext(ctx, "api.RegisterContract")
 	defer span.Finish()
 
 	orgID, err := domain.ParseID(req.OrganizationId)
@@ -67,8 +67,8 @@ func (s *Service) RegisterGeneratedContract(ctx context.Context, req *pb.Registe
 	}, nil
 }
 
-func (s *Service) GetGeneratedContract(ctx context.Context, req *pb.GetContractRequest) (*pb.GetContractResponse, error) {
-	span, ctx := opentracing.StartSpanFromContext(ctx, "api.GetGeneratedContract")
+func (s *Service) GetContract(ctx context.Context, req *pb.GetContractRequest) (*pb.GetContractResponse, error) {
+	span, ctx := opentracing.StartSpanFromContext(ctx, "api.GetContract")
 	defer span.Finish()
 
 	id, err := domain.ParseID(req.Id)
@@ -86,8 +86,8 @@ func (s *Service) GetGeneratedContract(ctx context.Context, req *pb.GetContractR
 	}, nil
 }
 
-func (s *Service) DeleteGeneratedContract(ctx context.Context, req *pb.DeleteContractRequest) (*emptypb.Empty, error) {
-	span, ctx := opentracing.StartSpanFromContext(ctx, "api.DeleteGeneratedContract")
+func (s *Service) DeleteContract(ctx context.Context, req *pb.DeleteContractRequest) (*emptypb.Empty, error) {
+	span, ctx := opentracing.StartSpanFromContext(ctx, "api.DeleteContract")
 	defer span.Finish()
 
 	id, err := domain.ParseID(req.Id)
@@ -101,30 +101,6 @@ func (s *Service) DeleteGeneratedContract(ctx context.Context, req *pb.DeleteCon
 	}
 
 	return &emptypb.Empty{}, nil
-}
-
-func (s *Service) ListGeneratedContracts(ctx context.Context, req *pb.ListContractsRequest) (*pb.ListContractsResponse, error) {
-	span, ctx := opentracing.StartSpanFromContext(ctx, "api.ListGeneratedContracts")
-	defer span.Finish()
-
-	orgID, err := domain.ParseID(req.OrganizationId)
-	if err != nil {
-		return nil, domain.ErrInvalidArgument
-	}
-
-	contracts, err := s.contractService.ListGeneratedContractsByOrganization(ctx, orgID)
-	if err != nil {
-		return nil, err
-	}
-
-	pbContracts := make([]*pb.GeneratedContract, 0, len(contracts))
-	for _, contract := range contracts {
-		pbContracts = append(pbContracts, contractToProto(contract))
-	}
-
-	return &pb.ListContractsResponse{
-		Contracts: pbContracts,
-	}, nil
 }
 
 // ListContracts implements GeneratedContractService.ListContracts with pagination support.

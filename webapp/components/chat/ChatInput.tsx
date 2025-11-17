@@ -13,7 +13,13 @@ interface ChatInputProps {
   isStreaming?: boolean;
 }
 
-export function ChatInput({ value, onChange, onSend, disabled, isStreaming }: ChatInputProps) {
+export function ChatInput({
+  value,
+  onChange,
+  onSend,
+  disabled,
+  isStreaming,
+}: ChatInputProps) {
   const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
     if (e.key === "Enter" && !e.shiftKey) {
       e.preventDefault();
@@ -39,11 +45,19 @@ export function ChatInput({ value, onChange, onSend, disabled, isStreaming }: Ch
       <Button
         isIconOnly
         color="success"
+        isDisabled={disabled || !value.trim()}
         radius="full"
         onPress={onSend}
-        isDisabled={disabled || !value.trim()}
       >
-        {isStreaming ? <Spinner size="sm" color="current" classNames={{wrapper: "w-4 h-4"}}/> : <ArrowRightIcon className="h-5 w-5" />}
+        {isStreaming ? (
+          <Spinner
+            classNames={{ wrapper: "w-4 h-4" }}
+            color="current"
+            size="sm"
+          />
+        ) : (
+          <ArrowRightIcon className="h-5 w-5" />
+        )}
       </Button>
     </div>
   );

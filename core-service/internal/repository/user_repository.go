@@ -337,6 +337,51 @@ func (r *PGXRepository) MarkInvitationAsUsed(ctx context.Context, id domain.ID) 
 	return nil
 }
 
+// GetInvitationByID retrieves an invitation by ID
+func (r *PGXRepository) GetInvitationByID(ctx context.Context, id domain.ID) (domain.Invitation, error) {
+	span, ctx := opentracing.StartSpanFromContext(ctx, "repository.GetInvitationByID")
+	defer span.Finish()
+
+	engine := r.engineFactory.Get(ctx)
+	query := `
+		SELECT id, organization_id, token, role, expires_at, used_at, created_at
+		FROM invitations
+		WHERE id = $1
+	`
+
+	var invitation domain.Invitation
+	err := pgxscan.Get(ctx, engine, &invitation, query, uuidToPgtype(id))
+	if err != nil {
+		if errors.Is(err, pgx.ErrNoRows) {
+			return domain.Invitation{}, domain.ErrNotFound
+		}
+		logger.Errorf(ctx, "failed to get invitation by id: %v", err)
+		return domain.Invitation{}, err
+	}
+
+	return invitation, nil
+}
+
+// DeleteInvitation deletes an invitation by ID
+func (r *PGXRepository) DeleteInvitation(ctx context.Context, id domain.ID) error {
+	span, ctx := opentracing.StartSpanFromContext(ctx, "repository.DeleteInvitation")
+	defer span.Finish()
+
+	engine := r.engineFactory.Get(ctx)
+	query := `DELETE FROM invitations WHERE id = $1`
+
+	tag, err := engine.Exec(ctx, query, uuidToPgtype(id))
+	if err != nil {
+		logger.Errorf(ctx, "failed to delete invitation: %v", err)
+		return err
+	}
+	if tag.RowsAffected() == 0 {
+		return domain.ErrNotFound
+	}
+
+	return nil
+}
+
 // CreateOrganizationMember creates a new organization membership
 func (r *PGXRepository) CreateOrganizationMember(ctx context.Context, member domain.OrganizationMember) (domain.OrganizationMember, error) {
 	span, ctx := opentracing.StartSpanFromContext(ctx, "repository.CreateOrganizationMember")

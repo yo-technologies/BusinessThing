@@ -4,17 +4,11 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import {
   ChatBubbleOvalLeftEllipsisIcon,
-  DocumentTextIcon,
-  DocumentDuplicateIcon,
-  Cog6ToothIcon,
   BriefcaseIcon,
   UserIcon, // Added UserIcon
 } from "@heroicons/react/24/outline";
 import {
   ChatBubbleOvalLeftEllipsisIcon as SolidChatBubbleIcon,
-  DocumentTextIcon as SolidDocumentTextIcon,
-  DocumentDuplicateIcon as SolidDocumentDuplicateIcon,
-  Cog6ToothIcon as SolidCog6ToothIcon,
   BriefcaseIcon as SolidBriefcaseIcon,
   UserIcon as SolidUserIcon, // Added SolidUserIcon
 } from "@heroicons/react/24/solid";
@@ -55,17 +49,20 @@ export const BottomNavbar = () => {
             return (
               <Link
                 key={href}
-                href={href}
                 className={clsx(
                   "flex flex-col items-center justify-center gap-1 px-3 py-1 rounded-4xl text-xs font-medium transition-all duration-300",
                   {
                     "bg-zinc-800/70 text-primary-400 shadow-lg": isActive,
-                    "text-zinc-400 hover:text-zinc-200 hover:bg-white/5": !isActive,
+                    "text-zinc-400 hover:text-zinc-200 hover:bg-white/5":
+                      !isActive,
                   },
                 )}
+                href={href}
               >
                 <CurrentIcon className="h-7 w-7" />
-                <span className="text-[9px] whitespace-nowrap font-semibold">{label}</span>
+                <span className="text-[9px] whitespace-nowrap font-semibold">
+                  {label}
+                </span>
               </Link>
             );
           })}

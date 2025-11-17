@@ -1,6 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useState } from "react";
+
 import { AgentChat } from "@/api/api.agent.generated";
 import { useApiClients } from "@/api/client";
 
@@ -9,7 +10,10 @@ interface UseChatListParams {
   enabled?: boolean;
 }
 
-export function useChatList({ organizationId, enabled = true }: UseChatListParams) {
+export function useChatList({
+  organizationId,
+  enabled = true,
+}: UseChatListParams) {
   const { agent } = useApiClients();
   const [chats, setChats] = useState<AgentChat[]>([]);
   const [loading, setLoading] = useState(true);
@@ -37,19 +41,24 @@ export function useChatList({ organizationId, enabled = true }: UseChatListParam
     }
   }, [agent.v1, organizationId, enabled]);
 
-  const deleteChat = useCallback(async (chatId: string) => {
-    if (!organizationId) return;
+  const deleteChat = useCallback(
+    async (chatId: string) => {
+      if (!organizationId) return;
 
-    try {
-      await agent.v1.agentServiceDeleteChat(chatId, { orgId: organizationId });
-      
-      setChats((prevChats) => prevChats.filter((chat) => chat.id !== chatId));
-    } catch (e) {
-      console.error("Failed to delete chat", e);
-      setError("Не удалось удалить чат");
-      throw e;
-    }
-  }, [agent.v1, organizationId]);
+      try {
+        await agent.v1.agentServiceDeleteChat(chatId, {
+          orgId: organizationId,
+        });
+
+        setChats((prevChats) => prevChats.filter((chat) => chat.id !== chatId));
+      } catch (e) {
+        console.error("Failed to delete chat", e);
+        setError("Не удалось удалить чат");
+        throw e;
+      }
+    },
+    [agent.v1, organizationId],
+  );
 
   useEffect(() => {
     void loadChats();

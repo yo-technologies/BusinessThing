@@ -73,9 +73,6 @@ func (c *TemplatesClient) createIndex(ctx context.Context) error {
 				"template_id": map[string]interface{}{
 					"type": "keyword",
 				},
-				"organization_id": map[string]interface{}{
-					"type": "keyword",
-				},
 				"name": map[string]interface{}{
 					"type": "text",
 				},
@@ -129,14 +126,13 @@ func (c *TemplatesClient) createIndex(ctx context.Context) error {
 }
 
 type IndexTemplateRequest struct {
-	TemplateID     string    `json:"template_id"`
-	OrganizationID string    `json:"organization_id"`
-	Name           string    `json:"name"`
-	Description    string    `json:"description"`
-	TemplateType   string    `json:"template_type"`
-	FieldsCount    int       `json:"fields_count"`
-	Embedding      []float32 `json:"embedding"`
-	CreatedAt      string    `json:"created_at"`
+	TemplateID   string    `json:"template_id"`
+	Name         string    `json:"name"`
+	Description  string    `json:"description"`
+	TemplateType string    `json:"template_type"`
+	FieldsCount  int       `json:"fields_count"`
+	Embedding    []float32 `json:"embedding"`
+	CreatedAt    string    `json:"created_at"`
 }
 
 func (c *TemplatesClient) IndexTemplate(ctx context.Context, template *domain.Template, embedding []float32) error {
@@ -145,7 +141,6 @@ func (c *TemplatesClient) IndexTemplate(ctx context.Context, template *domain.Te
 
 	doc := IndexTemplateRequest{
 		TemplateID:     template.ID.String(),
-		OrganizationID: template.OrganizationID.String(),
 		Name:           template.Name,
 		Description:    template.Description,
 		TemplateType:   template.TemplateType,
@@ -180,28 +175,17 @@ func (c *TemplatesClient) IndexTemplate(ctx context.Context, template *domain.Te
 	return nil
 }
 
-func (c *TemplatesClient) SearchTemplates(ctx context.Context, organizationID domain.ID, queryEmbedding []float32, limit int) ([]*TemplateSearchResult, error) {
+func (c *TemplatesClient) SearchTemplates(ctx context.Context, queryEmbedding []float32, limit int) ([]*TemplateSearchResult, error) {
 	span, ctx := opentracing.StartSpanFromContext(ctx, "vectordb.TemplatesClient.SearchTemplates")
 	defer span.Finish()
 
 	query := map[string]interface{}{
 		"size": limit,
 		"query": map[string]interface{}{
-			"bool": map[string]interface{}{
-				"must": []interface{}{
-					map[string]interface{}{
-						"term": map[string]interface{}{
-							"organization_id": organizationID.String(),
-						},
-					},
-					map[string]interface{}{
-						"knn": map[string]interface{}{
-							"embedding": map[string]interface{}{
-								"vector": queryEmbedding,
-								"k":      limit,
-							},
-						},
-					},
+			"knn": map[string]interface{}{
+				"embedding": map[string]interface{}{
+					"vector": queryEmbedding,
+					"k":      limit,
 				},
 			},
 		},
