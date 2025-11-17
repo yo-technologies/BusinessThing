@@ -214,7 +214,7 @@ export default function KnowledgePage() {
       )}
 
       <Card className="flex-1 rounded-4xl shadow-none ">
-        <CardBody className="gap-4 px-5 py-5">
+        <CardBody className="gap-4">
           {documents.length === 0 ? (
             <div className="flex flex-col h-full items-center justify-center py-12 gap-2">
               <DocumentIcon className="h-16 w-16 text-default-300" />
@@ -230,9 +230,9 @@ export default function KnowledgePage() {
                 const StatusIcon = status.icon;
 
                 return (
-                  <div
+                  <Card
                     key={doc.id}
-                    className="flex items-center gap-3 p-4 rounded-3xl  bg-default-50/60 hover:bg-default-100/70 transition-colors"
+                    className="flex flex-row items-center gap-3 p-4 rounded-3xl  bg-default-50/60 hover:bg-default-100/70 transition-colors"
                   >
                     <DocumentIcon className="h-6 w-6 flex-shrink-0 text-primary" />
                     <div className="flex-1 min-w-0">
@@ -261,7 +261,7 @@ export default function KnowledgePage() {
                     >
                       <TrashIcon className="h-4 w-4" />
                     </Button>
-                  </div>
+                  </Card>
                 );
               })}
             </div>
