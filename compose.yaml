@@ -5,6 +5,7 @@ include:
     - core-service-db/compose.yaml
     - docs-processor/compose.yaml
     - webapp/compose.yaml
+    - telegram-bot/compose.yaml
     - jaeger/compose.yaml
     - rabbitmq/compose.yaml
     - opensearch/compose.yaml

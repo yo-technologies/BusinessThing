@@ -1,0 +1,13 @@
+services:
+  telegram-bot:
+    container_name: telegram-bot
+    profiles: [backend, full]
+    build:
+      context: .
+      target: final
+    restart: unless-stopped
+    environment:
+      - TELEGRAM_BOT_TOKEN=${TELEGRAM_BOT_TOKEN}
+      - WEBAPP_URL=${WEBAPP_URL:-https://businessthing.ru}
+    volumes:
+      - /etc/localtime:/etc/localtime:ro
