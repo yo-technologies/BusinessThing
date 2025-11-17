@@ -95,6 +95,7 @@ export const OrganizationSwitcher = () => {
     <Dropdown>
       <DropdownTrigger>
         <Button
+          radius="full"
           className="gap-2 backdrop-blur-xs"
           endContent={<ChevronDownIcon className="h-4 w-4" />}
           size="sm"

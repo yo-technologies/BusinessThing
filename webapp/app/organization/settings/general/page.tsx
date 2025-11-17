@@ -79,15 +79,13 @@ export default function GeneralSettingsPage() {
 
     setSaving(true);
     try {
-      const response = await core.v1.organizationServiceUpdateOrganization(organization.id, {
+      await core.v1.organizationServiceUpdateOrganization(organization.id, {
         name: name || undefined,
         industry: industry || undefined,
         region: region || undefined,
         description: description || undefined,
       });
-      if (response.data.organization) {
-        setOrganization(response.data.organization);
-      }
+      router.back();
     } catch (e) {
       console.error("Failed to update organization", e);
       setError("Не удалось сохранить изменения");
@@ -111,7 +109,7 @@ export default function GeneralSettingsPage() {
     );
   }
 
-  if (error) {
+  if (error && !saving) { // Do not show full page error while saving
     return (
       <Card className="max-w-xl mx-auto mt-8 rounded-4xl shadow-sm border border-danger-200/60">
         <CardBody>
@@ -132,7 +130,7 @@ export default function GeneralSettingsPage() {
   }
 
   return (
-    <div className="flex flex-col gap-4 flex-1">
+    <div className="flex flex-col gap-4 flex-1 pb-24">
       <Card className="rounded-4xl shadow-none">
         <CardHeader className="flex flex-col gap-1 px-5 py-4">
           <div className="flex items-start gap-2 w-full">
@@ -152,7 +150,7 @@ export default function GeneralSettingsPage() {
             placeholder="ООО «Моя компания»"
             value={name}
             onValueChange={setName}
-            isDisabled={!isAdmin}
+            isDisabled={!isAdmin || saving}
           />
 
           <Input
@@ -160,7 +158,7 @@ export default function GeneralSettingsPage() {
             placeholder="IT, Финансы, Производство..."
             value={industry}
             onValueChange={setIndustry}
-            isDisabled={!isAdmin}
+            isDisabled={!isAdmin || saving}
           />
 
           <Input
@@ -168,7 +166,7 @@ export default function GeneralSettingsPage() {
             placeholder="Москва, Санкт-Петербург..."
             value={region}
             onValueChange={setRegion}
-            isDisabled={!isAdmin}
+            isDisabled={!isAdmin || saving}
           />
 
           <Textarea
@@ -178,7 +176,7 @@ export default function GeneralSettingsPage() {
             onValueChange={setDescription}
             minRows={4}
             maxRows={10}
-            isDisabled={!isAdmin}
+            isDisabled={!isAdmin || saving}
           />
 
           {!isAdmin && (
@@ -210,6 +208,23 @@ export default function GeneralSettingsPage() {
           </div>
         </CardBody>
       </Card>
+
+      {isAdmin && hasChanges && (
+        <div className="fixed bottom-18 left-0 right-0 z-50 p-4">
+            <div className="max-w-[80%] mx-auto">
+                <Button
+                    color="success"
+                    fullWidth
+                    onPress={handleSave}
+                    isDisabled={saving}
+                    radius="full"
+                    className="backdrop-blur-sm bg-secondary/30"
+                >
+                    {saving ? <Spinner color="white" size="sm" /> : "Сохранить изменения"}
+                </Button>
+            </div>
+        </div>
+      )}
     </div>
   );
 }
