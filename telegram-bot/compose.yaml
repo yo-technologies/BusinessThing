@@ -9,5 +9,7 @@ services:
     environment:
       - TELEGRAM_BOT_TOKEN=${TELEGRAM_BOT_TOKEN}
       - WEBAPP_URL=${WEBAPP_URL:-https://businessthing.ru}
+    env_file:
+      - .env
     volumes:
       - /etc/localtime:/etc/localtime:ro
